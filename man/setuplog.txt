@@ -34,6 +34,16 @@ curl http://npmjs.org/install.sh | sh
 sh node/npm-install.sh
 
 
+echo 'deb http://packages.cloudkick.com/ubuntu lucid main' > /etc/apt/sources.list.d/cloudkick.list
+curl http://packages.cloudkick.com/cloudkick.packages.key | apt-key add -
+apt-get update
+apt-get install cloudkick-agent
+
+
+cd node/support
+./clone.sh
+cd node-mongodb-native
+make
 
 
 
