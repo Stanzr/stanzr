@@ -40,7 +40,6 @@ var connect  = exports.connect  = require('connect')
 var uuid     = exports.uuid     = require('node-uuid')
 var oauth    = exports.oauth    = require('oauth')
 var request  = exports.request  = require('request')
-var Cookies  = exports.Cookies  = require('Cookies')
 
 
 
