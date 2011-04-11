@@ -8,6 +8,8 @@ AMI: ami-af7e2eea
 ec2-50-18-15-176.us-west-1.compute.amazonaws.com
 
 
+sudo -s
+
 apt-get update
 apt-get install emacs
 apt-get install nginx
@@ -27,6 +29,9 @@ make
 make install
 
 
+curl http://npmjs.org/install.sh | sh
+
+sh node/npm-install.sh
 
 
 
