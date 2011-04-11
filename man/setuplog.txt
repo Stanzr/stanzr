@@ -7,11 +7,14 @@ t1.micro
 AMI: ami-af7e2eea
 ec2-50-18-15-176.us-west-1.compute.amazonaws.com
 
+
 apt-get update
 apt-get install emacs
 apt-get install nginx
 apt-get install build-essential
 apt-get install libssl-dev
+apt-get install git
+
 
 cd /home/ubuntu
 mkdir build
