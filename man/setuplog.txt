@@ -1,0 +1,34 @@
+
+
+Amazon
+Security Group: web, inbound 22,80,443
+
+t1.micro
+AMI: ami-af7e2eea
+ec2-50-18-15-176.us-west-1.compute.amazonaws.com
+
+apt-get update
+apt-get install emacs
+apt-get install nginx
+apt-get install build-essential
+apt-get install libssl-dev
+
+cd /home/ubuntu
+mkdir build
+
+wget http://nodejs.org/dist/node-v0.4.5.tar.gz
+tar -xzf node-v0.4.5.tar.gz
+cd node-v0.4.5
+./configure
+make
+make install
+
+
+
+
+
+
+
+
+
+
