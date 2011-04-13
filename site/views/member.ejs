@@ -61,13 +61,56 @@
   </div>
 
   <div class="span-10 midcol clearfix">
+    <div class="topichead">
+      <h4 id="rally_topicname">Topic name</h4>
+      <p  id="rally_topicdesc">Neque porro quisquam est, qui dolorem ipsum</p>
+      <div class="navbox">
+        <a href="" class="imgbtn sprite-page-backward">&nbsp;</a>
+        <a href="" class="imgbtn sprite-page-forward">&nbsp;</a>
+      </div>
+    </div>
 
-<h2>Chat Window</h2>
-<div id="messages"></div>
-<div style="position: absolute; bottom: 25;">
-<input type="text" id="text-input">
-<input type="button" value="Send" id="send-button">
-</div>
+    <div id="logindiv" style="background-color:yellow;clear:both; margin:30px;">
+      Enter username:
+      <input id="username">
+      <a href="javascript:void(0)" id="loginbtn" class="textbtn">log in</a>
+    </div>
+
+    <div class="topicwelcome">
+      <h2>Welcome <span></span>!<h2>
+    </div>
+
+    <div class="topicsend">
+      <input type="text" id="post_text" >
+      <input type="button" value="Send" id="post_send">
+      <p class="tweetout">
+        <input type="checkbox"> Also post on Twitter - appends <span id="rally_hash">#chathash</span> 
+      </p>
+    </div>
+
+
+    <div class="topicposts" class="clearfix">
+
+      <ul id="posts">
+      </ul>
+
+      <ul id="posts_tm">
+        <li class="clearfix">
+          <div class="post_avatar sprite-silhouette32"></div>
+          <div class="post_content">
+            <h4></h4>
+            <span class="shares">&nbsp;&nbsp;x12</span>
+            &nbsp;&nbsp;<a href="" class="imgbtn sprite-at-reply">&nbsp;</a>
+            &nbsp;&nbsp;<a href="" class="imgbtn sprite-approve">&nbsp;</a>
+            <p class="post"></p>
+          </div>
+        </li>
+     <ul>
+
+   
+    </div>
+
+
 
   </div>
 
@@ -132,9 +175,9 @@
           </p>
         </li>
       </ul>
-    <div>
-
     </div>
+
+    <div>
       <h2>
         Top Shares
         <a href="" class="imgbtn sprite-drilldown">&nbsp;</a>

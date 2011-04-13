@@ -6,8 +6,13 @@ a {
     color: #9e9e9e; }
   a.imgbtn {
     display: inline-block;
-    width: 30px;
-    height: 30px; }
+    width: 15px;
+    height: 15px; }
+    a.imgbtn.sprite-drilldown, a.imgbtn.sprite-page-backward, a.imgbtn.sprite-page-forward {
+      width: 25px;
+      height: 25px; }
+    a.imgbtn:hover {
+      text-decoration: none; }
 
 h1 {
   font-weight: bold;
@@ -27,6 +32,12 @@ h3 {
   color: #333333;
   margin: 5px 0px; }
 
+h4 {
+  font-size: 13px;
+  font-weight: bold;
+  float: left;
+  margin: 0px; }
+
 body {
   font-size: 13px;
   color: #333333;
@@ -36,7 +47,8 @@ div.container {
   height: 100%; }
 div.header {
   background-color: #3399cc;
-  height: 60px; }
+  height: 60px;
+  width: 930px; }
   div.header h1 {
     color: #fff;
     padding: 15px;
@@ -54,18 +66,67 @@ div.header {
         background-color: #666666;
         color: white; }
 div.leftcol {
-  background-color: white; }
+  background-color: white;
+  margin-right: 0px;
+  height: 1500px; }
   div.leftcol h1, div.leftcol h2, div.leftcol h3 {
     color: #666666; }
   div.leftcol div {
-    padding: 15px;
+    padding: 10px 15px;
     border-bottom: 1px solid #e2e2e2; }
 div.midcol {
-  background-color: #f7efe1; }
+  background-color: #f7efe1;
+  margin-right: 0px;
+  height: 1500px; }
+  div.midcol > div {
+    padding: 10px 15px; }
+  div.midcol div.topichead {
+    height: 60px;
+    background-color: #d1cabf; }
+    div.midcol div.topichead p {
+      float: left;
+      width: 240px;
+      margin: 0px;
+      clear: both; }
+    div.midcol div.topichead div.navbox {
+      width: 70px;
+      float: right; }
+  div.midcol div.topicwelcome {
+    display: none; }
+  div.midcol div.topicposts #posts_tm {
+    display: none; }
+  div.midcol div.topicposts #posts {
+    list-style-type: none;
+    margin: 0px;
+    padding: 0px; }
+    div.midcol div.topicposts #posts li {
+      margin: 10px 0px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      background-color: #fff; }
+      div.midcol div.topicposts #posts li div.post_avatar {
+        width: 32px;
+        float: left; }
+      div.midcol div.topicposts #posts li div.post_content {
+        width: 300px;
+        float: right; }
+      div.midcol div.topicposts #posts li span.shares {
+        float: left;
+        color: #999999; }
+  div.midcol div.topicsend {
+    display: none; }
+    div.midcol div.topicsend #post_text {
+      border: 1px solid #ccc;
+      font-size: 16px;
+      background-color: #fff;
+      width: 300px; }
+    div.midcol div.topicsend p.tweetout {
+      color: #999999; }
 div.rightcol {
-  background-color: white; }
+  background-color: white;
+  height: 1500px; }
   div.rightcol div {
-    padding: 15px;
+    padding: 10px 15px;
     border-bottom: 1px solid #e2e2e2; }
     div.rightcol div#rally_miniavatars {
       border: none; }
@@ -82,11 +143,6 @@ div.rightcol {
       padding: 0px; }
       div.rightcol div ul.sideposts li {
         margin: 10px 0px; }
-        div.rightcol div ul.sideposts li h4 {
-          font-size: 13px;
-          font-weight: bold;
-          float: left;
-          margin: 0px; }
         div.rightcol div ul.sideposts li span.shares {
           float: left;
           color: #999999; }

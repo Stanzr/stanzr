@@ -14,6 +14,7 @@ $locolC: #fff;
 $hicolC: #f7efe1;
 $navbgC: #666;
 $bodybgC: #ccc;
+$topicheadbgC: #d1cabf;
 
 $fontbodyC: #333;
 $fontmetaC: #999;
@@ -22,7 +23,7 @@ $fontnavC:  #fff;
 
 
 @mixin sidecont() {
-  padding: $lenm;
+  padding: $lens $lenm;
   border-bottom: 1px solid #e2e2e2;
 }
 
@@ -41,8 +42,17 @@ a {
 
   &.imgbtn {
      display: inline-block;
-     width:  $len;
-     height: $len;
+     width:  $lenm;
+     height: $lenm;
+
+     &.sprite-drilldown, &.sprite-page-backward, &.sprite-page-forward {
+       width:  $lenm + $lens;
+       height: $lenm + $lens;
+     }
+
+     &:hover {
+       text-decoration: none;
+     }
   }
 }
 
@@ -70,6 +80,14 @@ h3 {
   margin: $lent 0px;
 }
 
+h4 {
+  font-size: 13px;
+  font-weight: bold;
+  float: left;
+  margin: 0px;
+}
+
+
 
 body {
   font-size: 13px;
@@ -86,6 +104,7 @@ div {
   &.header {
     background-color: $headC;
     height: $len2;
+    width: 930px; 
 
     h1 {
       color: #fff;
@@ -115,6 +134,9 @@ div {
 
   &.leftcol {
     background-color: $locolC;
+    margin-right: 0px;
+    height: 1500px;
+
     h1,h2,h3 {
       color: $fontsideC;
     }
@@ -127,11 +149,87 @@ div {
 
   &.midcol {
     background-color: $hicolC;
+    margin-right: 0px;
+    height: 1500px;
+
+    &>div {
+      padding: $lens $lenm;
+    }
+
+    div.topichead {
+      height: $len2;
+      background-color: $topicheadbgC;
+
+      p {
+        float: left;
+        width: 240px;
+        margin: 0px;
+        clear:both;
+      }
+      div.navbox {
+        width: 70px;
+        float: right;
+      }
+    }
+
+    div.topicwelcome {
+      display: none;
+    }
+
+    div.topicposts {
+
+      #posts_tm { display: none; }
+      #posts {
+        list-style-type: none;
+        margin: 0px;
+        padding: 0px;
+    
+        li {
+          margin: $lens 0px;
+          border: 1px solid #ccc;
+          padding: $lens;
+          background-color: #fff;
+
+
+          div.post_avatar {
+            width: 32px;
+            float: left;
+          }
+
+          div.post_content {
+            width: 300px;
+            float: right;
+          }
+
+
+          span.shares {
+            float: left;
+            color: $fontmetaC;
+          }    
+        }
+      }
+    }
+
+    div.topicsend {
+      display: none;
+
+      #post_text {
+        border: 1px solid #ccc;
+        font-size: 16px;
+        background-color: #fff;
+        width: 300px;
+      }
+
+      p.tweetout {
+        color: $fontmetaC;
+      }
+    }
   }
 
 
   &.rightcol {
     background-color: $locolC;
+    height: 1500px;
 
     div {
       @include sidecont();
@@ -156,13 +254,6 @@ div {
     
         li {
           margin: $lens 0px;
-
-          h4 {
-            font-size: 13px;
-            font-weight: bold;
-            float: left;
-            margin: 0px;
-          }
 
           span.shares {
             float: left;
