@@ -1,0 +1,96 @@
+a {
+  text-decoration: none; }
+  a:hover {
+    text-decoration: underline; }
+  a.textbtn {
+    color: #9e9e9e; }
+  a.imgbtn {
+    display: inline-block;
+    width: 30px;
+    height: 30px; }
+
+h1 {
+  font-weight: bold;
+  font-size: 24px;
+  color: #333333;
+  margin: 5px 0px; }
+
+h2 {
+  font-weight: bold;
+  font-size: 15px;
+  color: #333333;
+  margin: 5px 0px; }
+
+h3 {
+  font-weight: bold;
+  font-size: 15px;
+  color: #333333;
+  margin: 5px 0px; }
+
+body {
+  font-size: 13px;
+  color: #333333;
+  background-color: #cccccc; }
+
+div.container {
+  height: 100%; }
+div.header {
+  background-color: #3399cc;
+  height: 60px; }
+  div.header h1 {
+    color: #fff;
+    padding: 15px;
+    float: left; }
+  div.header ul {
+    float: right;
+    list-style-type: none;
+    margin: 20px 5px; }
+    div.header ul li {
+      padding: 0px;
+      margin: 0px 5px;
+      display: inline; }
+      div.header ul li a {
+        padding: 5px;
+        background-color: #666666;
+        color: white; }
+div.leftcol {
+  background-color: white; }
+  div.leftcol h1, div.leftcol h2, div.leftcol h3 {
+    color: #666666; }
+  div.leftcol div {
+    padding: 15px;
+    border-bottom: 1px solid #e2e2e2; }
+div.midcol {
+  background-color: #f7efe1; }
+div.rightcol {
+  background-color: white; }
+  div.rightcol div {
+    padding: 15px;
+    border-bottom: 1px solid #e2e2e2; }
+    div.rightcol div#rally_miniavatars {
+      border: none; }
+    div.rightcol div.miniavatar {
+      width: 32px;
+      height: 32px;
+      float: left;
+      margin: 0px 8px 8px 0px;
+      padding: 0px;
+      border: none; }
+    div.rightcol div ul.sideposts {
+      list-style-type: none;
+      margin: 0px;
+      padding: 0px; }
+      div.rightcol div ul.sideposts li {
+        margin: 10px 0px; }
+        div.rightcol div ul.sideposts li h4 {
+          font-size: 13px;
+          font-weight: bold;
+          float: left;
+          margin: 0px; }
+        div.rightcol div ul.sideposts li span.shares {
+          float: left;
+          color: #999999; }
+
+p.post {
+  margin: 0px;
+  clear: both; }

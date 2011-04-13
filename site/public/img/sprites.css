@@ -1,0 +1,14 @@
+
+.sprite-approve{ background-image: url(/img/sprites.png); background-position: 0 0; width: 14px; height: 16px; } 
+.sprite-at-reply{ background-image: url(/img/sprites.png); background-position: 0 -66px; width: 16px; height: 10px; } 
+.sprite-drilldown{ background-image: url(/img/sprites.png); background-position: 0 -126px; width: 17px; height: 17px; } 
+.sprite-drillup{ background-image: url(/img/sprites.png); background-position: 0 -193px; width: 17px; height: 17px; } 
+.sprite-facebook16{ background-image: url(/img/sprites.png); background-position: 0 -260px; width: 16px; height: 16px; } 
+.sprite-like{ background-image: url(/img/sprites.png); background-position: 0 -326px; width: 49px; height: 20px; } 
+.sprite-logo{ background-image: url(/img/sprites.png); background-position: 0 -396px; width: 191px; height: 28px; } 
+.sprite-page-backward{ background-image: url(/img/sprites.png); background-position: 0 -474px; width: 22px; height: 23px; } 
+.sprite-page-forward{ background-image: url(/img/sprites.png); background-position: 0 -547px; width: 22px; height: 23px; } 
+.sprite-silhouette16{ background-image: url(/img/sprites.png); background-position: 0 -620px; width: 16px; height: 16px; } 
+.sprite-silhouette32{ background-image: url(/img/sprites.png); background-position: 0 -686px; width: 32px; height: 32px; } 
+.sprite-tweet{ background-image: url(/img/sprites.png); background-position: 0 -768px; width: 55px; height: 20px; } 
+.sprite-twitter16{ background-image: url(/img/sprites.png); background-position: 0 -838px; width: 16px; height: 16px; } 

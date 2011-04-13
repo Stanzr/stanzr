@@ -40,7 +40,8 @@ var connect  = exports.connect  = require('connect')
 var uuid     = exports.uuid     = require('node-uuid')
 var oauth    = exports.oauth    = require('oauth')
 var request  = exports.request  = require('request')
-
+var express  = exports.express  = require('express')
+var now      = exports.now      = require('now')
 
 
 

@@ -2,13 +2,17 @@
 var common = require('./common')
 
 var connect = common.connect
+var express = common.express
+var mongo   = common.mongo
+var now     = common.now
 
-var mongo = common.mongo
 
 
-var app = {}
+var main = {}
+
 
 mongo.init(
+/*
   {
     host:'flame.mongohq.com',
     port:27059,
@@ -16,17 +20,47 @@ mongo.init(
     username:'first',
     password:'S2QP11CC'
   },
+*/
+  {
+    host:'localhost',
+    name:'stanzr01',
+  },
   function(db){
-    app.db = db
+    main.db = db
 
-    connect(
-      connect.logger()
-      ,connect.router(function(app){
-        app.get('/api/ping/node',function(req,res){
+    var app = main.app = express.createServer();
+
+    app.set('views', __dirname + '/../../../site/views');
+    app.set('view engine', 'ejs');
+
+    /*
+    app.get('/', function(req, res){
+      res.render('index', {locals: {
+        title: 'NowJS + Express Example'
+      }});
+    });
+    */
+
+    app.get('/member', function(req, res){
+      res.render('member', {locals: {
+        title: 'Member'
+      }});
+    });
+
+    app.listen(8080);
+    console.log("Express server listening on port %d", app.address().port);
+
+
+    app.use( connect.logger() )
+    app.use( connect.static( __dirname + '/../../../site/public') )
+
+    app.use( 
+      connect.router(function(capp){
+        capp.get('/api/ping/node',function(req,res){
           common.sendjson(res,{ok:true,now:new Date()})
         }),
-
-        app.get('/api/ping/mongo',function(req,res){
+        
+        capp.get('/api/ping/mongo',function(req,res){
           var start = new Date()
           mongo.coll('test',function(testcoll){
             testcoll.findOne({a:1},function(doc){
@@ -35,9 +69,25 @@ mongo.init(
             })
           })
         })
-        
       })
-    ).listen(8080)
+    )
 
+
+    var everyone = now.initialize(app);
+
+    everyone.connected(function(){
+      console.log("Joined: " + this.now.name);
+    });
+
+    everyone.disconnected(function(){
+      console.log("Left: " + this.now.name);
+    });
+
+    everyone.now.distributeMessage = function(message){
+      everyone.now.receiveMessage(this.now.name, message);
+    };
   }
 )
+
+
+
