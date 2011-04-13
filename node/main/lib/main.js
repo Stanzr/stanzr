@@ -12,7 +12,6 @@ var main = {}
 
 
 mongo.init(
-/*
   {
     host:'flame.mongohq.com',
     port:27059,
@@ -20,11 +19,12 @@ mongo.init(
     username:'first',
     password:'S2QP11CC'
   },
-*/
+/*
   {
     host:'localhost',
     name:'stanzr01',
   },
+*/
   function(db){
     main.db = db
 
