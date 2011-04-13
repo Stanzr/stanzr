@@ -28,7 +28,9 @@ $(document).ready(function(){
         var post = $('#posts_tm li').clone()
         post.find('h4').text(name)
         post.find('p').text(message)
+        post.css({opacity:0})
         $('#posts').prepend(post)
+        post.animate({opacity:1},500)
       }
   
       function post(){

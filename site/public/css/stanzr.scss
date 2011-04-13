@@ -178,7 +178,9 @@ div {
 
     div.topicposts {
 
-      #posts_tm { display: none; }
+      #posts_tm { 
+        display: none; 
+      }
       #posts {
         list-style-type: none;
         margin: 0px;
