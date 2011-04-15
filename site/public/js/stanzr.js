@@ -17,15 +17,6 @@ $(document).ready(function(){
     
     now.name = nick
 
-    function display(from,text) {
-      var post = $('#posts_tm li.message').clone()
-      post.find('h4').text(from)
-      post.find('p').text(text)
-      post.css({opacity:0})
-      
-      $('#posts').prepend(post)
-      post.animate({opacity:1},500)
-    }
     
     now.receiveMessage = function(from, jsonstr){
       var msg = JSON.parse(jsonstr)
@@ -64,30 +55,6 @@ $(document).ready(function(){
       }
     }
     joinchat()
-
-    $.ajax({
-      url:'/api/chat/'+chathash,
-      type:'GET',
-      dataType:'json',
-      success:function(res){
-        res.nicks.forEach(function(other){
-          if( other != nick ) {
-            addAvatar(other)
-          }
-        })
-
-        $.ajax({
-          url:'/api/chat/'+chathash+'/msgs',
-          type:'GET',
-          dataType:'json',
-          success:function(res){
-            res.forEach(function(msg){
-              display(msg.f,msg.t)
-            })
-          }
-        })
-      }
-    })
 
   }
 
@@ -182,5 +149,41 @@ $(document).ready(function(){
   if( nick ) {
     inituser()
   }
+
+
+  function display(from,text) {
+    var post = $('#posts_tm li.message').clone()
+    post.find('h4').text(from)
+    post.find('p').text(text)
+    post.css({opacity:0})
+    
+    $('#posts').prepend(post)
+    post.animate({opacity:1},500)
+  }
+  
+  $.ajax({
+    url:'/api/chat/'+chathash,
+    type:'GET',
+    dataType:'json',
+    success:function(res){
+      res.nicks.forEach(function(other){
+        if( other != nick ) {
+          addAvatar(other)
+        }
+      })
+
+      $.ajax({
+        url:'/api/chat/'+chathash+'/msgs',
+        type:'GET',
+        dataType:'json',
+        success:function(res){
+          res.forEach(function(msg){
+            display(msg.f,msg.t)
+          })
+        }
+      })
+    }
+  })
+
 });
 
