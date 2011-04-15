@@ -8,6 +8,9 @@ npm install now
 npm install socket.io
 npm install ejs
 npm install express
+npm install gex
+npm install cookies
+
 
 
 

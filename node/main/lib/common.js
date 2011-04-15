@@ -45,6 +45,7 @@ var now      = exports.now      = require('now')
 var assert   = exports.assert   = require('assert')
 var eyes     = exports.eyes     = require('eyes')
 var seneca   = exports.seneca   = require('seneca')
+var cookies  = exports.cookies  = require('cookies')
 
 
 exports.log = function() {

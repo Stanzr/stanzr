@@ -9,6 +9,7 @@ var util    = common.util
 var eyes    = common.eyes
 var assert  = common.assert
 var Seneca  = common.seneca
+var Cookies = common.cookies
 
 var log     = common.log
 
@@ -27,12 +28,79 @@ function sendcode(code,res) {
   }
 }
 function lost(res) { sendcode(404,res) } 
-function bad(res,e) { sendcode(400,res),log(e) } 
+function bad(res,err) { sendcode(400,res); log(err) } 
+function denied(res) { sendcode(401,res) } 
+function failed(res,err) { sendcode(500,res); log(err) } 
+
+
+function onwin(res,win){
+  return function(err){
+    util.debug('onwin:'+err)
+    if( err ) {
+      log('error',err)
+      bad(res,err)
+    }
+    else {
+      win && win.apply( this, [].slice.call(arguments,1) )
+    }
+  }
+}
 
 
 
-var view = {
 
+main.util = {
+  authuser: function(req,res,cb) {
+    cookies = new Cookies( req, res )  
+    var token = cookies.get('stanzr')
+
+    main.seneca.act(
+      {
+        tenant:'stanzr',
+        on:'user',
+        cmd:'auth',
+        token:token,
+      }, 
+      function(err,out){
+        if( err ) {
+          failed(res,err)
+        }
+        else {
+          if( out.auth ) {
+            cb(null,out.user,out.login)
+          }
+          else {
+            cb(null,null,null)
+          }
+        }
+      }
+    )
+  }
+}
+
+
+
+main.view = {
+
+  chat: {
+    hash: function(req, res, next ){
+      if( /\/api\//.exec(req.uri) ) {
+        next()
+      }
+      else {
+        main.util.authuser(req,res,onwin(res,function(user,login){
+          if( user ) {
+            var nick = user.nick
+          }
+          res.render('member', {locals: {
+            title: req.params.chathash,
+            chathash: req.params.chathash,
+            nick: nick
+          }})
+        }))
+      }
+    }
+  }
 }
 
 
@@ -59,12 +127,95 @@ main.api = {
     kf ? kf(req,res) : lost(res)
   },
 
-  user: {
+  bounce:
+  function(req,res){
+    res.writeHead(301,{'Location':'/'+req.params.chat})
+    res.end()
+  },
+
+  auth: {
     post: function(req,res) {
       common.readjson(req,res,function(json){
-        log('user.post json ',json)
-        common.sendjson(res,{ok:true})
+        log('user.post action:'+req.params.action,json)
+
+        if( 'register' == req.params.action ) {
+          // {nick:,email:,password:}
+          main.seneca.act(
+            {
+              tenant:'stanzr',
+              on:'user',
+              cmd:'register',
+              nick:json.nick,
+              email:json.email,
+              password:json.password,
+              active:true
+            }, 
+            onwin(res,function(out){
+              common.sendjson(res,{ok:true,nick:out.user.nick,email:out.user.email})
+            })
+          )
+        }
+
+        else if( 'login' == req.params.action ) {
+          // {nick:|email:,password:}
+          main.seneca.act(
+            {
+              tenant:'stanzr',
+              on:'user',
+              cmd:'login',
+              nick:json.nick,
+              email:json.email,
+              password:json.password
+            }, 
+            onwin(res,function(out){
+              if( out.pass ) {
+                cookies = new Cookies( req, res )
+                cookies.set('stanzr',out.login.token,{expires:new Date( new Date().getTime()+(30*24*3600*1000) )})
+              }
+              common.sendjson(res,{ok:out.pass})
+            })
+          )
+        }
+
+        else if( 'logout' == req.params.action ) {
+          cookies = new Cookies( req, res )
+          var token = cookies.get('stanzr')
+
+          main.seneca.act(
+            {
+              tenant:'stanzr',
+              on:'user',
+              cmd:'logout',
+              token:token
+            }, 
+            onwin(res,function(out){
+              if( out.logout ) {
+                cookies.set('stanzr',null)
+              }
+              common.sendjson(res,{ok:out.logout})
+            })
+          )
+        }
+        else {
+          lost(res)
+        }
+
       },bad)
+    }
+  },
+
+  user: {
+    get: function(req,res) {
+      var nick = req.params.nick
+      var user = main.ent.make$('sys','user')
+      user.load$({nick:nick},onwin(res,function(user){
+        if( user ) {
+          common.sendjson(res,{nick:user.nick,email:user.email})
+        }
+        else {
+          lost(res)
+        }
+      }))
     }
   }
 
@@ -117,7 +268,19 @@ var mongourl =
   (conf.mongo.username?conf.mongo.username+':'+conf.mongo.password+'@':'')+
   conf.mongo.host+':'+conf.mongo.port+'/'+conf.mongo.name
 
-log(mongourl)
+
+
+
+function auth(req,res,next) {
+  main.util.authuser(req,res,function(user,login){
+    req.user$ = user
+    req.login$ = login
+    next()
+  })
+}
+
+
+
 
 //mongo.init(
 //  conf.mongo,
@@ -141,19 +304,8 @@ Seneca.init(
     app.set('views', __dirname + '/../../../site/views');
     app.set('view engine', 'ejs');
 
-    /*
-    app.get('/', function(req, res){
-      res.render('index', {locals: {
-        title: 'NowJS + Express Example'
-      }});
-    });
-    */
 
-    app.get('/member', function(req, res){
-      res.render('member', {locals: {
-        title: 'Member'
-      }});
-    });
+    app.get('/:chathash', main.view.chat.hash)
 
     app.listen(8080);
     log("port", app.address().port)
@@ -164,31 +316,44 @@ Seneca.init(
 
     app.use( 
       connect.router(function(capp){
-        capp.get('/api/ping/:kind',function(req,res){
-          main.api.ping(req,res)
-        })
-
-        capp.post('/api/user/register',function(req,res){
-          main.api.user.post(req,res)
-        })
-        
+        capp.get('/api/ping/:kind',main.api.ping )
+        capp.get('/api/bounce/:chat', main.api.bounce )
+        capp.post('/api/auth/:action', main.api.auth.post)
       })
     )
 
 
-    var everyone = now.initialize(app);
+    app.use( auth )
+        
+    app.use( 
+      connect.router(function(capp){
+        capp.post('/api/auth/:action', main.api.auth.post)
 
-    everyone.connected(function(){
-      console.log("Joined: " + this.now.name);
-    });
+        capp.get('/api/user/:nick', main.api.user.get)
+      })
+    )
 
-    everyone.disconnected(function(){
-      console.log("Left: " + this.now.name);
-    });
 
-    everyone.now.distributeMessage = function(message){
-      everyone.now.receiveMessage(this.now.name, message);
-    };
+
+    main.everyone = now.initialize(app)
+
+    main.everyone.now.joinchat = function(msgjson){
+      var msg = JSON.parse(msgjson)
+      util.debug('joinchat:'+msgjson)
+      var nick = this.now.name
+      var group = now.getGroup(msg.chat)
+      group.addUser(this.user.clientId);
+      group.now.receiveMessage(nick, JSON.stringify({type:'join', nick:nick}))
+    }
+
+    main.everyone.now.distributeMessage = function(msgjson){
+      var msg = JSON.parse(msgjson)
+      util.debug('distmsg:'+msgjson)
+      var nick = this.now.name
+      var group = now.getGroup(msg.chat)
+
+      group.now.receiveMessage(nick, JSON.stringify({type:'message', text:msg.text}))
+    }
   }
 )
 

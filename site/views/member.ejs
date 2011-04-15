@@ -7,14 +7,21 @@
       <li><a id="head_hostyours" href="javascript:void(0)">Host your own</a></li>
       <li><a id="head_twitter" href="javascript:void(0)">-T-</a></li>
       <li><a id="head_facebook" href="javascript:void(0)">-F-</a></li>
+
+      <% if( nick ) { %>
+      <li><a id="head_nick" href="javascript:void(0)"><%=nick%></a></li>
+      <li><a id="head_logout" href="javascript:void(0)">Log out</a></li>
+      <% } else { %>
       <li><a id="head_signup" href="javascript:void(0)">Sign up</a></li>
       <li><a id="head_login" href="javascript:void(0)">Log in</a></li>
+      <% } %>
     </ul>
   </div>
   
   <div class="span-7 leftcol">
     <div>
       <h1 id="rally_title">Chat Title Lorem Ipsum Dolor</h1>
+      <h2>#<%=chathash%></h2>
     </div>
 
     <div>
@@ -70,12 +77,13 @@
       </div>
     </div>
 
+<!--
     <div id="logindiv" style="background-color:yellow;clear:both; margin:30px;">
       Enter username:
       <input id="username">
       <a href="javascript:void(0)" id="loginbtn" class="textbtn">log in</a>
     </div>
-
+-->
     <div class="topicwelcome">
       <h2>Welcome <span></span>!<h2>
     </div>
@@ -84,7 +92,7 @@
       <input type="text" id="post_text" >
       <input type="button" value="Send" id="post_send">
       <p class="tweetout">
-        <input type="checkbox"> Also post on Twitter - appends <span id="rally_hash">#chathash</span> 
+        <input type="checkbox" checked="yes"> Also post on Twitter - appends <span id="rally_hash">#chathash</span> 
       </p>
     </div>
 
@@ -95,7 +103,7 @@
       </ul>
 
       <ul id="posts_tm">
-        <li class="clearfix">
+        <li class="message clearfix">
           <div class="post_avatar sprite-silhouette32"></div>
           <div class="post_content">
             <h4></h4>
@@ -105,6 +113,10 @@
             <p class="post"></p>
           </div>
         </li>
+        <li class="infomsg clearfix">
+          <p></p>
+        </li>
+
      <ul>
 
    
@@ -119,30 +131,16 @@
 
     <div class="clearfix">
       <h2>
-        <span id="rally_pcount">50</span> people in this chat 
+        <span id="rally_pcount">0</span> people in this chat 
         <a href="javascript:void(0)" class="imgbtn sprite-drilldown">&nbsp;</a>
       </h2>
       
 
       <div id="rally_miniavatars" class="clearfix">
-        <div class="miniavatar sprite-silhouette32"></div>
-        <div class="miniavatar sprite-silhouette32"></div>
-        <div class="miniavatar sprite-silhouette32"></div>
-        <div class="miniavatar sprite-silhouette32"></div>
-        <div class="miniavatar sprite-silhouette32"></div>
-        <div class="miniavatar sprite-silhouette32"></div>
-        <div class="miniavatar sprite-silhouette32"></div>
-        <div class="miniavatar sprite-silhouette32"></div>
-        <div class="miniavatar sprite-silhouette32"></div>
-        <div class="miniavatar sprite-silhouette32"></div>
-        <div class="miniavatar sprite-silhouette32"></div>
-        <div class="miniavatar sprite-silhouette32"></div>
-        <div class="miniavatar sprite-silhouette32"></div>
-        <div class="miniavatar sprite-silhouette32"></div>
-        <div class="miniavatar sprite-silhouette32"></div>
-        <div class="miniavatar sprite-silhouette32"></div>
-        <div class="miniavatar sprite-silhouette32"></div>
+
       </div>
+
+      <div id="miniavatar_tm" class="miniavatar sprite-silhouette32"></div>
     </div>
 
     <div>
@@ -209,8 +207,45 @@
     </div>
 
   </div>
-  
+   
 </div>
   
+
+<div id="login_box">
+  <h2>Log in</h2>
+  
+  Username:<br />
+  <input id="login_username"><br />
+  
+    Password:<br />
+  <input type="password" id="login_password"><br />
+  
+  <a href="javascript:void(0)" id="login_loginbtn" class="textbtn">login</a>
+  
+  <p id="login_msg"></p>
+</div>
+
+
+<div id="signup_box">
+  <h2>Register</h2>
+  
+  Username:<br />
+  <input id="register_username"><br />
+
+  Email:<br />
+  <input id="register_email"><br />
+  
+  Password:<br />
+  <input type="password" id="register_password"><br />
+
+  Repeat Password:<br />
+  <input type="password" id="register_repeat"><br />
+  
+  <a href="javascript:void(0)" id="register_registerbtn" class="textbtn">register</a>
+  
+  <p id="register_msg"></p>
+</div>
+
+
 
 

@@ -62,12 +62,22 @@ module.exports = {
   },
 
 
-  user:function() {
+  auth:function() {
+    var nick = 'test-'+uuid().substring(0,8)
     post(
-      {uri:urlprefix+'/api/user/register',
-       json:{foo:'bar'}}, 
+      {uri:urlprefix+'/api/auth/register',
+       json:{nick:nick,email:nick+'@example.com',password:nick.toLowerCase()}}, 
       function(json){
-        log(json)
+        assert.ok(json.ok)
+
+        post(
+          {uri:urlprefix+'/api/auth/login',
+           json:{nick:nick,password:nick.toLowerCase()}}, 
+          function(json,response){
+            assert.ok(json.ok)
+            //eyes.inspect(response)
+          }
+        )        
       }
     )
 
