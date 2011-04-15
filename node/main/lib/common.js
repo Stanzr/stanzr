@@ -46,6 +46,7 @@ var assert   = exports.assert   = require('assert')
 var eyes     = exports.eyes     = require('eyes')
 var seneca   = exports.seneca   = require('seneca')
 var cookies  = exports.cookies  = require('cookies')
+var _        = exports._        = require('underscore')
 
 
 exports.log = function() {

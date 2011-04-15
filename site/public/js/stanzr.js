@@ -16,20 +16,22 @@ $(document).ready(function(){
     })
     
     now.name = nick
+
+    function display(from,text) {
+      var post = $('#posts_tm li.message').clone()
+      post.find('h4').text(from)
+      post.find('p').text(text)
+      post.css({opacity:0})
+      
+      $('#posts').prepend(post)
+      post.animate({opacity:1},500)
+    }
     
-    now.receiveMessage = function(nick, jsonstr){
+    now.receiveMessage = function(from, jsonstr){
       var msg = JSON.parse(jsonstr)
-      console.log(msg)
 
       if( 'message' == msg.type ) {
-        var post = $('#posts_tm li.message').clone()
-        post.find('h4').text(nick)
-        post.find('p').text(msg.text)
-        post.css({opacity:0})
-
-        $('#posts').prepend(post)
-        post.animate({opacity:1},500)
-
+        display(from,msg.text)
       }
       else if( 'join' == msg.type ) {
         var post = $('#posts_tm li.infomsg').clone()
@@ -38,7 +40,7 @@ $(document).ready(function(){
         $('#posts').prepend(post)
         post.animate({opacity:1},500)
 
-        addAvatar(nick)
+        addAvatar(from)
       }
     }
   
@@ -62,6 +64,30 @@ $(document).ready(function(){
       }
     }
     joinchat()
+
+    $.ajax({
+      url:'/api/chat/'+chathash,
+      type:'GET',
+      dataType:'json',
+      success:function(res){
+        res.nicks.forEach(function(other){
+          if( other != nick ) {
+            addAvatar(other)
+          }
+        })
+
+        $.ajax({
+          url:'/api/chat/'+chathash+'/msgs',
+          type:'GET',
+          dataType:'json',
+          success:function(res){
+            res.forEach(function(msg){
+              display(msg.f,msg.t)
+            })
+          }
+        })
+      }
+    })
 
   }
 
@@ -114,15 +140,20 @@ $(document).ready(function(){
   })
 
 
-  function addAvatar(nick) {
-    var avatar = $('#miniavatar_tm').clone().attr('id','side_avatar_'+nick).show()
-    $('#rally_miniavatars').append(avatar)
+  var avatars = {}
 
-    var pcount = $('#rally_pcount').text()
-    pcount = '' == pcount ? 0 : parseInt(pcount,10)
-    pcount++
-    $('#rally_pcount').text(''+pcount)
-    
+  function addAvatar(nick) {
+    if( !avatars[nick] ) {
+      avatars[nick] = true
+
+      var avatar = $('#miniavatar_tm').clone().attr('id','side_avatar_'+nick).show()
+      $('#rally_miniavatars').append(avatar)
+
+      var pcount = $('#rally_pcount').text()
+      pcount = '' == pcount ? 0 : parseInt(pcount,10)
+      pcount++
+      $('#rally_pcount').text(''+pcount)
+    }
   }
 
 
@@ -138,7 +169,6 @@ $(document).ready(function(){
       dataType:'json',
       data:'{}',
       success:function(res){
-        console.log(res)
         window.location.href = '/api/bounce/'+chathash
       }
     })

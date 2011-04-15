@@ -10,6 +10,7 @@ var eyes    = common.eyes
 var assert  = common.assert
 var Seneca  = common.seneca
 var Cookies = common.cookies
+var _       = common._
 
 var log     = common.log
 
@@ -75,6 +76,59 @@ main.util = {
         }
       }
     )
+  }
+}
+
+
+main.chat = {
+  get: function(chathash,cb) {
+    var chatent = main.seneca.make('stanzr','app','chat')
+    chatent.load$({chathash:chathash},function(err,chat){
+      if( err ) {
+        cb(err)
+      }
+      else if( chat ) {
+        cb(null,chat)
+      }
+      else {
+        chatent.chathash = chathash
+        chatent.nicks = []
+        chatent.save$(cb)
+      }
+    })
+  },
+
+  addnick: function(chathash,nick,cb) {
+    util.debug('addnick '+chathash+' '+nick)
+    main.chat.get(chathash,function(err,chat){
+      if( err ) {
+        cb(err)
+      }
+      else {
+        var nicks = chat.nicks
+        nicks.push(nick)
+        chat.nicks = _.uniq(nicks)
+        console.log(chat.nicks)
+        chat.save$(cb)
+      }
+    })
+  }
+}
+
+main.msg = {
+  map: {},
+  save: function(msg,cb) {
+    var msgent = main.seneca.make('stanzr','app','msg')
+    msgent.w = new Date()
+    msgent.f = msg.nick
+    msgent.c = msg.chathash
+    msgent.t = msg.text
+    msgent.save$(cb)
+  },
+
+  list: function(chathash,cb) {
+    var msgent = main.seneca.make('stanzr','app','msg')
+    msgent.list$({c:chathash},cb)
   }
 }
 
@@ -217,6 +271,32 @@ main.api = {
         }
       }))
     }
+  },
+
+  chat: {
+    get: function(req,res) {
+      var chathash = req.params.chathash
+      if( /msgs$/.exec(req.url) ) {
+        main.msg.list(chathash,function(err,chat){
+          if( err ) {
+            failed(res,err)
+          }
+          else {
+            common.sendjson(res,chat)
+          }
+        })
+      }
+      else {
+        main.chat.get(chathash,function(err,chat){
+          if( err ) {
+            failed(res,err)
+          }
+          else {
+            common.sendjson(res,chat)
+          }
+        })
+      }
+    }
   }
 
 }
@@ -319,6 +399,9 @@ Seneca.init(
         capp.get('/api/ping/:kind',main.api.ping )
         capp.get('/api/bounce/:chat', main.api.bounce )
         capp.post('/api/auth/:action', main.api.auth.post)
+
+        capp.get('/api/chat/:chathash', main.api.chat.get)
+        capp.get('/api/chat/:chathash/msgs', main.api.chat.get)
       })
     )
 
@@ -344,6 +427,8 @@ Seneca.init(
       var group = now.getGroup(msg.chat)
       group.addUser(this.user.clientId);
       group.now.receiveMessage(nick, JSON.stringify({type:'join', nick:nick}))
+
+      main.chat.addnick(msg.chat,nick)
     }
 
     main.everyone.now.distributeMessage = function(msgjson){
@@ -351,6 +436,8 @@ Seneca.init(
       util.debug('distmsg:'+msgjson)
       var nick = this.now.name
       var group = now.getGroup(msg.chat)
+
+      main.msg.save({nick:nick,chathash:msg.chat,text:msg.text})
 
       group.now.receiveMessage(nick, JSON.stringify({type:'message', text:msg.text}))
     }
