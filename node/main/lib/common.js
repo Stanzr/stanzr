@@ -42,13 +42,30 @@ var oauth    = exports.oauth    = require('oauth')
 var request  = exports.request  = require('request')
 var express  = exports.express  = require('express')
 var now      = exports.now      = require('now')
+var assert   = exports.assert   = require('assert')
+var eyes     = exports.eyes     = require('eyes')
+var seneca   = exports.seneca   = require('seneca')
 
 
+exports.log = function() {
+  var sb = []
+  for( var i = 0; i < arguments.length; i++ ) {
+    try {
+      var val = arguments[i]
+      sb.push( 'string'==typeof(val) ? val : 'number'==typeof(val) ? val : JSON.stringify(val) )
+    }
+    catch( e ) {
+      util.log(e)
+      util.log(arguments[i])
+    }
+  }
+  util.log(sb.join(' '))
+}
 
 
 // JSON functions
 
-exports.readjson = function(req,win,fail) {
+exports.readjson = function(req,res,win,fail) {
   var bodyarr = [];
   req.on('data',function(chunk){
     bodyarr.push(chunk);
@@ -61,7 +78,7 @@ exports.readjson = function(req,win,fail) {
       win && win(body);
     }
     catch(e) {
-      fail && fail(e)
+      fail && fail(res,e)
     }
   })
 }

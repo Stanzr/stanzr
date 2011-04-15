@@ -5,28 +5,136 @@ var connect = common.connect
 var express = common.express
 var mongo   = common.mongo
 var now     = common.now
+var util    = common.util
+var eyes    = common.eyes
+var assert  = common.assert
+var Seneca  = common.seneca
 
+var log     = common.log
 
 
 var main = {}
 
 
-mongo.init(
-  {
-    host:'flame.mongohq.com',
-    port:27059,
-    name:'stanzr01',
-    username:'first',
-    password:'S2QP11CC'
+
+function sendcode(code,res) {
+  try {
+    res.writeHead(code)
+    res.end()
+  }
+  catch( e ) {
+    log('send',code,e)
+  }
+}
+function lost(res) { sendcode(404,res) } 
+function bad(res,e) { sendcode(400,res),log(e) } 
+
+
+
+var view = {
+
+}
+
+
+main.api = {
+  ping: function(req,res) {
+    var kf = {
+      node:function(req,res){
+        common.sendjson(res,{ok:true,now:new Date()})
+      },
+      mongo:function(req,res){
+        var start = new Date()
+        main.seneca.act({on:'stanzr',cmd:'ping-mongo'},function(err,ent){
+          var end = new Date()
+          if( err ) {
+            bad(res,err)
+          }
+          else {
+            common.sendjson(res,{ok:true,end:end,dur:(end.getTime()-start.getTime()),a:ent?ent.a:null})
+          }
+        })
+      }
+    }[req.params.kind];
+
+    kf ? kf(req,res) : lost(res)
   },
-/*
-  {
-    host:'localhost',
-    name:'stanzr01',
+
+  user: {
+    post: function(req,res) {
+      common.readjson(req,res,function(json){
+        log('user.post json ',json)
+        common.sendjson(res,{ok:true})
+      },bad)
+    }
+  }
+
+}
+
+
+function initseneca( seneca ) {
+  main.seneca = seneca
+  main.ent    = seneca.make('stanzr',null,null)
+  
+  seneca.add({on:'stanzr',cmd:'time'},function(args,seneca,cb){
+    cb(null,new Date())
+  })
+
+  seneca.add({on:'stanzr',cmd:'ping-mongo'},function(args,seneca,cb){
+    var test = main.ent.make$('sys','test')
+    test.load$({a:1},cb)
+  })
+}
+
+
+
+var confmap = {
+  live: {
+    mongo: {
+      host:'flame.mongohq.com',
+      port:27059,
+      name:'stanzr01',
+      username:'first',
+      password:'S2QP11CC'
+    }
   },
-*/
-  function(db){
-    main.db = db
+  test: {
+    mongo: {
+      host:'localhost',
+      port:27017, 
+      name:'stanzr01',
+    }
+  }
+}
+
+var env = process.argv[('/usr/local/bin/expresso'==process.argv[1]?3:2)] || 'test'
+log('environment:',env)
+
+var conf = confmap[env]
+
+
+var mongourl = 
+  'mongo://'+
+  (conf.mongo.username?conf.mongo.username+':'+conf.mongo.password+'@':'')+
+  conf.mongo.host+':'+conf.mongo.port+'/'+conf.mongo.name
+
+log(mongourl)
+
+//mongo.init(
+//  conf.mongo,
+//  function(db){
+//    main.db = db
+Seneca.init(
+  {logger:log,
+   entity:mongourl,
+   plugins:['user']
+  },
+  function(err,seneca){
+    if( err ) {
+      log(err)
+      process.exit(1)
+    }
+
+    initseneca(seneca)
 
     var app = main.app = express.createServer();
 
@@ -48,7 +156,7 @@ mongo.init(
     });
 
     app.listen(8080);
-    console.log("Express server listening on port %d", app.address().port);
+    log("port", app.address().port)
 
 
     app.use( connect.logger() )
@@ -56,19 +164,14 @@ mongo.init(
 
     app.use( 
       connect.router(function(capp){
-        capp.get('/api/ping/node',function(req,res){
-          common.sendjson(res,{ok:true,now:new Date()})
-        }),
-        
-        capp.get('/api/ping/mongo',function(req,res){
-          var start = new Date()
-          mongo.coll('test',function(testcoll){
-            testcoll.findOne({a:1},function(doc){
-              var end = new Date()
-              common.sendjson(res,{ok:true,end:end,dur:(end.getTime()-start.getTime())})
-            })
-          })
+        capp.get('/api/ping/:kind',function(req,res){
+          main.api.ping(req,res)
         })
+
+        capp.post('/api/user/register',function(req,res){
+          main.api.user.post(req,res)
+        })
+        
       })
     )
 
@@ -89,5 +192,5 @@ mongo.init(
   }
 )
 
-
+module.exports = main
 
