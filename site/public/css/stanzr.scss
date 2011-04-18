@@ -135,7 +135,7 @@ div {
   &.leftcol {
     background-color: $locolC;
     margin-right: 0px;
-    height: 1500px;
+    height: 1000px;
 
     h1,h2,h3 {
       color: $fontsideC;
@@ -150,7 +150,7 @@ div {
   &.midcol {
     background-color: $hicolC;
     margin-right: 0px;
-    height: 1500px;
+    height: 1000px;
 
     &>div {
       padding: $lens $lenm;
@@ -162,7 +162,7 @@ div {
 
       p {
         float: left;
-        width: 240px;
+        width: 210px;
         margin: 0px;
         clear:both;
       }
@@ -177,6 +177,8 @@ div {
     }
 
     div.topicposts {
+      overflow: auto;
+      height:800px;
 
       #posts_tm { 
         display: none; 
@@ -199,7 +201,7 @@ div {
           }
 
           div.post_content {
-            width: 300px;
+            width: 270px;
             float: right;
           }
 
@@ -241,7 +243,7 @@ div {
 
   &.rightcol {
     background-color: $locolC;
-    height: 1500px;
+    height: 1000px;
 
     div {
       @include sidecont();
@@ -276,6 +278,12 @@ div {
     }
   }
 
+
+  &.footer {
+    background-color: #999;
+    height: $len;
+    width: 930px; 
+  }
 }
 
 p {

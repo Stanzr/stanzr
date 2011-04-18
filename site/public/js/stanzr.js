@@ -28,9 +28,9 @@ $(document).ready(function(){
         var post = $('#posts_tm li.infomsg').clone()
         post.find('p').text(msg.nick + ' has joined')
 
-        $('#posts').prepend(post)
+        $('#posts').append(post)
         post.animate({opacity:1},500)
-
+        $('div.topicposts').scrollTop( $('div.topicposts')[0].scrollHeight - 800 )
         addAvatar(from)
       }
     }
@@ -157,8 +157,9 @@ $(document).ready(function(){
     post.find('p').text(text)
     post.css({opacity:0})
     
-    $('#posts').prepend(post)
+    $('#posts').append(post)
     post.animate({opacity:1},500)
+    $('div.topicposts').scrollTop( $('div.topicposts')[0].scrollHeight - 800 )
   }
   
   $.ajax({
@@ -177,9 +178,10 @@ $(document).ready(function(){
         type:'GET',
         dataType:'json',
         success:function(res){
-          res.forEach(function(msg){
+          for( var i = 0; i < res.length; i++ ) {
+            var msg = res[i]
             display(msg.f,msg.t)
-          })
+          }
         }
       })
     }
