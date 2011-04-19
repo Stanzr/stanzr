@@ -21,7 +21,7 @@ function post(spec,cb) {
 }
 
 function put(spec,cb) {
-  request.post(spec,handle(cb,'PUT',spec))
+  request.put(spec,handle(cb,'PUT',spec))
 }
 
 function del(spec,cb) {
@@ -30,6 +30,7 @@ function del(spec,cb) {
 
 
 function handle(cb,method,spec) {
+  log(method,spec.uri,spec.json)
   return function(error, response, body) {
     assert.equal(null,error)
     log(method,spec.uri,response.statusCode+': '+body)
@@ -38,6 +39,30 @@ function handle(cb,method,spec) {
   }
 }
 
+
+
+function createuser(cb) {
+  var nick = 'test-'+uuid().substring(0,8)
+  post(
+    {uri:urlprefix+'/api/auth/register',
+     json:{nick:nick,email:nick+'@example.com',password:nick.toLowerCase()}}, 
+    function(json){
+      assert.ok(json.ok)
+      
+      post(
+        {uri:urlprefix+'/api/auth/login',
+         json:{nick:nick,password:nick.toLowerCase()}}, 
+          function(json,response){
+            assert.ok(json.ok)
+            eyes.inspect(response)
+
+            cb({nick:nick},response)
+          }
+      )        
+    }
+  )
+  
+}
 
 
 module.exports = {
@@ -81,6 +106,39 @@ module.exports = {
       }
     )
 
+  },
+
+
+
+  chat:function() {
+    var title = uuid().substring(0,8)
+    createuser(function(user,res){
+      console.log('createuser:'+JSON.stringify(user))
+      var token = (/stanzr=(.*?);/.exec(res.headers['set-cookie']))[1]
+      console.log(token)
+
+      put(
+        {uri:urlprefix+'/api/chat',
+         headers:{'Cookie':'stanzr='+token+';'},
+         json:{
+           moderator:user.nick,
+           title:'title-'+title,
+           hashtag:'tag'+title,
+           desc:'desc-'+title,
+           whenstr:'when-'+title,
+           topics:[
+             {name:'AAA', desc:'aaa'},
+             {name:'BBB', desc:'bbb'},
+             {name:'CCC', desc:'ccc'}
+             ]
+         }}, 
+        function(json,response){
+          eyes.inspect(json)
+          eyes.inspect(response)
+        }
+      )
+    })
   }
+
 
 }

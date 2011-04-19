@@ -8,7 +8,7 @@ a {
     display: inline-block;
     width: 15px;
     height: 15px; }
-    a.imgbtn.sprite-drilldown, a.imgbtn.sprite-page-backward, a.imgbtn.sprite-page-forward {
+    a.imgbtn.sprite-drilldown, a.imgbtn.sprite-page-backward, a.imgbtn.sprite-page-forward, a.imgbtn.sprite-page-backward-fill {
       width: 25px;
       height: 25px; }
     a.imgbtn:hover {
@@ -68,7 +68,7 @@ div.header {
 div.leftcol {
   background-color: white;
   margin-right: 0px;
-  height: 1000px; }
+  overflow: auto; }
   div.leftcol h1, div.leftcol h2, div.leftcol h3 {
     color: #666666; }
   div.leftcol div {
@@ -76,11 +76,11 @@ div.leftcol {
     border-bottom: 1px solid #e2e2e2; }
 div.midcol {
   background-color: #f7efe1;
-  margin-right: 0px;
-  height: 1000px; }
+  margin-right: 0px; }
   div.midcol > div {
     padding: 10px 15px; }
   div.midcol div.topichead {
+    padding: 10px 15px;
     height: 60px;
     background-color: #d1cabf; }
     div.midcol div.topichead p {
@@ -91,34 +91,31 @@ div.midcol {
     div.midcol div.topichead div.navbox {
       width: 70px;
       float: right; }
-  div.midcol div.topicwelcome {
-    display: none; }
-  div.midcol div.topicposts {
-    overflow: auto;
-    height: 800px; }
-    div.midcol div.topicposts #posts_tm {
+  div.midcol div.postsarea {
+    overflow: auto; }
+    div.midcol div.postsarea #posts_tm {
       display: none; }
-    div.midcol div.topicposts #posts {
+    div.midcol div.postsarea ul.topicposts {
       list-style-type: none;
       margin: 0px;
       padding: 0px; }
-      div.midcol div.topicposts #posts li.message {
+      div.midcol div.postsarea ul.topicposts li.message {
         margin: 10px 0px;
         border: 1px solid #ccc;
         padding: 10px;
         background-color: #fff; }
-        div.midcol div.topicposts #posts li.message div.post_avatar {
+        div.midcol div.postsarea ul.topicposts li.message div.post_avatar {
           width: 32px;
           float: left; }
-        div.midcol div.topicposts #posts li.message div.post_content {
+        div.midcol div.postsarea ul.topicposts li.message div.post_content {
           width: 270px;
           float: right; }
-        div.midcol div.topicposts #posts li.message span.shares {
+        div.midcol div.postsarea ul.topicposts li.message span.shares {
           float: left;
           color: #999999; }
-      div.midcol div.topicposts #posts li.infomsg {
+      div.midcol div.postsarea ul.topicposts li.infomsg {
         margin: 10px 0px; }
-        div.midcol div.topicposts #posts li.infomsg p {
+        div.midcol div.postsarea ul.topicposts li.infomsg p {
           color: #999999;
           margin: 0px;
           padding: 0px; }
@@ -133,7 +130,7 @@ div.midcol {
       color: #999999; }
 div.rightcol {
   background-color: white;
-  height: 1000px; }
+  overflow: auto; }
   div.rightcol div {
     padding: 10px 15px;
     border-bottom: 1px solid #e2e2e2; }
@@ -186,5 +183,31 @@ p.post {
   background-color: white;
   padding: 20px; }
 
+#hostchat_box {
+  display: none;
+  border: 1px solid black;
+  position: absolute;
+  top: 300px;
+  margin: auto;
+  width: 200px;
+  height: 400px;
+  background-color: white;
+  padding: 20px; }
+
 #miniavatar_tm {
+  display: none; }
+
+#topicheads {
+  padding: 0px; }
+
+#topichead_tm {
+  display: none; }
+
+#topicposts_tm {
+  display: none; }
+
+#welcome {
+  display: none; }
+
+#hostyourown {
   display: none; }

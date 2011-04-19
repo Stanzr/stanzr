@@ -10,6 +10,7 @@ npm install ejs
 npm install express
 npm install gex
 npm install cookies
+npm install config
 
 
 

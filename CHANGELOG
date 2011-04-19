@@ -1,0 +1,9 @@
+
+2011-04-19:
+ - run sudo npm install config
+ - configuration system added
+   run as:
+   $ cd stanzr
+   $ node node/main/lib/main.js -config ./conf/node/<configname>.js
+   where configname is one of demo, staging, design
+

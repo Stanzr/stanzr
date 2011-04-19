@@ -4,12 +4,12 @@
     <h1>Stanzr</h1>
 
     <ul>
-      <li><a id="head_hostyours" href="javascript:void(0)">Host your own</a></li>
+      <li><a id="head_hostchat" href="javascript:void(0)">Host your own</a></li>
       <li><a id="head_twitter" href="javascript:void(0)">-T-</a></li>
       <li><a id="head_facebook" href="javascript:void(0)">-F-</a></li>
 
-      <% if( nick ) { %>
-      <li><a id="head_nick" href="javascript:void(0)"><%=nick%></a></li>
+      <% if( val.nick ) { %>
+      <li><a id="head_nick" href="javascript:void(0)"><%=val.nick%></a></li>
       <li><a id="head_logout" href="javascript:void(0)">Log out</a></li>
       <% } else { %>
       <li><a id="head_signup" href="javascript:void(0)">Sign up</a></li>
@@ -18,10 +18,10 @@
     </ul>
   </div>
   
-  <div class="span-7 leftcol">
+  <div class="span-7 leftcol col">
     <div>
       <h1 id="rally_title">Chat Title Lorem Ipsum Dolor</h1>
-      <h2>#<%=chathash%></h2>
+      <h2>#<%=val.hashtag%></h2>
     </div>
 
     <div>
@@ -32,7 +32,7 @@
 
     <div>
       <h2>Scheduled for <span id="rally_date">April 12</span></h2>
-      <h3 id="rally_time">from 8-9 PM</h3>
+      <h3 id="rally_whenstr">from 8-9 PM</h3>
       <a id="rally_remindB" href="javascript:void(0)" class="textbtn">remind me</a>
       <br />
       <a href="javascript:void(0)">[Like]</a>
@@ -40,7 +40,7 @@
     </div>
 
     <div>
-      <p>
+      <p id="rally_desc">
         Sed ut perspiciatis unde omnis iste natus sit voluptatem
         accusantium doloremque laudantium, totam rem aperiam, eaque
         ipsa quae ab illo inventore veritatis et quasi architecto
@@ -52,14 +52,6 @@
         numquam eius modi tempora incidunt ut labore et dolore magnam
         aliquam quaerat voluptatem. 
       </p>
-      <p>
-        Ut enim ad minima veniam, quis
-        nostrum exercitationem ullam corporis suscipit laboriosam,
-        nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum
-        iure reprehenderit qui in ea voluptate velit esse quam nihil
-        molestiae consequatur, vel illum qui dolorem eum fugiat quo
-        voluptas nulla pariatur?
-      </p>
       <p style="text-align:center">
 
       </p>
@@ -67,32 +59,37 @@
 
   </div>
 
-  <div class="span-10 midcol clearfix">
-    <div class="topichead">
-      <h4 id="rally_topicname">Topic name</h4>
-      <p  id="rally_topicdesc">Neque porro quisquam est, qui dolorem ipsum</p>
+  <div class="span-10 midcol clearfix col">
+
+    <div id="topichead_tm" class="topichead">
+      <h4 class="rally_topicname">Topic name</h4>
+      <p  class="rally_topicdesc">Neque porro quisquam est, qui dolorem ipsum</p>
       <div class="navbox">
+        <a class="imgbtn sprite-page-backward-fill">&nbsp;</a>
         <a href="javascript:void(0)" class="imgbtn sprite-page-backward">&nbsp;</a>
         <a href="javascript:void(0)" class="imgbtn sprite-page-forward">&nbsp;</a>
       </div>
     </div>
 
-<!--
-    <div id="logindiv" style="background-color:yellow;clear:both; margin:30px;">
-      Enter username:
-      <input id="username">
-      <a href="javascript:void(0)" id="loginbtn" class="textbtn">log in</a>
-    </div>
--->
-    <div class="topicwelcome">
-      <h2>Welcome <span></span>!<h2>
+    <div id="topicheads">
     </div>
 
 
+    <div id="welcome">
+      <h2>Welcome!</h2>
+      <p><a href="javascript:$('#head_signup').click()">Sign up</a> to create your own chat</p>
+    </div>
 
-    <div class="topicposts" class="clearfix">
+    <div id="hostyourown">
+      <h2>Host Your Own Chat!</h2>
+      <p><a href="javascript:$('#head_hostchat').click()">create your chat now</a></p>
+    </div>
 
-      <ul id="posts">
+
+
+    <div class="postsarea" class="clearfix">
+
+      <ul id="topicposts_tm" class="topicposts">
       </ul>
 
       <ul id="posts_tm">
@@ -117,7 +114,7 @@
       <input type="text" id="post_text" >
       <input type="button" value="Send" id="post_send">
       <p class="tweetout">
-        <input type="checkbox" checked="yes"> Also post on Twitter - appends <span id="rally_hash">#<%=chathash%></span> 
+        <input type="checkbox" checked="yes"> Also post on Twitter - appends <span id="rally_hash">#<%=val.hashtag%></span> 
       </p>
     </div>
 
@@ -125,7 +122,7 @@
   </div>
 
 
-  <div class="span-7 last rightcol">
+  <div class="span-7 last rightcol col">
 
     <div class="clearfix">
       <h2>
@@ -246,6 +243,39 @@
   <a href="javascript:void(0)" id="register_registerbtn" class="textbtn">register</a>
   
   <p id="register_msg"></p>
+</div>
+
+
+<div id="hostchat_box">
+  <h2>Create Your Chat</h2>
+  
+  Session name:<br />
+  <input id="hostchat_title"><br />
+
+  Moderated by:<br />
+  <input id="hostchat_modname"><br />
+
+  Scheduled for:<br />
+  <input id="hostchat_whenstr"><br />
+
+  Twitter hashtag:<br />
+  <input id="hostchat_hashtag"><br />
+
+  Description:<br />
+  <textarea id="hostchat_desc" style="width:150px;height:30px">
+  </textarea>
+  <br />
+  
+  Topics:<br />
+  <input id="hostchat_topic0"><br />
+  <input id="hostchat_topic1"><br />
+  <input id="hostchat_topic2"><br />
+  
+  <br />
+
+  <a href="javascript:void(0)" id="hostchat_createbtn" class="textbtn">create</a>
+  
+  <p id="hostchat_msg"></p>
 </div>
 
 
