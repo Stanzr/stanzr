@@ -44,9 +44,11 @@ var express  = exports.express  = require('express')
 var now      = exports.now      = require('now')
 var assert   = exports.assert   = require('assert')
 var eyes     = exports.eyes     = require('eyes')
-var seneca   = exports.seneca   = require('seneca')
 var cookies  = exports.cookies  = require('cookies')
 var _        = exports._        = require('underscore')
+
+
+var seneca   = exports.seneca   = require('../../support/seneca')
 
 
 var config = require('config')
