@@ -71,7 +71,7 @@ div.leftcol {
   overflow: auto; }
   div.leftcol h1, div.leftcol h2, div.leftcol h3 {
     color: #666666; }
-  div.leftcol div {
+  div.leftcol > div {
     padding: 10px 15px;
     border-bottom: 1px solid #e2e2e2; }
 div.midcol {
@@ -211,3 +211,6 @@ p.post {
 
 #hostyourown {
   display: none; }
+
+#rally_desc {
+  padding: 0px; }

@@ -539,7 +539,8 @@ Seneca.init(
             chatid:chatid,
             text:msg.text, 
             topic:msg.topic,
-            id:msgid
+            id:msgid,
+            from:nick
           }
         )
       )

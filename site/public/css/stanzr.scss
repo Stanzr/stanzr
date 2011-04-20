@@ -141,7 +141,7 @@ div {
       color: $fontsideC;
     }
 
-    div {
+    > div {
       @include sidecont();
     }
   }
@@ -354,3 +354,6 @@ p {
   display: none;
 }
 
+#rally_desc {
+  padding: 0px;
+}

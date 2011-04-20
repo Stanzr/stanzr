@@ -76,7 +76,7 @@ $(function(){
         addAvatar(msg.from)
       }
     }
-  
+    
     function post(){
       var msg = {chat:chatid,text:$("#post_text").val(),type:'message',topic:app.topic}
       now.distributeMessage(JSON.stringify(msg));
@@ -265,98 +265,96 @@ $(function(){
     }
   }
 
-  console.log(chatid)
   if( chatid ) {
-    console.log('sending '+chatid)
-  $.ajax({
-    url:'/api/chat/'+chatid,
-    type:'GET',
-    dataType:'json',
-    success:function(res){
-      var nicks = res.nicks || []
-      for( var i = 0; i < nicks.length; i++ ) {
-        var other = nicks[i]
-        if( other != nick ) {
-          addAvatar(other)
-        }
-      }
-
-
-      var topicheads = $('#topicheads')
-      var postsarea = $('div.postsarea')
-
-      var topichead_tm = $('#topichead_tm')
-      var topicposts_tm = $('#topicposts_tm')
-
-      app.topic  = res.topic || 0
-      var topics = res.topics || ['General']
-
-      for( var i = 0; i < topics.length; i++ ) {
-        var topic = topics[i]
-        var topichead = topichead_tm.clone()
-        topichead.attr('id','topic_head_'+i)
-        topichead.find('h4').text(topic.name)
-        topichead.find('p').text(topic.desc)
-
-        var backward_fill = topichead.find('div a.sprite-page-backward-fill')
-        var backward      = topichead.find('div a.sprite-page-backward')
-        var forward       = topichead.find('div a.sprite-page-forward')
-
-        if( 0 == i ) {
-          backward.hide()
-          backward_fill.show()
-        }
-        else {
-          backward_fill.hide()
-        }
-
-        if( topics.length-1 == i ) {
-          forward.hide()
-        }
-
-        function movetopic(dir){
-          return function() {
-            app.changetopic(app.topic + dir)            
+    $.ajax({
+      url:'/api/chat/'+chatid,
+      type:'GET',
+      dataType:'json',
+      success:function(res){
+        var nicks = res.nicks || []
+        for( var i = 0; i < nicks.length; i++ ) {
+          var other = nicks[i]
+          if( other != nick ) {
+            addAvatar(other)
           }
         }
 
-        backward.click(movetopic(-1))
-        forward.click(movetopic(1))
 
-        topicheads.append(topichead)
-        topichead.css({display:'none'})
+        var topicheads = $('#topicheads')
+        var postsarea = $('div.postsarea')
 
+        var topichead_tm = $('#topichead_tm')
+        var topicposts_tm = $('#topicposts_tm')
 
-        var topicposts = topicposts_tm.clone()
-        topicposts.attr('id','topic_posts_'+i)
+        app.topic  = res.topic || 0
+        var topics = res.topics || ['General']
 
-        postsarea.append(topicposts)
-        topicposts.css({display:'none'})
-      }
-      $('#topic_head_'+app.topic).show()
-      $('#topic_posts_'+app.topic).show()
-      
+        for( var i = 0; i < topics.length; i++ ) {
+          var topic = topics[i]
+          var topichead = topichead_tm.clone()
+          topichead.attr('id','topic_head_'+i)
+          topichead.find('h4').text(topic.name)
+          topichead.find('p').text(topic.desc)
 
-      $('#rally_title').text(res.title)
-      $('#rally_modname').text(res.modname)
-      $('#rally_whenstr').text(res.whenstr)
-      $('#rally_desc').text(res.desc)
+          var backward_fill = topichead.find('div a.sprite-page-backward-fill')
+          var backward      = topichead.find('div a.sprite-page-backward')
+          var forward       = topichead.find('div a.sprite-page-forward')
 
-
-      $.ajax({
-        url:'/api/chat/'+chatid+'/msgs',
-        type:'GET',
-        dataType:'json',
-        success:function(res){
-          for( var i = 0; i < res.length; i++ ) {
-            var msg = res[i]
-            display( {from:msg.f,text:msg.t,topic:msg.p})
+          if( 0 == i ) {
+            backward.hide()
+            backward_fill.show()
           }
-          app.sendbox()
+          else {
+            backward_fill.hide()
+          }
+
+          if( topics.length-1 == i ) {
+            forward.hide()
+          }
+
+          function movetopic(dir){
+            return function() {
+              app.changetopic(app.topic + dir)            
+            }
+          }
+
+          backward.click(movetopic(-1))
+          forward.click(movetopic(1))
+
+          topicheads.append(topichead)
+          topichead.css({display:'none'})
+
+
+          var topicposts = topicposts_tm.clone()
+          topicposts.attr('id','topic_posts_'+i)
+
+          postsarea.append(topicposts)
+          topicposts.css({display:'none'})
         }
-      })
-    }
-  })
+        $('#topic_head_'+app.topic).show()
+        $('#topic_posts_'+app.topic).show()
+        
+
+        $('#rally_title').text(res.title)
+        $('#rally_modname').text(res.modname)
+        $('#rally_whenstr').text(res.whenstr)
+        $('#rally_desc').text(res.desc)
+
+
+        $.ajax({
+          url:'/api/chat/'+chatid+'/msgs',
+          type:'GET',
+          dataType:'json',
+          success:function(res){
+            for( var i = 0; i < res.length; i++ ) {
+              var msg = res[i]
+              display( {from:msg.f,text:msg.t,topic:msg.p})
+            }
+            app.sendbox()
+          }
+        })
+      }
+    })
   }
   else if( nick ) {
     $('#hostyourown').show()
