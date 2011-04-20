@@ -4,12 +4,12 @@
     <h1>Stanzr</h1>
 
     <ul class="topnav">
-      <li><a id="head_hostyours" href="javascript:void(0)">Host your own</a></li>
+      <li><a id="head_hostchat" href="javascript:void(0)">Host your own</a></li>
       <li><a id="head_twitter" href="javascript:void(0)">-T-</a></li>
       <li><a id="head_facebook" href="javascript:void(0)">-F-</a></li>
 
-      <% if( nick ) { %>
-      <li><a id="head_nick" href="javascript:void(0)"><%=nick%></a></li>
+      <% if( val.nick ) { %>
+      <li><a id="head_nick" href="javascript:void(0)"><%=val.nick%></a></li>
       <li><a id="head_logout" href="javascript:void(0)">Log out</a></li>
       <% } else { %>
       <li><a id="head_signup" href="javascript:void(0)">Sign up</a></li>
@@ -18,10 +18,10 @@
     </ul>
   </div>
   
-  <div class="span-7 leftcol">
+  <div class="span-7 leftcol col">
     <div>
       <h1 id="rally_title">Chat Title Lorem Ipsum Dolor</h1>
-      <h2>#<%=chathash%></h2>
+      <h2>#<%=val.hashtag%></h2>
     </div>
 
     <div>
@@ -32,7 +32,7 @@
 
     <div>
       <h2>Scheduled for <span id="rally_date">April 12</span></h2>
-      <h3 id="rally_time">from 8-9 PM</h3>
+      <h3 id="rally_whenstr">from 8-9 PM</h3>
       <a id="rally_remindB" href="javascript:void(0)" class="textbtn">remind me</a>
       <br />
       <a href="javascript:void(0)">[Like]</a>
@@ -40,46 +40,148 @@
     </div>
 
     <div class="chat_description">
-      <p>Take the agony out of analytics and prove marketing as a revenue driver, not a cost center. We'll talk about how companies can learn and use the six steps to building effective marketing forecasts and justify your budget based on that forecasting.
-      </p>
-      <p>We'll also discover how to better understand your revenue cycle and manage marketing forecasts with the proper tools. Better understand revenue cycle, lead types and transitions to provide a basis for forming valuable marketing report.
-      </p>
-      <p>We'll also share new insights and metrics we're uncovering from teams that are leveraging Marketo for successful Marketing forecasting.
-      </p>
+      <div id="rally_desc">
 
-      <p style="text-align:center">
+Ever wanted to talk to your favorite influencer? Ever wondered about their
+PR techniques, online marketing strategies, social media strategies and
+similar topics? Need some sound advice? Well now is your chance! PRWeb
+is getting in on all the fun hosting an all new,
+bi-weekly Twitter chat that features today's gurus and tomorrow's
+influencers, based on the topics of PR, SEO, social media and the like for
+individuals, agencies and small businesses.
+<br /><br />
+Every other Thursday from 2-3 p.m. EST, join PRWeb's conversation and get in
+on the discussion. Moderated by Stacey Acevero (@sacevero) of PRWeb (@prweb). 
+<br /><br />
 
-      </p>
+Other great resources from PRWeb: 
+<br /><br />
+ 
+Our Blog <http://www.bloggingprweb.com/> 
+<br /><br />
+ 
+
+PRWeb Learning Center
+<br /><br />
+
+Daily, live press release webinars and instructional videos
+<br /><br />
+ 
+Free PRWeb Whitepapers
+<br /><br />
+
+<img src="data:image/jpg;base64,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">
+
+      </div>
     </div>
 
   </div>
 
-  <div class="span-10 midcol clearfix">
-    <div class="topichead clearfix">
-      <h4 id="rally_topicname">Topic name</h4>
-      <p  id="rally_topicdesc">Neque porro quisquam est, qui dolorem ipsum</p>
+
+  <div class="span-10 midcol clearfix col">
+    <div id="topichead_tm" class="topichead clearfix">
+      <h4 class="rally_topicname">Topic name</h4>
+      <p  class="rally_topicdesc">Neque porro quisquam est, qui dolorem ipsum</p>
       <div class="navbox">
+        <a class="imgbtn sprite-page-backward-fill">&nbsp;</a>
         <a href="javascript:void(0)" class="imgbtn sprite-page-backward">&nbsp;</a>
         <a href="javascript:void(0)" class="imgbtn sprite-page-forward">&nbsp;</a>
       </div>
     </div>
 
-<!--
-    <div id="logindiv" style="background-color:yellow;clear:both; margin:30px;">
-      Enter username:
-      <input id="username">
-      <a href="javascript:void(0)" id="loginbtn" class="textbtn">log in</a>
-    </div>
--->
-    <div class="topicwelcome">
-      <h2>Welcome <span></span>!<h2>
+    <div id="topicheads">
     </div>
 
 
+    <div id="welcome">
+      <h2>Welcome!</h2>
+      <p><a href="javascript:$('#head_signup').click()">Sign up</a> to create your own chat</p>
+    </div>
 
-    <div class="topicposts" class="clearfix">
+    <div id="hostyourown">
+      <h2>Host Your Own Chat!</h2>
+      <p><a href="javascript:$('#head_hostchat').click()">create your chat now</a></p>
+    </div>
 
-      <ul id="posts">
+
+
+    <div class="postsarea" class="clearfix">
+
+      <ul id="topicposts_tm" class="topicposts">
       </ul>
 
       <ul id="posts_tm">
@@ -104,7 +206,7 @@
       <input type="text" id="post_text" >
       <input type="button" value="Send" id="post_send">
       <p class="tweetout">
-        <input type="checkbox" checked="yes"> Also post on Twitter - appends <span id="rally_hash">#<%=chathash%></span> 
+        <input type="checkbox" checked="yes"> Also post on Twitter - appends <span id="rally_hash">#<%=val.hashtag%></span> 
       </p>
     </div>
 
@@ -112,7 +214,7 @@
   </div>
 
 
-  <div class="span-7 last rightcol">
+  <div class="span-7 last rightcol col">
 
     <div class="clearfix">
       <h2>
@@ -227,6 +329,39 @@
   <a href="javascript:void(0)" id="register_registerbtn" class="textbtn">register</a>
   
   <p id="register_msg"></p>
+</div>
+
+
+<div id="hostchat_box">
+  <h2>Create Your Chat</h2>
+  
+  Session name:<br />
+  <input id="hostchat_title"><br />
+
+  Moderated by:<br />
+  <input id="hostchat_modname"><br />
+
+  Scheduled for:<br />
+  <input id="hostchat_whenstr"><br />
+
+  Twitter hashtag:<br />
+  <input id="hostchat_hashtag"><br />
+
+  Description:<br />
+  <textarea id="hostchat_desc" style="width:150px;height:30px">
+  </textarea>
+  <br />
+  
+  Topics:<br />
+  <input id="hostchat_topic0"><br />
+  <input id="hostchat_topic1"><br />
+  <input id="hostchat_topic2"><br />
+  
+  <br />
+
+  <a href="javascript:void(0)" id="hostchat_createbtn" class="textbtn">create</a>
+  
+  <p id="hostchat_msg"></p>
 </div>
 
 

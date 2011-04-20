@@ -73,7 +73,7 @@ a {
      width:  $lenm;
      height: $lenm;
 
-     &.sprite-drilldown, &.sprite-page-backward, &.sprite-page-forward {
+     &.sprite-drilldown, &.sprite-page-backward, &.sprite-page-forward, &.sprite-page-backward-fill {
        width:  22px;
        height: 22px;
      }
@@ -176,15 +176,15 @@ div {
   &.leftcol {
     background-color: $locolC;
     margin-right: 0px;
-    height: 1000px;
     width: 265px;
     float: left;
+    overflow: auto;
 
     h1,h2,h3 {
       color: $fontsideC;
     }
 
-    div {
+    > div {
       @include sidecont();
     }
     .chat_description {
@@ -196,7 +196,6 @@ div {
   &.midcol {
     background-color: $hicolC;
     margin-right: 0px;
-    height: 1000px;
     width: 450px;
     float: left;
 
@@ -206,6 +205,7 @@ div {
 
     div.topichead {
       background-color: $topicheadbgC;
+      padding: 10px;
 
       p {
         float: left;
@@ -219,18 +219,14 @@ div {
       }
     }
 
-    div.topicwelcome {
-      display: none;
-    }
-
-    div.topicposts {
+    div.postsarea {
       overflow: auto;
-      height:800px;
 
       #posts_tm { 
         display: none; 
       }
-      #posts {
+
+      ul.topicposts {
         list-style-type: none;
         margin: 0px;
         padding: 0px;
@@ -290,9 +286,9 @@ div {
 
   &.rightcol {
     background-color: $locolC;
-    height: 1000px;
     width: 265px;
     float: left;
+    overflow: auto;
 
     div {
       @include sidecont();
@@ -362,7 +358,44 @@ p {
   padding: 20px;
 }
 
+#hostchat_box {
+  display: none;
+  border: 1px solid black;
+  position: absolute;
+  top: 300px;
+  margin: auto;
+  width: 200px;            
+  height: 400px;
+  background-color: white;
+  padding: 20px;
+}
+
 
 #miniavatar_tm {
    display: none;
+}
+
+
+#topicheads {
+  padding: 0px;
+}
+
+#topichead_tm {
+  display: none;
+}
+
+#topicposts_tm {
+  display: none;
+}
+
+#welcome {
+  display: none;
+}
+
+#hostyourown {
+  display: none;
+}
+
+#rally_desc {
+  padding: 0px;
 }

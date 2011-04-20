@@ -44,9 +44,36 @@ var express  = exports.express  = require('express')
 var now      = exports.now      = require('now')
 var assert   = exports.assert   = require('assert')
 var eyes     = exports.eyes     = require('eyes')
-var seneca   = exports.seneca   = require('seneca')
 var cookies  = exports.cookies  = require('cookies')
 var _        = exports._        = require('underscore')
+
+
+var seneca   = exports.seneca   = require('../../support/seneca')
+//var now      = exports.now   = require('../../support/now')
+
+
+var config = require('config')
+var conf = exports.conf = config('conf',{
+  env: 'dev',
+  web: {
+    port: 8080
+  },
+  keys: {
+    chartaca: {
+      key: '3b206e8c-f57a-49f1-9ee3-34fd3b6ce2b5'
+    }
+  },
+  mongo: {
+    main: {
+      name: 'stanzrdev',
+      server: 'localhost',
+      port: 27017,
+      username: '',
+      password: ''
+    }
+  }
+})
+eyes.inspect(conf)
 
 
 exports.log = function() {
