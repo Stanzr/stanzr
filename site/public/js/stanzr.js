@@ -1,4 +1,6 @@
 
+document.cookie = "socketio=xhr-polling; expires=1; path=/";
+
 
 
 var app = {
@@ -65,6 +67,10 @@ $(function(){
         display(msg)
       }
       else if( 'join' == msg.type ) {
+        if( nick == msg.nick) {
+          app.sendbox()
+        }
+
         var post = $('#posts_tm li.infomsg').clone()
         post.find('p').text(msg.nick + ' has joined')
 
@@ -78,9 +84,10 @@ $(function(){
     
     function post(){
       var msg = {chat:chatid,text:$("#post_text").val(),type:'message',topic:app.topic}
-      now.distributeMessage(JSON.stringify(msg));
       $("#post_text").val("");
       $("#post_text").focus();
+
+      now.distributeMessage(JSON.stringify(msg));
     }
     
     $("#post_send").click(post)
@@ -350,9 +357,6 @@ $(function(){
               display( {from:msg.f,text:msg.t,topic:msg.p})
             }
 
-            if( nick ) {
-              app.sendbox()
-            }
           }
         })
       }
