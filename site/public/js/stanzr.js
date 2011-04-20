@@ -19,7 +19,6 @@ var app = {
   postbottom: function() {
     var h  = $('div.postsarea').height()
     var sh = $('div.postsarea')[0].scrollHeight
-    console.log(sh,h)
     $('div.postsarea').scrollTop( sh - h  )
   },
 
@@ -350,14 +349,20 @@ $(function(){
               var msg = res[i]
               display( {from:msg.f,text:msg.t,topic:msg.p})
             }
-            app.sendbox()
+
+            if( nick ) {
+              app.sendbox()
+            }
           }
         })
       }
     })
   }
+
   else if( nick ) {
-    $('#hostyourown').show()
+    if( !/stanzr\.(com|test)\/?$/.exec( document.location.href ) ) {
+      $('#hostyourown').show()
+    }
   }
 
 });
