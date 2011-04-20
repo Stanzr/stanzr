@@ -49,6 +49,7 @@ var _        = exports._        = require('underscore')
 
 
 var seneca   = exports.seneca   = require('../../support/seneca')
+//var now      = exports.now   = require('../../support/now')
 
 
 var config = require('config')
