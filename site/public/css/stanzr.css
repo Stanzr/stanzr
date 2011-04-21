@@ -109,14 +109,34 @@ div.midcol {
   div.midcol div.topichead {
     background-color: #d1cabf;
     padding: 10px; }
-    div.midcol div.topichead p {
+    div.midcol div.topichead p.rally_topicdesc {
       float: left;
       width: 360px;
       margin: 0px;
       clear: both; }
+    div.midcol div.topichead div.rally_gotoactive {
+      display: none;
+      background-color: #575450;
+      clear: both;
+      color: white;
+      margin-top: 5px;
+      padding: 5px; }
+      div.midcol div.topichead div.rally_gotoactive p {
+        margin: 0px; }
+        div.midcol div.topichead div.rally_gotoactive p.left {
+          float: left;
+          width: 180px; }
+        div.midcol div.topichead div.rally_gotoactive p.right {
+          float: right;
+          width: 30px; }
+    div.midcol div.topichead div.rally_makeactive {
+      display: none;
+      clear: both;
+      margin-top: 5px; }
     div.midcol div.topichead div.navbox {
-      width: 55px;
-      float: right; }
+      width: 50px;
+      float: right;
+      margin-bottom: 5px; }
   div.midcol div.postsarea {
     overflow: auto; }
     div.midcol div.postsarea #posts_tm {

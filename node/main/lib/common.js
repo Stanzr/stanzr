@@ -95,19 +95,31 @@ exports.log = function() {
 // JSON functions
 
 exports.readjson = function(req,res,win,fail) {
-  var bodyarr = [];
+  var MAX = 65535
+  var size = 0;
+  var bodyarr = []
+
   req.on('data',function(chunk){
-    bodyarr.push(chunk);
-  })
-  req.on('end',function(){
-    var bodystr = bodyarr.join('');
-    util.debug('READJSON:'+req.url+':'+bodystr);
-    try {
-      var body = JSON.parse(bodystr);
-      win && win(body);
+    size += chunk.length
+    if( MAX < size ) {
+      bad(res)
     }
-    catch(e) {
-      fail && fail(res,e)
+    else {
+      bodyarr.push(chunk);
+    }
+  })
+
+  req.on('end',function(){
+    if( size < MAX ) {
+      var bodystr = bodyarr.join('');
+      util.debug('READJSON:'+req.url+':'+bodystr);
+      try {
+        var body = JSON.parse(bodystr);
+        win && win(body);
+      }
+      catch(e) {
+        fail && fail(res,e)
+      }
     }
   })
 }

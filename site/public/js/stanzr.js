@@ -5,6 +5,8 @@ document.cookie = "socketio=xhr-polling; expires=1; path=/";
 
 var app = {
   topic: 0,
+  active_topic: 0,
+  chat: {},
 
   changetopic: function(topic) {
     app.topic = topic
@@ -12,8 +14,27 @@ var app = {
     $('div.topichead').hide()
     app.topichead = $('#topic_head_'+app.topic).show()
 
+    if( app.active_topic != topic && topic < app.active_topic ) {
+      app.topichead.find('div.rally_gotoactive').show().click(app.gotoactive)
+    }
+    else {
+      app.topichead.find('div.rally_gotoactive').hide()
+    }
+
+    if( nick == app.chat.modnick ) {
+      if( app.active_topic + 1 == topic ) {
+        app.topichead.find('div.rally_makeactive').show().click(app.makeactive)
+      }
+      else {
+        app.topichead.find('div.rally_makeactive').hide()
+      }
+    }
+
+
     $('ul.topicposts').hide()
     app.topicposts = $('#topic_posts_'+app.topic).show()
+
+    app.resize()
 
     app.postbottom()
   },
@@ -36,7 +57,40 @@ var app = {
     var headerh = $('div.header').height()
     var colh    = Math.max( 400, winh - headerh - 30 );
     $('div.col').height(colh)
-    $('div.postsarea').height(colh-180)
+    var thh = app.topichead.height() || 50
+    var sbh = $('div.topicsend').height() || 100
+    $('div.postsarea').height( colh-(sbh+thh+50) )
+  },
+
+  gotoactive: function() {
+    var topics = app.chat.topics
+    for(var i = 0; i < topics.length; i++ ) {
+      if( topics[i].active ) {
+        app.changetopic(i)
+        break
+      }
+    }
+  },
+
+  makeactive: function() {
+    var topic = app.topic
+    $.ajax({
+      url:'/api/chat/'+app.chat.chatid+'/topic/'+topic+'/active',
+      type:'POST',
+      dataType:'json',
+      contentType:'application/json',
+      data:'{}',
+      success:function(res){
+        app.active_topic = res.topic
+
+        var topics = app.chat.topics
+        for(var i = 0; i < topics.length; i++ ) {
+          topics[i].active = (i==app.active_topic)
+        }
+
+        app.changetopic(topic)
+      }
+    })
   }
 
 }
@@ -70,15 +124,23 @@ $(function(){
         if( nick == msg.nick && chatid ) {
           app.sendbox()
         }
+        infomsg( msg.nick + ' has joined' )
 
-        var post = $('#posts_tm li.infomsg').clone()
-        post.find('p').text(msg.nick + ' has joined')
-
-        var topicposts = $('#topic_posts_'+app.topic)
-        topicposts.append(post)
-        post.animate({opacity:1},500)
-        app.postbottom()
         addAvatar(msg.from)
+      }
+      else if( 'topic' == msg.type ) {
+        if( app.active_topic != msg.topic ) {
+          app.active_topic = msg.topic
+          var topics = app.chat.topics
+          for(var i = 0; i < topics.length; i++ ) {
+            topics[i].active = (i==app.active_topic)
+          }
+
+          app.changetopic(app.topic)
+          if( app.chat.modnick != nick ) {
+            infomsg( 'discussion has moved to next topic' )
+          }
+        }
       }
     }
     
@@ -118,7 +180,7 @@ $(function(){
     while( 0 < (topicentry = $('#hostchat_topic'+tI)).length ) {
       var topicstr = topicentry.val()
       if( 0 < topicstr.length ) {
-        topics.push({name:topicstr,desc:'Description of '+topicstr})
+        topics.push({title:topicstr,desc:'Description of '+topicstr})
       }
       tI++
     }
@@ -252,6 +314,15 @@ $(function(){
   }
 
 
+  function infomsg(text) {
+    var post = $('#posts_tm li.infomsg').clone()
+    post.find('p').text(text)
+    var topicposts = $('#topic_posts_'+app.topic)
+    topicposts.append(post)
+    post.animate({opacity:1},500)
+    app.postbottom()
+  }
+
   function display(msg) {
     var post = $('#posts_tm li.message').clone()
     post.attr('id','topic_'+msg.topic+'_post_'+msg.id)
@@ -277,6 +348,7 @@ $(function(){
       type:'GET',
       dataType:'json',
       success:function(res){
+        app.chat = res
         var nicks = res.nicks || []
         for( var i = 0; i < nicks.length; i++ ) {
           var other = nicks[i]
@@ -297,10 +369,15 @@ $(function(){
 
         for( var i = 0; i < topics.length; i++ ) {
           var topic = topics[i]
+
+          if( topic.active ) {
+            app.active_topic = i
+          }
+
           var topichead = topichead_tm.clone()
           topichead.attr('id','topic_head_'+i)
-          topichead.find('h4').text(topic.name)
-          topichead.find('p').text(topic.desc)
+          topichead.find('h4').text(topic.title)
+          topichead.find('p.rally_topicdesc').text(topic.desc)
 
           var backward_fill = topichead.find('div a.sprite-page-backward-fill')
           var backward      = topichead.find('div a.sprite-page-backward')
@@ -324,6 +401,7 @@ $(function(){
             }
           }
 
+
           backward.click(movetopic(-1))
           forward.click(movetopic(1))
 
@@ -337,9 +415,8 @@ $(function(){
           postsarea.append(topicposts)
           topicposts.css({display:'none'})
         }
-        $('#topic_head_'+app.topic).show()
-        $('#topic_posts_'+app.topic).show()
-        
+        app.changetopic(app.active_topic)            
+
 
         $('#rally_title').text(res.title)
         $('#rally_modname').text(res.modname)

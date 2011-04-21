@@ -34,7 +34,7 @@ function lost(res) { sendcode(404,res) }
 function bad(res,err) { sendcode(400,res); log(err) } 
 function denied(res) { sendcode(401,res) } 
 function failed(res,err) { sendcode(500,res); log(err) } 
-
+function found(res,obj,cb) { if(obj){cb(obj)} else {lost(res)} }
 
 function onwin(res,win){
   return function(err){
@@ -44,7 +44,12 @@ function onwin(res,win){
       bad(res,err)
     }
     else {
-      win && win.apply( this, [].slice.call(arguments,1) )
+      try {
+        win && win.apply( this, [].slice.call(arguments,1) )
+      }
+      catch( ex ) {
+        failed(res,ex)
+      }
     }
   }
 }
@@ -80,6 +85,15 @@ main.util = {
         }
       }
     )
+  },
+  
+  mustbemod: function(req,nick,cb) {
+    if( req.user$.nick == nick ) {
+      cb()
+    }
+    else {
+      denied(req)
+    }
   }
 }
 
@@ -91,13 +105,8 @@ main.chat = {
       if( err ) {
         cb(err)
       }
-      else if( chat ) {
-        cb(null,chat)
-      }
       else {
-        chatent.chatid = chatid
-        chatent.nicks = []
-        chatent.save$(cb)
+        cb(null,chat)
       }
     })
   },
@@ -108,12 +117,15 @@ main.chat = {
       if( err ) {
         cb(err)
       }
-      else {
+      else if( chat ) {
         var nicks = chat.nicks || []
         nicks.push(nick)
         chat.nicks = _.uniq(nicks)
         console.log(chat.nicks)
         chat.save$(cb)
+      }
+      else {
+        cb()
       }
     })
   }
@@ -205,6 +217,9 @@ main.api = {
             common.sendjson(res,{ok:true,end:end,dur:(end.getTime()-start.getTime()),a:ent?ent.a:null})
           }
         })
+      },
+      diag:function(req,res){
+        common.sendjson(res,{params:req.params,json:req.json$,user:req.user$})
       }
     }[req.params.kind];
 
@@ -311,7 +326,6 @@ main.api = {
   chat: {
     get: function(req,res) {
       var chatid = req.params.chatid
-      util.debug('CHATID:'+chatid)
 
       if( 'favicon.ico' == chatid ) {
         lost(res)
@@ -333,8 +347,11 @@ main.api = {
           if( err ) {
             failed(res,err)
           }
-          else {
+          else if( chat ) {
             common.sendjson(res,chat)
+          }
+          else {
+            lost(res)
           }
         })
       }
@@ -348,32 +365,87 @@ main.api = {
       
       chatent.modnick = json.moderator
 
-      if( req.user$.nick != chatent.modnick ) {
-        util.debug('CHAT PUT DENIED: user$:'+req.user$.nick+' chatent.modnick:'+chatent.modnick)
-        denied(res)
-        return
-      }
-      
-      chatent.modname = json.modname || ''
-      chatent.whenstr = json.whenstr || ''
-      chatent.hashtag = json.hashtag || ''
-      chatent.desc    = json.desc || ''
-      
-      chatent.topics  = json.topics || ['General']
-      chatent.topic = 0
-
-      chatent.nicks = []
-      
-      main.seneca.act({on:'util',cmd:'quickcode',len:6},onwin(res,function(quickcode){
-        chatent.chatid = quickcode
+      main.util.mustbemod( req, chatent.modnick, function() {
+        chatent.modname = json.modname || ''
+        chatent.whenstr = json.whenstr || ''
+        chatent.hashtag = json.hashtag || ''
+        chatent.desc    = json.desc || ''
         
-        chatent.save$(onwin(res,function(chatent){
-          common.sendjson(res,chatent.data$())
+        chatent.topics  = json.topics || [{title:'General',desc:'Open discussion'}]
+        chatent.topics[0].active = true
+        chatent.topic = 0
+
+        chatent.nicks = []
+        
+        main.seneca.act({on:'util',cmd:'quickcode',len:6},onwin(res,function(quickcode){
+          chatent.chatid = quickcode
+          
+          chatent.save$(onwin(res,function(chatent){
+            common.sendjson(res,chatent.data$())
+          }))
         }))
-      }))
+      })
+    },
+
+    topic: {
+      get: function(req,res) {
+        main.chat.get( req.params.chatid, onwin(res,function(chat){
+          if( !chat ) {
+            return lost(res); 
+          }
+          var tI = parseInt(req.params.topic,10)
+          var topic = tI < chat.topics.length ? chat.topics[tI] : null
+          common.sendjson(res,topic)
+        }))
+      },
+
+      post: function(req,res) {
+        main.chat.get( req.params.chatid, onwin(res,function(chat){
+          if( !chat ) {
+            return lost(res); 
+          }
+
+          main.util.mustbemod( req, chat.modnick, function() {
+            var tI = parseInt(req.params.topic,10)
+            var topic = tI < chat.topics.length ? chat.topics[tI] : null
+
+            found( res, topic, function(topic) {
+              topic = _.extend(topic,req.json$)
+              chat.topics[tI] = topic
+
+              chat.save$(onwin(res,function(chat){
+                common.sendjson(res,{ok:true,topic:topic})
+              }))
+            })
+          })
+        }))
+      },
+
+      post_active: function(req,res) {
+        main.chat.get( req.params.chatid, onwin(res,function(chat){
+          found( res, chat, function( chat ) {
+            main.util.mustbemod( req, chat.modnick, function() {
+              var at = parseInt(req.params.topic,10)
+
+              for(var tI = 0; tI < chat.topics.length; tI++ ) {
+                chat.topics[tI].active = (tI == at)
+              }
+
+              chat.save$(onwin(res,function(chat){
+                common.sendjson(res,{ok:true,topic:at})                
+
+                var group = now.getGroup(chat.chatid)
+                if( group.now.receiveMessage ) {
+                  group.now.receiveMessage(chat.modnick, JSON.stringify({type:'topic', topic:at}))
+                }
+              }))
+            })
+          })
+        }))
+      }
+
     }
   }
-
 }
 
 
@@ -405,7 +477,7 @@ util.debug(mongourl)
 
 function auth(req,res,next) {
   main.util.authuser(req,res,onwin(res,function(user,login){
-    util.debug(user)
+    util.debug('AUTH:'+JSON.stringify(user))
     if( user ) {
       req.user$ = user
       req.login$ = login
@@ -419,7 +491,6 @@ function auth(req,res,next) {
 
 
 function json(req,res,next) {
-  console.log(req.headers)
   var ct = req.headers['content-type'] || ''
   if( -1 != ct.toLowerCase().indexOf('json') ) {
     common.readjson(req,res,function(json){
@@ -470,12 +541,16 @@ Seneca.init(
     app.use( 
       connect.router(function(capp){
         capp.get('/api/ping/:kind',main.api.ping )
+        capp.post('/api/ping/diag',main.api.ping )
+
         capp.get('/api/bounce/', main.api.bounce )
         capp.get('/api/bounce/:chatid', main.api.bounce )
         capp.post('/api/auth/:action', main.api.auth.post)
 
         capp.get('/api/chat/:chatid', main.api.chat.get)
         capp.get('/api/chat/:chatid/msgs', main.api.chat.get)
+
+        capp.get('/api/chat/:chatid/topic/:topic', main.api.chat.topic.get)
       })
     )
 
@@ -489,6 +564,9 @@ Seneca.init(
         capp.get('/api/user/:nick', main.api.user.get)
 
         capp.put('/api/chat', main.api.chat.put)
+
+        capp.post('/api/chat/:chatid/topic/:topic', main.api.chat.topic.post)
+        capp.post('/api/chat/:chatid/topic/:topic/active', main.api.chat.topic.post_active)
       })
     )
 
@@ -516,17 +594,6 @@ Seneca.init(
 
       var chatid = msg.chat
 
-      /*
-      var chatent = main.seneca.make$('stanzr','app','chat')
-      chatent.load$({chatid:chatid},function(err,chat){
-        if( err ) {
-          log('error','chat',err)
-          return
-        }
-
-        if( chat ) {
-      */
-      
       var msgid = uuid().toLowerCase().replace('-','')
       console.log(msgid)
       main.msg.save({id:msgid,nick:nick,chatid:chatid,topic:msg.topic,text:msg.text})
