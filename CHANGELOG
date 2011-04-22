@@ -7,3 +7,9 @@
    $ node node/main/lib/main.js -config ./conf/node/<configname>.js
    where configname is one of demo, staging, design
 
+2011-04-22:
+ - npm updates:
+   sudo npm install oauth
+   sudo npm install linkedin-js
+
+

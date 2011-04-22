@@ -214,35 +214,49 @@ main.view = {
             var nick = user.nick
           }
 
-          var chatent = main.seneca.make('stanzr','app','chat')
-          chatent.load$({chatid:req.params.chatid},onwin(res,function(chat){
-            if( chat ) {
-              res.render(
-                'member', 
-                {locals: {
-                  txt: {
-                    title: chat.chatid
-                  },
-                  val: {
-                    chatid: chat.chatid,
-                    hashtag: chat.hashtag,
-                    nick: nick
-                  }
-                }})
-            }
-            else {
-              res.render(
-                'member', 
-                { locals: {
-                  txt: {
-                    title:'Stanzr' 
-                  },
-                  val: {
-                    nick: nick
-                  }
-                }})
-            }
-          }))
+          if( req.params.chatid ) {
+            var chatent = main.seneca.make('stanzr','app','chat')
+            chatent.load$({chatid:req.params.chatid},onwin(res,function(chat){
+              if( chat ) {
+                res.render(
+                  'member', 
+                  {locals: {
+                    txt: {
+                      title: chat.chatid
+                    },
+                    val: {
+                      chatid: chat.chatid,
+                      hashtag: chat.hashtag,
+                      nick: nick
+                    }
+                  }})
+              }
+              else {
+                res.render(
+                  'member', 
+                  { locals: {
+                    txt: {
+                      title:'Stanzr' 
+                    },
+                    val: {
+                      nick: nick
+                    }
+                  }})
+              }
+            }))
+          }
+          else {
+            res.render(
+              'home', 
+              { locals: {
+                txt: {
+                  title:'Stanzr' 
+                },
+                val: {
+                  nick: nick
+                }
+              }})
+          }
         }))
       }
     }
