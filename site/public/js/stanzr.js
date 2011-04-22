@@ -1,13 +1,13 @@
 
-document.cookie = "socketio=xhr-polling; expires=1; path=/";
-
-
 
 var app = {
   topic: 0,
   active_topic: 0,
   chat: {},
   msgcache: {},
+  agrees: [],
+  nickmap: {},
+  agrees_start: 0,
 
   changetopic: function(topic) {
     app.topic = topic
@@ -40,11 +40,13 @@ var app = {
     app.postbottom()
   },
 
+
   postbottom: function() {
     var h  = $('div.postsarea').height()
     var sh = $('div.postsarea')[0].scrollHeight
     $('div.postsarea').scrollTop( sh - h  )
   },
+
 
   sendbox: function() {
     // show or hide on topix
@@ -52,6 +54,7 @@ var app = {
       $("#post_text").focus()
     })
   },
+
 
   resize: function() {
     var winh    = $(window).height()
@@ -63,6 +66,7 @@ var app = {
     $('div.postsarea').height( colh-(sbh+thh+50) )
   },
 
+
   gotoactive: function() {
     var topics = app.chat.topics
     for(var i = 0; i < topics.length; i++ ) {
@@ -72,6 +76,7 @@ var app = {
       }
     }
   },
+
 
   makeactive: function() {
     var topic = app.topic
@@ -126,21 +131,110 @@ var app = {
       url:'/api/chat/'+app.chat.chatid+'/msgs/agrees',
       dataType:'json',
       success:function(res){
+        var msgids = []
         for(var i = 0; i < res.length; i++) {
           var msg = res[i]
-          msg && ( app.msgcache[msg.i] = msg )
+          msg && ( app.msgcache[msg.i] = msg, msgids.push(msg.i) )
         }
+        app.agrees = msgids
         cb(res)
       }
     })
   },
+
+
+  loadagrees: function() {
+    $.ajax({
+      url:'/api/chat/'+chatid+'/msgs/agrees',
+      type:'GET',
+      dataType:'json',
+      success:function(res){
+        app.agrees = res
+        app.displayagrees()
+      }})
+  },
+
+
+  displayagrees: function(start){
+    app.agrees_start = start || app.agrees_start
+
+
+    var mostagreed_drilldown = $('#mostagreed_drilldown')
+    if( 3 < app.agrees.length && app.agrees_start < app.agrees.length ) {
+      mostagreed_drilldown.show()
+    }
+    else {
+      mostagreed_drilldown.hide()
+    }
+
+    var mostagreed_drillup = $('#mostagreed_drillup')
+    if( 3 <= app.agrees_start ) {
+      mostagreed_drillup.css({opacity:1})
+    }
+    else {
+      mostagreed_drillup.css({opacity:0.001})
+    }
+
+
+    var rally_mostagreed = $('#rally_mostagreed')
+    var mostagreed_msg_tm = $('#mostagreed_msg_tm')
+
+    rally_mostagreed.empty()
+
+    for( var i = app.agrees_start; i < app.agrees_start+3; i++ ) {
+      function displaymostagreed(msg){
+        var msgdiv = mostagreed_msg_tm.clone().attr('id','')
+        msgdiv.find('h4').text(msg.f)
+        msgdiv.find('.agrees').text(msg.a)
+        msgdiv.find('.post').text(msg.t)
+        rally_mostagreed.append(msgdiv.fadeIn())
+      }
+
+      var msgid = app.agrees[i]
+      if( msgid ) {
+        var msg = app.msgcache[msgid]
+        if( !msg ) {
+          app.loadmsg(msgid,function(msg){
+            displaymostagreed(msg)
+          })
+        }
+        else {
+          displaymostagreed(msg)
+        }
+      }
+
+    }
+  }
+  
 }
 
+
+
+
 $(function(){
+  $.cookie('socketio',null)
+
   app.changetopic(0)
   
   app.resize()
   window.onresize = app.resize
+
+  $('h4').live('click',function(event){
+    var n = $(event.target).text()
+    if( app.nickmap[n] ) {
+      $('#profile_box').show().find('h2').text(n)
+    }
+  })
+
+  $('#mostagreed_drillup').click(function(){
+    if( 3 <= app.agrees_start ) {
+      app.displayagrees(app.agrees_start-3)
+    }
+  })
+
+  $('#mostagreed_drilldown').click(function(){
+    app.displayagrees(app.agrees_start+3)
+  })
 
 
   function enterkey(cb) {
@@ -159,7 +253,10 @@ $(function(){
       var msg = JSON.parse(jsonstr)
 
       if( 'message' == msg.type ) {
-        display(msg)
+        if( !app.msgcache[msg.i] ) {
+          app.msgcache[msg.i] = msg
+          display(msg)
+        }
       }
       else if( 'join' == msg.type ) {
         if( nick == msg.nick && chatid ) {
@@ -167,7 +264,7 @@ $(function(){
         }
         infomsg( msg.nick + ' has joined' )
 
-        addAvatar(msg.from)
+        addAvatar(from)
       }
       else if( 'topic' == msg.type ) {
         if( app.active_topic != msg.topic ) {
@@ -183,10 +280,33 @@ $(function(){
           }
         }
       }
+      else if( 'agree' == msg.type ) {
+        var msgid = msg.msgid
+
+        function incmsg(msg) {
+          msg.a = (msg.a || 0) + 1
+          msg.an = msg.an || []
+          msg.an.push(from)
+          msg.an = _.uniq(msg.an)
+        }
+
+        if( app.msgcache[msgid] ) {
+          incmsg(app.msgcache[msgid])
+        }
+        else {
+          app.loadmsg(msgid,function(){
+            incmsg(app.msgcache[msgid])
+          })
+        }
+
+        app.loadagrees()
+      }
+      
     }
+
     
     function post(){
-      var msg = {chat:chatid,text:$("#post_text").val(),type:'message',topic:app.topic}
+      var msg = {c:chatid,t:$("#post_text").val(),type:'message',p:app.topic}
       $("#post_text").val("");
       $("#post_text").focus();
 
@@ -309,13 +429,15 @@ $(function(){
 
   var avatars = {}
 
-  function addAvatar(nick) {
-    if( !avatars[nick] ) {
-      avatars[nick] = true
+  function addAvatar(avnick) {
+    app.nickmap[avnick] = true
 
-      var avatar = $('#miniavatar_tm').clone().attr('id','side_avatar_'+nick).show()
+    if( !avatars[avnick] ) {
+      avatars[avnick] = true
+
+      var avatar = $('#miniavatar_tm').clone().attr('id','side_avatar_'+avnick).show()
       avatar.click(function(){
-        $('#profile_box').show().find('h2').text(nick)
+        $('#profile_box').show().find('h2').text(avnick)
       })
       $('#rally_miniavatars').append(avatar)
 
@@ -323,6 +445,14 @@ $(function(){
       pcount = '' == pcount ? 0 : parseInt(pcount,10)
       pcount++
       $('#rally_pcount').text(''+pcount)
+
+      var rally_pcount_drilldown = $('#rally_pcount_drilldown')
+      if( 20 < pcount ) {
+        rally_pcount_drilldown.show()
+      }
+      else {
+        rally_pcount_drilldown.hide()
+      }
     }
   }
 
@@ -368,16 +498,55 @@ $(function(){
   }
 
   function display(msg) {
+    app.nickmap[msg.f] = true
+
     var post = $('#posts_tm li.message').clone()
-    post.attr('id','topic_'+msg.topic+'_post_'+msg.id)
-    post.find('h4').text(msg.from)
-    post.find('p').text(msg.text)
+    post.attr('id','topic_'+msg.p+'_post_'+msg.i)
+    post.find('h4').text(msg.f)
+    post.find('p').text(msg.t)
+
+    if( 0 < msg.a ) {
+      post.find('.agrees').text('x'+msg.a)
+    }
+
+
+    post.find('a.sprite-at-reply').click(function(){
+      var txt = $('#post_text').val()
+      if( -1 == txt.indexOf( msg.f ) ) {
+        $('#post_text').val( '@'+msg.f+' '+txt ) 
+      }
+      $('#post_text').focus()
+    })
+
+    var approve = post.find('a.sprite-approve')
+    if( (msg.an && _.include(msg.an,nick)) || nick == msg.f ) {
+      approve.css({background:'transparent'})
+    }
+    else {
+      approve.click(function(){
+        approve.animate({opacity:0.01},function(){
+          approve.css({background:'transparent'})
+        })
+
+        app.agree(msg.i,function(res){
+          msg.a = msg.a || 1
+          msg.an = _.include( (msg.an = msg.an || []), nick )
+
+          post.find('.agrees').text('x'+msg.a)
+
+          app.agrees = res
+          app.displayagrees()
+        })
+      })
+    }
+
+
     post.css({opacity:0})
     
-    var topicposts = $('#topic_posts_'+msg.topic)
+    var topicposts = $('#topic_posts_'+msg.p)
     topicposts.append(post)
 
-    if( msg.topic == app.topic ) {
+    if( msg.p == app.topic ) {
       post.animate({opacity:1},500)
       app.postbottom()
     }
@@ -476,8 +645,10 @@ $(function(){
             for( var i = 0; i < res.length; i++ ) {
               var msg = res[i]
               app.msgcache[msg.i] = msg
-              display( {from:msg.f,text:msg.t,topic:msg.p})
+              display(msg)
             }
+
+            app.loadagrees()
           }
         })
       }

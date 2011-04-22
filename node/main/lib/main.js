@@ -183,12 +183,12 @@ main.msg = {
   map: {},
   save: function(msg,cb) {
     var msgent = main.seneca.make('stanzr','app','msg')
-    msgent.i = msg.msgid
+    msgent.i = msg.i
     msgent.w = new Date()
-    msgent.f = msg.nick
-    msgent.c = msg.chatid
-    msgent.t = msg.text
-    msgent.p = msg.topic
+    msgent.f = msg.f
+    msgent.c = msg.c
+    msgent.t = msg.t
+    msgent.p = msg.p
     msgent.save$(cb)
     return msgent
   },
@@ -542,6 +542,12 @@ main.api = {
           msg.save$(onwin(res,function(msg){
             main.cache.set('topagrees-'+req.params.chatid,null,onwin(res,function(){
               main.api.chat.msg.get_agrees(req,res)
+
+              var group = now.getGroup(req.params.chatid)
+              if( group.now.receiveMessage ) {
+                group.now.receiveMessage(req.user$.nick, JSON.stringify({type:'agree',msgid:msg.i}))
+              }
+
             }))
           }))
         }))
@@ -683,7 +689,6 @@ Seneca.init(
 
     main.everyone.now.joinchat = function(msgjson){
       var msg = JSON.parse(msgjson)
-      util.debug('joinchat:'+msgjson)
       var nick = this.now.name
       var group = now.getGroup(msg.chat)
       group.addUser(this.user.clientId);
@@ -695,26 +700,29 @@ Seneca.init(
 
     main.everyone.now.distributeMessage = function(msgjson,cb){
       var msg = JSON.parse(msgjson)
-      util.debug('distmsg:'+msgjson)
-      var nick = this.now.name
-      var group = now.getGroup(msg.chat)
+      util.debug('MSG:'+msgjson)
 
-      var chatid = msg.chat
+      var chatid = msg.c
+      var nick = this.now.name
+      var group = now.getGroup(chatid)
+
 
       var msgid = uuid().toLowerCase()
       console.log(msgid)
-      var unsavedmsgent = main.msg.save({msgid:msgid,nick:nick,chatid:chatid,topic:msg.topic,text:msg.text})
+      var unsavedmsgent = main.msg.save({i:msgid,f:nick,c:chatid,p:msg.p,t:msg.t})
 
       group.now.receiveMessage(
         nick, 
         JSON.stringify(
           {
             type:'message', 
-            chatid:chatid,
-            text:msg.text, 
-            topic:msg.topic,
-            id:msgid,
-            from:nick
+            c:chatid,
+            t:msg.t, 
+            p:msg.p,
+            i:msgid,
+            f:nick,
+            a:0,
+            an:[]
           }
         )
       )

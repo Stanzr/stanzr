@@ -73,7 +73,7 @@ a {
      width:  $lenm;
      height: $lenm;
 
-     &.sprite-drilldown, &.sprite-page-backward, &.sprite-page-forward, &.sprite-page-backward-fill {
+     &.sprite-drilldown, &.sprite-drillup, &.sprite-page-backward, &.sprite-page-forward, &.sprite-page-backward-fill {
        width:  22px;
        height: 22px;
      }
@@ -279,9 +279,13 @@ div {
 
 
           span.shares {
-            float: left;
             color: $fontmetaC;
           }    
+
+          span.agrees {
+            color: $fontmetaC;
+          }    
+
         }
 
         li.infomsg {
@@ -341,7 +345,7 @@ div {
         padding: 0px;
     
         li {
-          margin: 0 0 8px 0;
+          margin: 8px 0 8px 0;
 
           span.shares {
             float: left;
@@ -427,4 +431,13 @@ div.modalbox {
 
 #rally_desc {
   padding: 0px;
+}
+
+
+#mostagreed_msg_tm {
+  display: none;                    
+}
+
+#mostagreed_drillup {
+  opacity: 0.001;
 }
