@@ -166,7 +166,7 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
         <p class="right">Go &gt;</p>
       </div>
       <div class="rally_makeactive clearfix">
-        <a href="javascript:void(0)" class="txtbtn">Start this topic</a>
+        <a href="javascript:void(0)" class="textbtn">Start this topic</a>
       </div>
     </div>
 
@@ -223,7 +223,7 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
 
   <div class="span-7 last rightcol col">
 
-    <div class="clearfix">
+    <div class="clearfix" id="rally_members">
       <h2>
         <span id="rally_pcount">0</span> people in this chat 
         <a href="javascript:void(0)" class="imgbtn sprite-drilldown">&nbsp;</a>
@@ -271,7 +271,7 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
 
     <div>
       <h2>
-        Top Shares
+        Top shares
         <a href="javascript:void(0)" class="imgbtn sprite-drilldown">&nbsp;</a>
       </h2>
 
@@ -303,13 +303,15 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
 </div>
   
 
-<div id="login_box">
+<div id="login_box" class="modalbox">
+  <div class="modal_close"><a href="javascript:$('#login_box').hide()" class="textbtn">close</a></div>
+
   <h2>Log in</h2>
   
   Username:<br />
   <input id="login_username"><br />
   
-    Password:<br />
+  Password:<br />
   <input type="password" id="login_password"><br />
   
   <a href="javascript:void(0)" id="login_loginbtn" class="textbtn">login</a>
@@ -318,7 +320,9 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
 </div>
 
 
-<div id="signup_box">
+<div id="signup_box" class="modalbox">
+  <div class="modal_close"><a href="javascript:$('#signup_box').hide()" class="textbtn">close</a></div>
+
   <h2>Register</h2>
   
   Username:<br />
@@ -339,7 +343,9 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
 </div>
 
 
-<div id="hostchat_box">
+<div id="hostchat_box" class="modalbox">
+  <div class="modal_close"><a href="javascript:$('#hostchat_box').hide()" class="textbtn">close</a></div>
+
   <h2>Create Your Chat</h2>
   
   Session name:<br />
@@ -372,5 +378,9 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
 </div>
 
 
+<div id="profile_box" class="modalbox">
+  <div class="modal_close"><a href="javascript:$('#profile_box').hide()" class="textbtn">close</a></div>
 
-
+  <h2></h2>
+  <div class="miniavatar sprite-silhouette32"></div>  
+</div>

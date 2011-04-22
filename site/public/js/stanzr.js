@@ -7,6 +7,7 @@ var app = {
   topic: 0,
   active_topic: 0,
   chat: {},
+  msgcache: {},
 
   changetopic: function(topic) {
     app.topic = topic
@@ -91,8 +92,48 @@ var app = {
         app.changetopic(topic)
       }
     })
-  }
+  },
 
+
+  loadmsg: function(msgid,cb) {
+    $.ajax({
+      url:'/api/chat/'+app.chat.chatid+'/msg/'+msgid,
+      dataType:'json',
+      success:function(res){
+        app.msgcache[msgid] = res
+        cb(res)
+      }
+    })
+  },
+
+
+  agree: function(msgid,cb) {
+    $.ajax({
+      url:'/api/chat/'+app.chat.chatid+'/msg/'+msgid+'/agree',
+      type:'POST',
+      contentType:'application/json',
+      data:'{}',
+      dataType:'json',
+      success:function(res){
+        cb(res)
+      }
+    })
+  },
+
+
+  topagrees: function(cb) {
+    $.ajax({
+      url:'/api/chat/'+app.chat.chatid+'/msgs/agrees',
+      dataType:'json',
+      success:function(res){
+        for(var i = 0; i < res.length; i++) {
+          var msg = res[i]
+          msg && ( app.msgcache[msg.i] = msg )
+        }
+        cb(res)
+      }
+    })
+  },
 }
 
 $(function(){
@@ -149,7 +190,9 @@ $(function(){
       $("#post_text").val("");
       $("#post_text").focus();
 
-      now.distributeMessage(JSON.stringify(msg));
+      now.distributeMessage(JSON.stringify(msg),function(msg){
+        app.msgcache[msg.i] = msg
+      })
     }
     
     $("#post_send").click(post)
@@ -271,6 +314,9 @@ $(function(){
       avatars[nick] = true
 
       var avatar = $('#miniavatar_tm').clone().attr('id','side_avatar_'+nick).show()
+      avatar.click(function(){
+        $('#profile_box').show().find('h2').text(nick)
+      })
       $('#rally_miniavatars').append(avatar)
 
       var pcount = $('#rally_pcount').text()
@@ -301,9 +347,7 @@ $(function(){
   })
 
 
-  $('#login_box').css({left:($(window).width()-200)/2})
-  $('#signup_box').css({left:($(window).width()-200)/2})
-  $('#hostchat_box').css({left:($(window).width()-200)/2})
+  $('div.modalbox').css({left:($(window).width()-200)/2})
 
 
   if( nick ) {
@@ -431,9 +475,9 @@ $(function(){
           success:function(res){
             for( var i = 0; i < res.length; i++ ) {
               var msg = res[i]
+              app.msgcache[msg.i] = msg
               display( {from:msg.f,text:msg.t,topic:msg.p})
             }
-
           }
         })
       }
@@ -444,6 +488,8 @@ $(function(){
     if( !/stanzr\.(com|test)\/?$/.exec( document.location.href ) ) {
       $('#hostyourown').show()
     }
+
+    $('#rally_members').hide()
   }
 
 });

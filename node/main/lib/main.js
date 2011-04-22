@@ -19,6 +19,7 @@ var log     = common.log
 
 var main = {}
 
+var MAX_INFO_LIST = 30
 
 
 function sendcode(code,res) {
@@ -55,6 +56,23 @@ function onwin(res,win){
 }
 
 
+function Cache(){
+  var self = this;
+
+  var map = {}
+
+  self.get = function(key,cb){
+    cb(null,map[key])
+  }
+
+  self.set = function(key,val,cb){
+    map[key] = val
+    cb(null,key,val)
+  }
+}
+
+
+main.cache = new Cache()
 
 
 main.util = {
@@ -99,6 +117,12 @@ main.util = {
 
 
 main.chat = {
+  getreq: function(req,res,cb) {
+    main.chat.get( req.params.chatid, onwin(res,function(chat){
+      found( res, chat, cb )
+    }))
+  },
+
   get: function(chatid,cb) {
     var chatent = main.seneca.make('stanzr','app','chat')
     chatent.load$({chatid:chatid},function(err,chat){
@@ -128,19 +152,45 @@ main.chat = {
         cb()
       }
     })
+  },
+
+  topagrees:function(chatid,cb){
+    var msgent = main.seneca.make$('stanzr','app','msg')
+    var db = msgent.$.store$()._db()
+
+    db.collection('app_msg',function(err,app_msg){
+      if( err ) return cb(err)
+
+      app_msg.find(
+        {c:chatid},
+        {sort:[['a',-1]],limit:MAX_INFO_LIST},
+
+        function(res,cur){
+          if( err ) return cb(err)
+
+          cur.toArray(function(err,msgs){
+            if( err ) return cb(err)
+
+            cb(null,msgs)
+          })
+        })
+    })
   }
+
 }
 
 main.msg = {
   map: {},
   save: function(msg,cb) {
     var msgent = main.seneca.make('stanzr','app','msg')
+    msgent.i = msg.msgid
     msgent.w = new Date()
     msgent.f = msg.nick
     msgent.c = msg.chatid
     msgent.t = msg.text
     msgent.p = msg.topic
     msgent.save$(cb)
+    return msgent
   },
 
   list: function(chatid,cb) {
@@ -235,7 +285,8 @@ main.api = {
   },
 
   auth: {
-    post: function(req,res) {
+    post: 
+    function(req,res) {
       //common.readjson(req,res,function(json){
       //  log('user.post action:'+req.params.action,json)
 
@@ -303,8 +354,6 @@ main.api = {
         else {
           lost(res)
         }
-
-      //},bad)
     }
   },
 
@@ -422,28 +471,81 @@ main.api = {
       },
 
       post_active: function(req,res) {
-        main.chat.get( req.params.chatid, onwin(res,function(chat){
-          found( res, chat, function( chat ) {
-            main.util.mustbemod( req, chat.modnick, function() {
-              var at = parseInt(req.params.topic,10)
+        main.chat.getreq(req,res,function(chat){
+          main.util.mustbemod( req, chat.modnick, function() {
+            var at = parseInt(req.params.topic,10)
 
-              for(var tI = 0; tI < chat.topics.length; tI++ ) {
-                chat.topics[tI].active = (tI == at)
+            for(var tI = 0; tI < chat.topics.length; tI++ ) {
+              chat.topics[tI].active = (tI == at)
+            }
+
+            chat.save$(onwin(res,function(chat){
+              common.sendjson(res,{ok:true,topic:at})                
+              
+              var group = now.getGroup(chat.chatid)
+              if( group.now.receiveMessage ) {
+                group.now.receiveMessage(chat.modnick, JSON.stringify({type:'topic', topic:at}))
               }
-
-              chat.save$(onwin(res,function(chat){
-                common.sendjson(res,{ok:true,topic:at})                
-
-                var group = now.getGroup(chat.chatid)
-                if( group.now.receiveMessage ) {
-                  group.now.receiveMessage(chat.modnick, JSON.stringify({type:'topic', topic:at}))
-                }
-              }))
-            })
+            }))
           })
+        })
+      }
+    },
+
+    // api.chat
+    msg: {
+      get: 
+      function(req,res){
+        var msgent = main.seneca.make$('stanzr','app','msg')
+        msgent.load$({c:req.params.chatid,i:req.params.msgid},onwin(res,function(msg){
+          if(!msg){
+            lost(res)
+          }
+          else {
+            common.sendjson(res,msg)
+          }
+        }))
+      },
+
+      get_agrees: 
+      function(req,res){
+        var msgids = main.cache.get('topagrees-'+req.params.chatid,onwin(res,function(msgids){
+          if( msgids ) {
+            common.sendjson(res,msgids)
+          }
+          else {
+            main.chat.topagrees(req.params.chatid,onwin(res,function(msgs){
+              var msgids = []
+              for(var i = 0; i < msgs.length; i++) {
+                msgids.push(msgs[i].i)
+              }
+              main.cache.set('topagrees-'+req.params.chatid,msgids,onwin(res,function(key,msgids){
+                console.log(key,msgids)
+                common.sendjson(res,msgids)
+              }))
+            }))
+          }
+        }))
+      },
+
+      post_agree: 
+        function(req,res){
+        var msgent = main.seneca.make$('stanzr','app','msg')
+        msgent.load$({c:req.params.chatid,i:req.params.msgid},onwin(res,function(msg){
+          if( !msg ) {
+            return lost(msg)
+          }
+          msg.an = msg.an || []
+          msg.an.push(req.user$.nick)
+          msg.an = _.uniq(msg.an)
+          msg.a = msg.an.length
+          msg.save$(onwin(res,function(msg){
+            main.cache.set('topagrees-'+req.params.chatid,null,onwin(res,function(){
+              main.api.chat.msg.get_agrees(req,res)
+            }))
+          }))
         }))
       }
-
     }
   }
 }
@@ -548,7 +650,10 @@ Seneca.init(
         capp.post('/api/auth/:action', main.api.auth.post)
 
         capp.get('/api/chat/:chatid', main.api.chat.get)
+
         capp.get('/api/chat/:chatid/msgs', main.api.chat.get)
+        capp.get('/api/chat/:chatid/msgs/agrees', main.api.chat.msg.get_agrees)
+        capp.get('/api/chat/:chatid/msg/:msgid', main.api.chat.msg.get)
 
         capp.get('/api/chat/:chatid/topic/:topic', main.api.chat.topic.get)
       })
@@ -567,6 +672,8 @@ Seneca.init(
 
         capp.post('/api/chat/:chatid/topic/:topic', main.api.chat.topic.post)
         capp.post('/api/chat/:chatid/topic/:topic/active', main.api.chat.topic.post_active)
+
+        capp.post('/api/chat/:chatid/msg/:msgid/agree', main.api.chat.msg.post_agree)
       })
     )
 
@@ -586,7 +693,7 @@ Seneca.init(
     }
 
 
-    main.everyone.now.distributeMessage = function(msgjson){
+    main.everyone.now.distributeMessage = function(msgjson,cb){
       var msg = JSON.parse(msgjson)
       util.debug('distmsg:'+msgjson)
       var nick = this.now.name
@@ -594,9 +701,9 @@ Seneca.init(
 
       var chatid = msg.chat
 
-      var msgid = uuid().toLowerCase().replace('-','')
+      var msgid = uuid().toLowerCase()
       console.log(msgid)
-      main.msg.save({id:msgid,nick:nick,chatid:chatid,topic:msg.topic,text:msg.text})
+      var unsavedmsgent = main.msg.save({msgid:msgid,nick:nick,chatid:chatid,topic:msg.topic,text:msg.text})
 
       group.now.receiveMessage(
         nick, 
@@ -612,6 +719,7 @@ Seneca.init(
         )
       )
 
+      cb(unsavedmsgent.data$())
     }
   }
 )
