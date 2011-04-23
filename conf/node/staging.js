@@ -18,7 +18,7 @@ module.exports = {
       linkedin: {
         key:'JIvFtpTOzqLNNfc2-DwH4g47p-EZAdlxvS8jORnLL7HbtoTeFaqqSZ6MEZIjUKJZ',
         secret:'73BIQurFiKIkMvzIBWw4zAh8Moh2tjafRM-xM3PQ3IcMWbZb3rzn8BNx1zCL49YG',
-        callback:'http://stanzr.com/social/linkedin/callback'
+        callback:'http://staging.stanzr.com/social/linkedin/callback'
       }
     }
   }
