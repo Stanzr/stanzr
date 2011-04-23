@@ -1,17 +1,12 @@
 
 module.exports = {
   conf: {
-    env:'staging',
-    web: {
-      port: 8090
-    },
+    env:'dev',
     mongo: {
       main: {
-        name: 'stanzrstaging',
-        server: 'flame.mongohq.com',
-        port: 27045,
-        username: 'staging',
-        password: 'k1lk3nn1'  
+        server:'localhost',
+        port:27017,
+        name:'stanzrdev'
       }
     },
     keys: {

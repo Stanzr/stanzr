@@ -1,5 +1,6 @@
 
 var common = require('./common')
+var social = require('./social')
 
 var connect = common.connect
 var express = common.express
@@ -642,7 +643,7 @@ Seneca.init(
 
     initseneca(seneca)
 
-    var app = main.app = express.createServer();
+    var app = main.app = express.createServer()
 
     app.set('views', __dirname + '/../../../site/views');
     app.set('view engine', 'ejs');
@@ -657,7 +658,10 @@ Seneca.init(
 
     app.use( connect.logger() )
     app.use( connect.static( __dirname + '/../../../site/public') )
+    
 
+    social.init(app,main.seneca)
+    
     app.use( json )
 
     app.use( 
