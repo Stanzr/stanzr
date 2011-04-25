@@ -10,6 +10,7 @@
 2011-04-22:
  - npm updates:
    sudo npm install oauth
-   sudo npm install linkedin-js
+   npm install cookies
+   npm install xml2js
 
 

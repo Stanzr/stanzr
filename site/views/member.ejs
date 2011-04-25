@@ -5,9 +5,11 @@
 
     <ul class="topnav">
       <li><a id="head_hostchat" href="javascript:void(0)">Host your own</a></li>
-      <li><a id="head_linkedin" href="/social/linkedin/login<%=val.chatid?'/'+val.chatid:''%>">-L-</a></li>
-      <li><a id="head_twitter" href="javascript:void(0)">-T-</a></li>
-      <li><a id="head_facebook" href="javascript:void(0)">-F-</a></li>
+
+      <% var logintag = val.chatid?'/'+val.chatid:'' %>
+      <li><a id="head_linkedin" href="/api/user/oauth/linkedin/login<%=logintag%>">-L-</a></li>
+      <li><a id="head_twitter"  href="/api/user/oauth/twitter/login<%=logintag%>">-T-</a></li>
+      <li><a id="head_facebook" href="/api/user/oauth/facebook/login<%=logintag%>">-F-</a></li>
 
       <% if( val.nick ) { %>
       <li><a id="head_nick" href="javascript:void(0)"><%=val.nick%></a></li>

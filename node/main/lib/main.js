@@ -1,6 +1,5 @@
 
 var common = require('./common')
-var social = require('./social')
 
 var connect = common.connect
 var express = common.express
@@ -33,9 +32,9 @@ function sendcode(code,res) {
   }
 }
 function lost(res) { sendcode(404,res) } 
-function bad(res,err) { sendcode(400,res); log(err) } 
+function bad(res,err) { sendcode(400,res); log('bad',err) } 
 function denied(res) { sendcode(401,res) } 
-function failed(res,err) { sendcode(500,res); log(err) } 
+function failed(res,err) { sendcode(500,res); log('error',err) } 
 function found(res,obj,cb) { if(obj){cb(obj)} else {lost(res)} }
 
 function onwin(res,win){
@@ -599,8 +598,9 @@ util.debug(mongourl)
 
 
 function auth(req,res,next) {
+  console.log('**************AUTH')
   main.util.authuser(req,res,onwin(res,function(user,login){
-    util.debug('AUTH:'+JSON.stringify(user))
+    util.debug('\n\n\n\n\n\n\n\nAUTH:'+JSON.stringify(user))
     if( user ) {
       req.user$ = user
       req.login$ = login
@@ -633,7 +633,7 @@ function json(req,res,next) {
 Seneca.init(
   {logger:log,
    entity:mongourl,
-   plugins:['util','user']
+   plugins:['util','user','echo']
   },
   function(err,seneca){
     if( err ) {
@@ -647,7 +647,7 @@ Seneca.init(
 
     app.set('views', __dirname + '/../../../site/views');
     app.set('view engine', 'ejs');
-
+    
 
     app.get('/', main.view.chat.hash)
     app.get('/:chatid', main.view.chat.hash)
@@ -660,7 +660,37 @@ Seneca.init(
     app.use( connect.static( __dirname + '/../../../site/public') )
     
 
-    social.init(app,main.seneca)
+    app.use( main.seneca.service('user',{
+      hosturl:conf.hosturl,
+      prefix:'/api/user',
+      tenant:'stanzr',
+      oauth: {
+        services: {
+          twitter: {
+            keys:conf.keys.twitter
+          },
+          facebook: {version:2,keys:conf.keys.facebook},
+          linkedin: {
+            keys:conf.keys.linkedin
+          }
+        }
+      },
+
+    },function(err,ctxt){
+      eyes.inspect(err,'user router')
+      console.log(ctxt.username+' '+ctxt.userid)
+      if( err ) {
+        failed(ctxt.res,err)
+      }
+      else {
+        var res = ctxt.res
+        res.writeHead( 301, {
+          'Location':"/"+(ctxt.tag?ctxt.tag:'')
+        })
+        res.end()
+      }
+    }))
+
     
     app.use( json )
 

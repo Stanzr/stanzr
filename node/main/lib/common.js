@@ -47,12 +47,15 @@ var eyes     = exports.eyes      = require('eyes')
 var cookies  = exports.cookies   = require('cookies')
 var _        = exports._         = require('underscore')
 var oauth    = exports.oauth     = require('oauth')
+var url      = exports.url       = require('url')
 
 //var oauth    = exports.oauth     = require('../../support/node-oauth')
 
 var linkedin = exports.linkedin  = require('./linkedin_client.js')
 
-var seneca   = exports.seneca    = require('../../support/seneca')
+//var seneca   = exports.seneca    = require('../../support/seneca')
+var seneca   = exports.seneca    = require('seneca')
+
 //var now      = exports.now   = require('../../support/now')
 
 

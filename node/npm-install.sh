@@ -12,7 +12,9 @@ npm install gex
 npm install cookies
 npm install config
 npm install oauth
-npm install linkedin-js
+npm install xml2js
+
+
 
 
 
