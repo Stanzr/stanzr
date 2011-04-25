@@ -2,6 +2,7 @@
 module.exports = {
   conf: {
     env:'staging',
+    hosturl:'http://stanzr.com',
     web: {
       port: 8090
     },
