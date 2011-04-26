@@ -171,54 +171,63 @@ div {
       padding: $lenm;
       float:left;
     }
+  }
 
-    ul.topnav {
-      float: right;
-      list-style-type: none;
-      margin: $lenb $lent;
+  ul.topnav {
+    float: right;
+    list-style-type: none;
+    margin: $lenb $lent;
 
+    &.popup {
+      float: none;
+      padding: 0px;
+      margin: $lenb 0px;
       li {
-        padding: 0px;
-        display: inline;
-
-        a {
-          padding: 5px 7px;
-          background-color: $navbgC;
-          color: $fontnavC;
-        }
-
-        &.navgroup {
-          margin: 0px 1px 0px -5px;
-          a {
-            border-left: 1px solid #999;
-          }
-        }        
-
-        &.navgroup-left {
-          margin: 0px 1px 0px 5px;
-          a.first { @include box-round-left(4px); }
-          a.last { @include box-round-right(4px); }
-          a {
-            margin-right: -5px;
-          }
-        }        
-
-        &.navgroup-right {
-          margin: 0px 1px 0px -5px;
-          a { 
-            border-left: 1px solid #999;
-            @include box-round-right(4px); 
-          }
-        }        
-
-        &.navgroup-alone {
-          margin: 0px 1px 0px 5px;
-          a {
-            @include box-round-left(4px);
-            @include box-round-right(4px);
-          }
-        }        
+        margin: 0px;
       }
+    }
+
+    li {
+      padding: 0px;
+      display: inline;
+
+      a {
+        padding: 5px 7px;
+        background-color: $navbgC;
+        color: $fontnavC;
+      }
+
+      &.navgroup {
+        margin: 0px 1px 0px -5px;
+        a {
+          border-left: 1px solid #999;
+        }
+      }        
+
+      &.navgroup-left {
+        margin: 0px 1px 0px 5px;
+        a.first { @include box-round-left(4px); }
+        a.last { @include box-round-right(4px); }
+        a {
+          margin-right: -5px;
+        }
+      }        
+
+      &.navgroup-right {
+        margin: 0px 1px 0px -5px;
+        a { 
+          border-left: 1px solid #999;
+          @include box-round-right(4px); 
+        }
+      }        
+
+      &.navgroup-alone {
+        margin: 0px 1px 0px 5px;
+        a {
+          @include box-round-left(4px);
+          @include box-round-right(4px);
+        }
+      }        
     }
   }
 
@@ -436,15 +445,40 @@ div.modalbox {
 }
 
 #login_box {
-  height: 200px;
+  height: 250px;
 }
 
 #signup_box {
-  height: 300px;
+  height: 350px;
 }
 
 #hostchat_box {
-  height: 400px;
+  height: 500px;
+  width: 250px;
+
+  input {
+    width: 200px;
+  }
+  textarea {
+    width: 195px;
+    height: 30px;
+  }
+
+  #hostchat_topiclist {
+    overflow: auto;
+    height: 400px;
+    list-style-type: none;
+    margin: 0px;
+    padding: 0px;
+
+    li {
+      margin: 5px 0px 0px 0px;
+    }
+  }
+
+  #hostchat_topicitem_tm {
+    display: none;
+  }
 }
 
 #profile_box {
@@ -483,6 +517,9 @@ div.modalbox {
   padding: 0px;
 }
 
+#rally_editbtn {
+  display:none;
+}
 
 #mostagreed_msg_tm {
   display: none;                    

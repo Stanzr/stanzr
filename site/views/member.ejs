@@ -16,7 +16,7 @@
       <li class="navgroup-right"><a id="head_logout" href="javascript:void(0)">Log out</a></li>
 
       <% } else { %>
-      <% var logintag = val.chatid?'/'+val.chatid:'' %>
+      <% var logintag = '/'+(val.chatid||'member') %>
 
       <li class="navgroup-left">
         <a id="head_linkedin" href="/api/user/oauth/linkedin/login<%=logintag%>" class="first sprite-silhouette16">&nbsp;&nbsp;&nbsp;</a>
@@ -32,19 +32,20 @@
   
   <div class="span-7 leftcol col">
     <div>
-      <h1 id="rally_title">Chat Title Lorem Ipsum Dolor</h1>
+      <h1 id="rally_title"></h1>
       <h2>#<%=val.hashtag%></h2>
+      <a href="javascript:void(0)" id="rally_editbtn" class="textbtn">edit</a>
     </div>
 
     <div>
-      <h2>Moderated by <a id="rally_modname">Person Name</a></h2>
-      <h3 id="rally_modtitle">Title, Company</h3>
+      <h2>Moderated by <a id="rally_modname"></a></h2>
+      <h3 id="rally_modtitle"></h3>
       <a id="rally_modmsgB" href="javascript:void(0)" class="textbtn">send a message</a>
     </div>
 
     <div>
-      <h2>Scheduled for <span id="rally_date">April 12</span></h2>
-      <h3 id="rally_whenstr">from 8-9 PM</h3>
+      <h2>Scheduled for <span id="rally_date"></span></h2>
+      <h3 id="rally_whenstr"></h3>
       <a id="rally_remindB" href="javascript:void(0)" class="textbtn">remind me</a>
       <br />
       <a href="javascript:void(0)">[Like]</a>
@@ -313,7 +314,17 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
 <div id="login_box" class="modalbox">
   <div class="modal_close"><a href="javascript:void(0)" onclick="$('#login_box').hide();" class="textbtn">close</a></div>
 
-  <h2>Log in</h2>
+  <h2>Login Using:</h2>
+  
+  <ul class="topnav popup">
+    <li class="navgroup-left">
+      <a id="head_linkedin" href="/api/user/oauth/linkedin/login<%=logintag%>" class="first sprite-silhouette16">&nbsp;&nbsp;&nbsp;</a>
+      <a id="head_twitter"  href="/api/user/oauth/twitter/login<%=logintag%>" class="sprite-twitter16">&nbsp;&nbsp;&nbsp;</a>
+      <a id="head_facebook" href="/api/user/oauth/facebook/login<%=logintag%>" class="last sprite-facebook16">&nbsp;&nbsp;&nbsp;</a>
+    </li>
+  </ul>
+
+  <h2>Or Login Directly</h2>
   
   Username:<br />
   <input id="login_username"><br />
@@ -330,7 +341,18 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
 <div id="signup_box" class="modalbox">
   <div class="modal_close"><a href="javascript:void(0)" onclick="$('#signup_box').hide()" class="textbtn">close</a></div>
 
-  <h2>Register</h2>
+  <h2>Login Using:</h2>
+  
+  <ul class="topnav popup">
+    <li class="navgroup-left">
+      <a id="head_linkedin" href="/api/user/oauth/linkedin/login<%=logintag%>" class="first sprite-silhouette16">&nbsp;&nbsp;&nbsp;</a>
+      <a id="head_twitter"  href="/api/user/oauth/twitter/login<%=logintag%>" class="sprite-twitter16">&nbsp;&nbsp;&nbsp;</a>
+      <a id="head_facebook" href="/api/user/oauth/facebook/login<%=logintag%>" class="last sprite-facebook16">&nbsp;&nbsp;&nbsp;</a>
+    </li>
+  </ul>
+  
+
+  <h2>Or Register:</h2>
   
   Username:<br />
   <input id="register_username"><br />
@@ -353,6 +375,7 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
 <div id="hostchat_box" class="modalbox">
   <div class="modal_close"><a href="javascript:void(0)" onclick="$('#hostchat_box').hide()" class="textbtn">close</a></div>
 
+  <div id="hostchat_details">
   <h2>Create Your Chat</h2>
   
   Session name:<br />
@@ -368,20 +391,38 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
   <input id="hostchat_hashtag"><br />
 
   Description:<br />
-  <textarea id="hostchat_desc" style="width:150px;height:30px">
+  <textarea id="hostchat_desc">
   </textarea>
   <br />
-  
-  Topics:<br />
-  <input id="hostchat_topic0"><br />
-  <input id="hostchat_topic1"><br />
-  <input id="hostchat_topic2"><br />
-  
-  <br />
 
-  <a href="javascript:void(0)" id="hostchat_createbtn" class="textbtn">create</a>
-  
+  <a href="javascript:void(0)" id="hostchat_createbtn" class="textbtn">next</a>
+  </div>
+
+  <div id="hostchat_topics">
+  <a href="javascript:void(0)" id="hostchat_backbtn" class="textbtn">back</a>
+
+  <h2>Set Your Topics</h2>
+
+  <ul id="hostchat_topiclist">
+  </ul>
+  <br />
+  <a href="javascript:void(0)" id="hostchat_morebtn" class="textbtn">more</a>
+  <a href="javascript:void(0)" id="hostchat_lessbtn" class="textbtn">less</a>
+
+  <li id="hostchat_topicitem_tm" class="hostchat_topic">
+    <label>Topic name</label><br />
+    <input><br />
+
+    <label>Topic description</label><br />
+    <textarea>
+    </textarea>
+  </li>
+
+  <br />
+  <a href="javascript:void(0)" id="hostchat_donebtn" class="textbtn">done</a>
   <p id="hostchat_msg"></p>
+  </div>
+
 </div>
 
 
