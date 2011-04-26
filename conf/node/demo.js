@@ -21,10 +21,8 @@ module.exports = {
         secret:'dzJujZo6jUMExSAWa3qkcQjJwyVAb06QP9veL05nw'
       },
       facebook: {
-        rkey:'0190c50506a037b02a70fb5beafd6c54',
-        rsecret:'cd7aaec2cfeb61335cc2274c007a2329',
-        key:'7d6cb3183bd588c6e94f89d238a0d35b',
-        secret:'5b229dec3143d00ff3411f009401de99'
+        key:'0190c50506a037b02a70fb5beafd6c54',
+        secret:'cd7aaec2cfeb61335cc2274c007a2329',
       }
     }
   }
