@@ -2,6 +2,10 @@
 module.exports = {
   conf: {
     env:'demo',
+    hosturl:'http://stanzr.com',
+    web: {
+      port: 8080
+    },
     mongo: {
       main: {
         server:'flame.mongohq.com',
