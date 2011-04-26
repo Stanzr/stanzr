@@ -244,6 +244,7 @@ $(function(){
 
 
   app.hostchatbox = new HostChatBox()
+  app.avatarbox = new AvatarBox()
 
   app.el.head_hostchat.click(killpopups(app.hostchatbox.hostchat))
   app.el.head_signup.click(killpopups(signupbox))
@@ -301,7 +302,7 @@ $(function(){
         }
         infomsg( msg.nick + ' has joined' )
 
-        addAvatar(from)
+        app.avatarbox.add(from)
       }
       else if( 'topic' == msg.type ) {
         if( app.active_topic != msg.topic ) {
@@ -429,34 +430,6 @@ $(function(){
   })
 
 
-  var avatars = {}
-
-  function addAvatar(avnick) {
-    app.nickmap[avnick] = true
-
-    if( !avatars[avnick] ) {
-      avatars[avnick] = true
-
-      var avatar = $('#miniavatar_tm').clone().attr('id','side_avatar_'+avnick).show()
-      avatar.click(function(){
-        $('#profile_box').show().find('h2').text(avnick)
-      })
-      $('#rally_miniavatars').append(avatar)
-
-      var pcount = $('#rally_pcount').text()
-      pcount = '' == pcount ? 0 : parseInt(pcount,10)
-      pcount++
-      $('#rally_pcount').text(''+pcount)
-
-      var rally_pcount_drilldown = $('#rally_pcount_drilldown')
-      if( 20 < pcount ) {
-        rally_pcount_drilldown.show()
-      }
-      else {
-        rally_pcount_drilldown.hide()
-      }
-    }
-  }
 
 
 
@@ -569,7 +542,7 @@ $(function(){
         for( var i = 0; i < nicks.length; i++ ) {
           var other = nicks[i]
           if( other != nick ) {
-            addAvatar(other)
+            app.avatarbox.add(other)
           }
         }
 
@@ -668,10 +641,65 @@ $(function(){
 
     $('#rally_members').hide()
   }
-
-
   
 });
+
+
+
+function AvatarBox() {
+  var self = this
+  
+  self.el = {
+    dummy: null
+    ,drilldown: $('#avatar_drilldown')
+    ,drillup: $('#avatar_drillup')
+    ,box: $('#avatar_box')
+  }
+
+
+  var avatars = {}
+
+  self.add = function(avnick) {
+    app.nickmap[avnick] = true
+
+    if( !avatars[avnick] ) {
+      avatars[avnick] = true
+
+      var avatar = $('#miniavatar_tm').clone().attr('id','side_avatar_'+avnick).show()
+      avatar.click(function(){
+        $('#profile_box').show().find('h2').text(avnick)
+      })
+      $('#rally_miniavatars').append(avatar)
+
+      var pcount = $('#rally_pcount').text()
+      pcount = '' == pcount ? 0 : parseInt(pcount,10)
+      pcount++
+      $('#rally_pcount').text(''+pcount)
+
+      var rally_pcount_drilldown = $('#rally_pcount_drilldown')
+      if( 20 < pcount ) {
+        rally_pcount_drilldown.show()
+      }
+      else {
+        rally_pcount_drilldown.hide()
+      }
+    }
+  }
+
+
+  self.el.drillup.click(function(){
+    self.el.box.animate({height:140})
+    self.el.drilldown.show()
+    self.el.drillup.css({opacity:0.001})
+  })
+
+  self.el.drilldown.click(function(){
+    self.el.box.animate({height:'100%'})
+    self.el.drilldown.hide()
+    self.el.drillup.css({opacity:1})
+  })
+}
+
 
 
 function HostChatBox() {

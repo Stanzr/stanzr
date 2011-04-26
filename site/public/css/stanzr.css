@@ -243,6 +243,9 @@ div.rightcol {
         div.rightcol div ul.sideposts li span.shares {
           float: left;
           color: #999999; }
+  div.rightcol #avatar_box {
+    height: 140px;
+    overflow: hidden; }
 
 p.post {
   margin: 0px;
@@ -291,6 +294,9 @@ div.modalbox {
 
 #profile_box {
   height: 100px; }
+
+#avatar_drillup {
+  opacity: 0.001; }
 
 #miniavatar_tm {
   display: none; }

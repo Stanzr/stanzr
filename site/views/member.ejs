@@ -46,10 +46,17 @@
     <div>
       <h2>Scheduled for <span id="rally_date"></span></h2>
       <h3 id="rally_whenstr"></h3>
-      <a id="rally_remindB" href="javascript:void(0)" class="textbtn">remind me</a>
       <br />
-      <a href="javascript:void(0)">[Like]</a>
-      <a href="javascript:void(0)">[Tweet]</a>
+
+<!-- AddThis Button BEGIN -->
+<div class="addthis_toolbox addthis_default_style " style="width:250px">
+<a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+<a class="addthis_button_tweet"></a>
+</div>
+<script type="text/javascript">var addthis_config = {"data_track_clickback":true};</script>
+<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid=ra-4da9f0b86183f2b2"></script>
+<!-- AddThis Button END -->
+
     </div>
 
     <div class="chat_description">
@@ -215,7 +222,7 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
             &nbsp;&nbsp;<span class="shares"></span>
             &nbsp;&nbsp;
             &nbsp;&nbsp;<a href="javascript:void(0)" class="imgbtn sprite-approve">&nbsp;</a>
-            &nbsp;&nbsp;<span class="agrees"></span>
+<            &nbsp;&nbsp;<span class="agrees"></span>
 
             <p class="post"></p>
           </div>
@@ -241,10 +248,11 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
 
   <div class="span-7 last rightcol col">
 
-    <div class="clearfix" id="rally_members">
+    <div class="clearfix" id="avatar_box">
       <h2>
         <span id="rally_pcount">0</span> people in this chat 
-        <a id="rally_pcount_drilldown" href="javascript:void(0)" class="imgbtn sprite-drilldown">&nbsp;</a>
+        <a id="avatar_drilldown" class="imgbtn sprite-drilldown">&nbsp;</a>
+        <a id="avatar_drillup" class="imgbtn sprite-drillup">&nbsp;</a>
       </h2>
       
 
@@ -378,7 +386,7 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
   <div id="hostchat_details">
   <h2>Create Your Chat</h2>
   
-  Session name:<br />
+  Event title:<br />
   <input id="hostchat_title"><br />
 
   Moderated by:<br />
