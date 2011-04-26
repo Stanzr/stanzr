@@ -22,11 +22,11 @@ var main = {}
 var MAX_INFO_LIST = 30
 
 
+/*
 process.on('uncaughtException', function (err) {
-  eyes.inspect(err)
   log('error','uncaught',err)
 });
-
+*/
 
 function sendcode(code,res) {
   try {
