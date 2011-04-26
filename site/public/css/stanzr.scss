@@ -413,6 +413,14 @@ div {
         }
       }
     }
+
+    #avatar_box {
+      height: 140px;
+      overflow: hidden;
+
+    }      
+
+
   }
 }
 
@@ -487,6 +495,9 @@ div.modalbox {
 
 
 
+#avatar_drillup {
+  opacity:0.001;
+}
 
 #miniavatar_tm {
    display: none;
