@@ -41,7 +41,6 @@ h3 {
 h4 {
   font-size: 13px;
   font-weight: bold;
-  float: left;
   margin: 0px; }
 
 p {
@@ -147,7 +146,7 @@ div.midcol {
   width: 450px;
   float: left; }
   div.midcol > div {
-    padding: 10px 5px 10px 15px; }
+    padding: 10px; }
   div.midcol div.topichead {
     background-color: #d1cabf;
     padding: 10px; }
@@ -188,16 +187,23 @@ div.midcol {
       margin: 0px;
       padding: 0px; }
       div.midcol div.postsarea ul.topicposts li.message {
-        margin: 10px 0px;
-        border: 1px solid #ccc;
-        padding: 10px;
+        -moz-box-shadow: 1px 1px 3px #bfbfbf;
+        -webkit-box-shadow: 1px 1px 3px #bfbfbf;
+        box-shadow: 1px 1px 3px #bfbfbf;
+        margin: 0 0 3px 0;
+        padding: 5px;
         background-color: #fff; }
         div.midcol div.postsarea ul.topicposts li.message div.post_avatar {
           width: 32px;
           float: left; }
         div.midcol div.postsarea ul.topicposts li.message div.post_content {
-          width: 280px;
-          float: right; }
+          width: 340px;
+          float: left;
+          margin-left: 10px; }
+          div.midcol div.postsarea ul.topicposts li.message div.post_content h4 {
+            float: left; }
+          div.midcol div.postsarea ul.topicposts li.message div.post_content .post_actions {
+            float: right; }
         div.midcol div.postsarea ul.topicposts li.message span.shares {
           color: #999999; }
         div.midcol div.postsarea ul.topicposts li.message span.agrees {
@@ -209,13 +215,15 @@ div.midcol {
           margin: 0px;
           padding: 0px; }
   div.midcol div.topicsend {
-    display: none; }
+    display: none;
+    padding: 0px 5px 5px 10px; }
     div.midcol div.topicsend #post_text {
-      border: 1px solid #ccc;
-      font-size: 16px;
+      border: 1px solid #999;
+      font-size: 13px;
       background-color: #fff;
-      width: 300px; }
-    div.midcol div.topicsend p.tweetout {
+      width: 370px;
+      padding: 2px; }
+    div.midcol div.topicsend div.tweetout {
       color: #999999; }
 div.rightcol {
   background-color: white;

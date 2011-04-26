@@ -215,15 +215,15 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
         <li class="message clearfix">
           <div class="post_avatar sprite-silhouette32"></div>
           <div class="post_content">
-            <h4></h4>
-
-            &nbsp;&nbsp;
-            &nbsp;&nbsp;<a href="javascript:void(0)" class="imgbtn sprite-at-reply">&nbsp;</a>
-            &nbsp;&nbsp;<span class="shares"></span>
-            &nbsp;&nbsp;
-            &nbsp;&nbsp;<a href="javascript:void(0)" class="imgbtn sprite-approve">&nbsp;</a>
-<            &nbsp;&nbsp;<span class="agrees"></span>
-
+            <div class="clearfix">
+              <h4></h4>
+              <div class="post_actions">
+                <a href="javascript:void(0)" class="imgbtn sprite-at-reply">&nbsp;</a>
+                <span class="shares"></span>
+                <a href="javascript:void(0)" class="imgbtn sprite-approve">&nbsp;</a>
+                <span class="agrees"></span>
+              </div>            
+            </div>
             <p class="post"></p>
           </div>
         </li>
@@ -237,9 +237,9 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
     <div class="topicsend">
       <input type="text" id="post_text" >
       <input type="button" value="Send" id="post_send">
-      <p class="tweetout">
+      <div class="tweetout">
         <input type="checkbox" checked="yes"> Also post on Twitter - appends <span id="rally_hash">#<%=val.hashtag%></span> 
-      </p>
+      </div>
     </div>
 
 

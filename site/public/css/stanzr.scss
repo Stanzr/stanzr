@@ -65,6 +65,12 @@ $fontnavC:  #fff;
   box-shadow: 1px 1px 3px #666; 
 }
 
+@mixin messageshadow {
+  -moz-box-shadow: 1px 1px 3px #bfbfbf; 
+  -webkit-box-shadow: 1px 1px 3px #bfbfbf;
+  box-shadow: 1px 1px 3px #bfbfbf; 
+}
+
 @mixin clearfix {
   display: inline-block;
   &:after {
@@ -138,7 +144,6 @@ h3 {
 h4 {
   font-size: 13px;
   font-weight: bold;
-  float: left;
   margin: 0px;
 }
 
@@ -259,7 +264,7 @@ div {
     float: left;
 
     &>div {
-      padding: $lens 5px $lens $lenm;
+      padding: 10px
     }
 
     div.topichead {
@@ -320,9 +325,9 @@ div {
         padding: 0px;
     
         li.message {
-          margin: $lens 0px;
-          border: 1px solid #ccc;
-          padding: $lens;
+          @include messageshadow;
+          margin: 0 0 3px 0;
+          padding: 5px;
           background-color: #fff;
 
 
@@ -332,10 +337,14 @@ div {
           }
 
           div.post_content {
-            width: 280px;
-            float: right;
+            width: 340px;
+            float: left;
+            margin-left: 10px;
+            
+            h4 {float: left;}
+            
+            .post_actions {float: right;}
           }
-
 
           span.shares {
             color: $fontmetaC;
@@ -361,15 +370,17 @@ div {
 
     div.topicsend {
       display: none;
+      padding: 0px 5px 5px 10px;
 
       #post_text {
-        border: 1px solid #ccc;
-        font-size: 16px;
+        border: 1px solid #999;
+        font-size: 13px;
         background-color: #fff;
-        width: 300px;
+        width: 370px;
+        padding: 2px;
       }
 
-      p.tweetout {
+      div.tweetout {
         color: $fontmetaC;
       }
     }
