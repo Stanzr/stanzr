@@ -270,15 +270,15 @@ div {
     div.topichead {
       background-color: $topicheadbgC;
       padding: 10px;
+      
+      h4 {width: 375px; float: left;}
 
       p.rally_topicdesc {
-        float: left;
-        width: 360px;
         margin: 0px;
-        clear:both;
       }
 
       div.rally_gotoactive {
+        @include box-round;
         display: none;
         background-color: #575450;
         clear:both;
@@ -308,7 +308,6 @@ div {
       div.navbox {
         width: 50px;
         float: right;
-        margin-bottom: 5px;
       }
     }
 
@@ -329,8 +328,7 @@ div {
           margin: 0 0 3px 0;
           padding: 5px;
           background-color: #fff;
-
-
+          
           div.post_avatar {
             width: 32px;
             float: left;

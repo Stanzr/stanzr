@@ -150,12 +150,22 @@ div.midcol {
   div.midcol div.topichead {
     background-color: #d1cabf;
     padding: 10px; }
+    div.midcol div.topichead h4 {
+      width: 375px;
+      float: left; }
     div.midcol div.topichead p.rally_topicdesc {
-      float: left;
-      width: 360px;
-      margin: 0px;
-      clear: both; }
+      margin: 0px; }
     div.midcol div.topichead div.rally_gotoactive {
+      -moz-border-radius: 4px;
+      /* FF1+ */
+      -webkit-border-radius: 4px;
+      /* Saf3-4, iOS 1+, Android 1.5+ */
+      border-radius: 4px;
+      /* Opera 10.5, IE9, Saf5, Chrome, FF4 */
+      /* useful if you don't want a bg color from leaking outside the border: */
+      -moz-background-clip: padding;
+      -webkit-background-clip: padding-box;
+      background-clip: padding-box;
       display: none;
       background-color: #575450;
       clear: both;
@@ -176,8 +186,7 @@ div.midcol {
       margin-top: 5px; }
     div.midcol div.topichead div.navbox {
       width: 50px;
-      float: right;
-      margin-bottom: 5px; }
+      float: right; }
   div.midcol div.postsarea {
     overflow: auto; }
     div.midcol div.postsarea #posts_tm {
