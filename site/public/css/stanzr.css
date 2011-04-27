@@ -244,7 +244,9 @@ div.rightcol {
   overflow: auto; }
   div.rightcol div.sidesection {
     padding: 10px 15px;
-    border-bottom: 1px solid #e2e2e2; }
+    border-bottom: 1px solid #e2e2e2;
+    height: 140px;
+    overflow: hidden; }
     div.rightcol div.sidesection h2 {
       float: left; }
     div.rightcol div.sidesection .sidenav {
@@ -267,9 +269,6 @@ div.rightcol {
         div.rightcol div.sidesection ul.sideposts li span.shares {
           float: left;
           color: #999999; }
-  div.rightcol #avatar_box {
-    /*       height: 140px; */
-    overflow: hidden; }
 
 p.post {
   margin: 0px;
@@ -345,7 +344,13 @@ div.modalbox {
   height: 100px; }
 
 #avatar_drillup {
-  opacity: 0.001; }
+  display: none; }
+
+#agree_drillup {
+  display: none; }
+
+#reply_drillup {
+  display: none; }
 
 #miniavatar_tm {
   display: none; }
@@ -373,9 +378,6 @@ div.modalbox {
 
 #mostagreed_msg_tm {
   display: none; }
-
-#mostagreed_drillup {
-  opacity: 0.001; }
 
 #head_nick_img {
   background-position: 7px -746px;

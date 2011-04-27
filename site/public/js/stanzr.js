@@ -169,7 +169,7 @@ var app = {
   displayagrees: function(start){
     app.agrees_start = start || app.agrees_start
 
-
+/*
     var mostagreed_drilldown = $('#mostagreed_drilldown')
     if( 3 < app.agrees.length && app.agrees_start < app.agrees.length ) {
       mostagreed_drilldown.show()
@@ -185,7 +185,7 @@ var app = {
     else {
       mostagreed_drillup.css({opacity:0.001})
     }
-
+*/
 
     var rally_mostagreed = $('#rally_mostagreed')
     var mostagreed_msg_tm = $('#mostagreed_msg_tm')
@@ -214,6 +214,28 @@ var app = {
         }
       }
 
+    }
+  },
+
+  rightbar: {
+    box: {},
+
+    show: function(others) {
+      console.log(others)
+
+      for( var i = 0; i < others.length; i++ ) {
+        var box = app.rightbar.box[others[i]]
+        box && box.show()
+      }
+    },
+    
+    hide: function(others) {
+      console.log(others)
+
+      for( var i = 0; i < others.length; i++ ) {
+        var box = app.rightbar.box[others[i]]
+        box && box.hide()
+      }
     }
   }
   
@@ -244,7 +266,10 @@ $(function(){
 
 
   app.hostchatbox = new HostChatBox()
-  app.avatarbox = new AvatarBox()
+
+  app.rightbar.box.avatar = new AvatarBox()
+  app.rightbar.box.agree  = new AgreeBox()
+  app.rightbar.box.reply  = new ReplyBox()
 
   app.el.head_hostchat.click(killpopups(app.hostchatbox.hostchat))
   app.el.head_signup.click(killpopups(signupbox))
@@ -268,9 +293,6 @@ $(function(){
   $('#mostagreed_drilldown').click(function(){
     app.displayagrees(app.agrees_start+3)
   })
-
-
-
 
 
 
@@ -302,7 +324,7 @@ $(function(){
         }
         infomsg( msg.nick + ' has joined' )
 
-        app.avatarbox.add(from)
+        app.rightbar.box.avatar.add(from)
       }
       else if( 'topic' == msg.type ) {
         if( app.active_topic != msg.topic ) {
@@ -542,7 +564,7 @@ $(function(){
         for( var i = 0; i < nicks.length; i++ ) {
           var other = nicks[i]
           if( other != nick ) {
-            app.avatarbox.add(other)
+            app.rightbar.box.avatar.add(other)
           }
         }
 
@@ -612,7 +634,7 @@ $(function(){
         $('#rally_whenstr').text(res.whenstr)
         $('#rally_desc').text(res.desc)
 
-        if( app.chat.modnicks[nick] ) {
+        if( app.chat.modnicks && app.chat.modnicks[nick] ) {
           $('#rally_editbtn').show().click(app.hostchatbox.editchat)
         }
 
@@ -646,6 +668,68 @@ $(function(){
 
 
 
+function RightbarBox() {
+  this.hide = function() {
+    this.el.box.slideUp();
+  }
+
+  this.show = function() {
+    this.el.box.slideDown();
+  }
+
+  this.init = function(others) {
+    var self = this
+    self.el.drillup.click(function(){
+      self.el.box.animate({height:140})
+      setTimeout(function(){
+        app.rightbar.show(others)
+      },200)
+      self.el.drilldown.show()
+      self.el.drillup.hide()
+    })
+
+    self.el.drilldown.click(function(){
+      app.rightbar.hide(others)
+      setTimeout(function(){
+        self.el.box.animate({height:$('div.rightcol').height()-21})
+      },200)
+      self.el.drilldown.hide()
+      self.el.drillup.css({display:'inline-block'})
+    })
+  }
+}
+
+
+function AgreeBox() {
+  var self = this
+
+  self.el = {
+    dummy: null
+    ,drilldown: $('#agree_drilldown')
+    ,drillup: $('#agree_drillup')
+    ,box: $('#agree_box')
+  }
+
+  self.init(['reply','avatar'])
+}
+AgreeBox.prototype = new RightbarBox()
+
+
+function ReplyBox() {
+  var self = this
+
+  self.el = {
+    dummy: null
+    ,drilldown: $('#reply_drilldown')
+    ,drillup: $('#reply_drillup')
+    ,box: $('#reply_box')
+  }
+
+  self.init(['agree','avatar'])
+}
+ReplyBox.prototype = new RightbarBox()
+
+
 function AvatarBox() {
   var self = this
   
@@ -656,6 +740,7 @@ function AvatarBox() {
     ,box: $('#avatar_box')
   }
 
+  self.init(['agree','reply'])
 
   var avatars = {}
 
@@ -687,19 +772,9 @@ function AvatarBox() {
   }
 
 
-  self.el.drillup.click(function(){
-    self.el.box.animate({height:140})
-    self.el.drilldown.show()
-    self.el.drillup.css({opacity:0.001})
-  })
 
-  self.el.drilldown.click(function(){
-    self.el.box.animate({height:'100%'})
-    self.el.drilldown.hide()
-    self.el.drillup.css({opacity:1})
-  })
 }
-
+AvatarBox.prototype = new RightbarBox()
 
 
 function HostChatBox() {

@@ -397,6 +397,8 @@ div {
 
     div.sidesection {
       @include sidecont();
+      height: 140px;
+      overflow: hidden;
 
       h2 {float: left;}
       .sidenav {float: right;}
@@ -430,13 +432,6 @@ div {
         }
       }
     }
-
-    #avatar_box {
-/*       height: 140px; */
-      overflow: hidden;
-    }      
-
-
   }
 }
 
@@ -531,7 +526,13 @@ div.modalbox {
 
 
 #avatar_drillup {
-  opacity:0.001;
+  display: none;
+}
+#agree_drillup {
+  display: none;
+}
+#reply_drillup {
+  display: none;
 }
 
 #miniavatar_tm {
@@ -571,9 +572,6 @@ div.modalbox {
   display: none;                    
 }
 
-#mostagreed_drillup {
-  opacity: 0.001;
-}
 
 
 #head_nick_img {
