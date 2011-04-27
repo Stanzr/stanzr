@@ -128,7 +128,8 @@ var app = {
       contentType:'application/json',
       data:'{}',
       dataType:'json',
-      success:function(res){}
+      success:function(res){
+      }
     })
   },
 
@@ -252,7 +253,7 @@ $(function(){
         var msgid = msg.msgid
 
         function incmsg(msg) {
-          msg.a = (msg.a || 0) + 1
+          msg.a = (msg.a || 0) + (nick == msg.from ? 0 : 1)
           msg.an = msg.an || []
           msg.an.push(from)
           msg.an = _.uniq(msg.an)
@@ -431,8 +432,8 @@ $(function(){
           approve.css({background:'transparent'})
         })
 
-        msg.a = msg.a || 0
         msg.an = _.include( (msg.an = msg.an || []), nick )
+        msg.a = msg.an.length
 
         post.find('.agrees').text('x'+msg.a)
 
