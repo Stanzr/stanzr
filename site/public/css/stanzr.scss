@@ -39,26 +39,6 @@ $fontnavC:  #fff;
   background-clip: padding-box; 
 }
 
-@mixin box-round-left($size) {
-  -moz-border-top-left-radius: $size;
-  -webkit-border-top-left-radius: $size;
-  border-top-left-radius: $size;
-
-  -moz-border-bottom-left-radius: $size;
-  -webkit-border-bottom-left-radius: $size;
-  border-bottom-left-radius: $size;
-}
-
-@mixin box-round-right($size) {
-  -moz-border-top-right-radius: $size;
-  -webkit-border-top-right-radius: $size;
-  border-top-right-radius: $size;
-
-  -moz-border-bottom-right-radius: $size;
-  -webkit-border-bottom-right-radius: $size;
-  border-bottom-right-radius: $size;
-}
-
 @mixin modalshadow {
   -moz-box-shadow: 1px 1px 3px #666; 
   -webkit-box-shadow: 1px 1px 3px #666;
@@ -179,46 +159,16 @@ div {
 
       li {
         padding: 0px;
+        margin: 0px 4px 0 0;
         display: inline;
 
         a {
-          padding: 5px 7px;
-          background-color: $navbgC;
-          color: $fontnavC;
-        }
-
-        &.navgroup {
-          margin: 0px 1px 0px -5px;
-          a {
-            border-left: 1px solid #999;
-          }
-        }        
-
-        &.navgroup-left {
-          margin: 0px 1px 0px 5px;
-          a.first { @include box-round-left(4px); }
-          a.last { @include box-round-right(4px); }
-          a {
-            margin-right: -5px;
-          }
-        }        
-
-        &.navgroup-right {
-          margin: 0px 1px 0px -5px;
-          a { 
-            border-left: 1px solid #999;
-            @include box-round-right(4px); 
-          }
-        }        
-
-        &.navgroup-alone {
-          margin: 0px 1px 0px 5px;
-          a {
-            @include box-round-left(4px);
-            @include box-round-right(4px);
-          }
-        }        
-      }
+         padding: 5px 7px;
+         background-color: $navbgC;
+         color: $fontnavC;
+         @include box-round;
+       }
+     }
     }
   }
 
@@ -490,23 +440,4 @@ div.modalbox {
 
 #mostagreed_drillup {
   opacity: 0.001;
-}
-
-
-#head_nick_img {
-  background-position: 7px -616px; 
-  margin-right: -5px;
-  width: 40px;
-}
-
-#head_linkedin {
-  background-position: 7px -616px; 
-}
-
-#head_twitter {
-  background-position: 7px -834px;
-}
-
-#head_facebook {
-  background-position: 7px -256px;
 }

@@ -4,28 +4,19 @@
     <h1>Stanzr</h1>
 
     <ul class="topnav">
-      <li class="navgroup navgroup-alone"><a id="head_hostchat" href="javascript:void(0)">Host your own</a></li>
+      <li><a id="head_hostchat" href="javascript:void(0)">Host your own</a></li>
 
+      <% var logintag = val.chatid?'/'+val.chatid:'' %>
+      <li><a id="head_linkedin" href="/api/user/oauth/linkedin/login<%=logintag%>">-L-</a></li>
+      <li><a id="head_twitter"  href="/api/user/oauth/twitter/login<%=logintag%>">-T-</a></li>
+      <li><a id="head_facebook" href="/api/user/oauth/facebook/login<%=logintag%>">-F-</a></li>
 
       <% if( val.nick ) { %>
-      <li class="navgroup-left">
-        <a id="head_nick_img" href="javascript:void(0)" class="first sprite-silhouette16">&nbsp;&nbsp;&nbsp;</a>
-        <a id="head_nick" href="javascript:void(0)"><%=val.nick%></a>
-      </li>
-      <li class="navgroup"><a id="head_history" href="javascript:void(0)">History</a></li>
-      <li class="navgroup-right"><a id="head_logout" href="javascript:void(0)">Log out</a></li>
-
+      <li><a id="head_nick" href="javascript:void(0)"><%=val.nick%></a></li>
+      <li><a id="head_logout" href="javascript:void(0)">Log out</a></li>
       <% } else { %>
-      <% var logintag = val.chatid?'/'+val.chatid:'' %>
-
-      <li class="navgroup-left">
-        <a id="head_linkedin" href="/api/user/oauth/linkedin/login<%=logintag%>" class="first sprite-silhouette16">&nbsp;&nbsp;&nbsp;</a>
-        <a id="head_twitter"  href="/api/user/oauth/twitter/login<%=logintag%>" class="sprite-twitter16">&nbsp;&nbsp;&nbsp;</a>
-        <a id="head_facebook" href="/api/user/oauth/facebook/login<%=logintag%>" class="sprite-facebook16">&nbsp;&nbsp;&nbsp;</a>
-        <a id="head_signup" href="javascript:void(0)" class="last">Sign up</a></li>
-      </li>
-
-      <li class="navgroup-alone"><a id="head_login" href="javascript:void(0)">Log in</a></li>
+      <li><a id="head_signup" href="javascript:void(0)">Sign up</a></li>
+      <li><a id="head_login" href="javascript:void(0)">Log in</a></li>
       <% } %>
     </ul>
   </div>
