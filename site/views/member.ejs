@@ -19,7 +19,7 @@
       <% var logintag = '/'+(val.chatid||'member') %>
 
       <li class="navgroup-left">
-        <a id="head_linkedin" href="/api/user/oauth/linkedin/login<%=logintag%>" class="first sprite-silhouette16">&nbsp;&nbsp;&nbsp;</a>
+        <a id="head_linkedin" href="/api/user/oauth/linkedin/login<%=logintag%>" class="first sprite-linkedin16">&nbsp;&nbsp;&nbsp;</a>
         <a id="head_twitter"  href="/api/user/oauth/twitter/login<%=logintag%>" class="sprite-twitter16">&nbsp;&nbsp;&nbsp;</a>
         <a id="head_facebook" href="/api/user/oauth/facebook/login<%=logintag%>" class="sprite-facebook16">&nbsp;&nbsp;&nbsp;</a>
         <a id="head_signup" href="javascript:void(0)" class="last">Sign up</a>
@@ -325,20 +325,27 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
 
   <h2>Login Using:</h2>
   
-  <ul class="topnav popup">
-    <li class="navgroup-left">
-      <a id="head_linkedin" href="/api/user/oauth/linkedin/login<%=logintag%>" class="first sprite-silhouette16">&nbsp;&nbsp;&nbsp;</a>
-      <a id="head_twitter"  href="/api/user/oauth/twitter/login<%=logintag%>" class="sprite-twitter16">&nbsp;&nbsp;&nbsp;</a>
-      <a id="head_facebook" href="/api/user/oauth/facebook/login<%=logintag%>" class="last sprite-facebook16">&nbsp;&nbsp;&nbsp;</a>
-    </li>
-  </ul>
+  <div class="auth_vertlist">
+      <div>
+        <a id="head_linkedin" href="/api/user/oauth/linkedin/login<%=logintag%>" class="auth_img sprite-linkedin16">&nbsp;&nbsp;&nbsp;</a>
+        <a id="head_linkedin" href="/api/user/oauth/linkedin/login<%=logintag%>">LinkedIn</a>
+      </div>
+      <div>
+        <a id="head_twitter"  href="/api/user/oauth/twitter/login<%=logintag%>" class="auth_img sprite-twitter16">&nbsp;&nbsp;&nbsp;</a>
+        <a id="head_twitter"  href="/api/user/oauth/twitter/login<%=logintag%>">Twitter</a>
+      </div>
+      <div>      
+        <a id="head_facebook" href="/api/user/oauth/facebook/login<%=logintag%>" class="auth_img sprite-facebook16">&nbsp;&nbsp;&nbsp;</a>
+        <a id="head_facebook" href="/api/user/oauth/facebook/login<%=logintag%>">Facebook</a>      
+      </div>
+  </div>
 
   <h2>Or Login Directly</h2>
   
-  Username:<br />
-  <input id="login_username"><br />
+  <label for="login_username">Username</label>
+  <input id="login_username">
   
-  Password:<br />
+  <label for="login_password">Password</label>
   <input type="password" id="login_password"><br />
   
   <a href="javascript:void(0)" id="login_loginbtn" class="textbtn">login</a>
@@ -351,31 +358,37 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
   <div class="modal_close"><a href="javascript:void(0)" onclick="$('#signup_box').hide()" class="textbtn">close</a></div>
 
   <h2>Login Using:</h2>
-  
-  <ul class="topnav popup">
-    <li class="navgroup-left">
-      <a id="head_linkedin" href="/api/user/oauth/linkedin/login<%=logintag%>" class="first sprite-silhouette16">&nbsp;&nbsp;&nbsp;</a>
-      <a id="head_twitter"  href="/api/user/oauth/twitter/login<%=logintag%>" class="sprite-twitter16">&nbsp;&nbsp;&nbsp;</a>
-      <a id="head_facebook" href="/api/user/oauth/facebook/login<%=logintag%>" class="last sprite-facebook16">&nbsp;&nbsp;&nbsp;</a>
-    </li>
-  </ul>
-  
+
+  <div class="auth_vertlist">
+      <div>
+        <a id="head_linkedin" href="/api/user/oauth/linkedin/login<%=logintag%>" class="auth_img sprite-linkedin16">&nbsp;&nbsp;&nbsp;</a>
+        <a id="head_linkedin" href="/api/user/oauth/linkedin/login<%=logintag%>">LinkedIn</a>
+      </div>
+      <div>
+        <a id="head_twitter"  href="/api/user/oauth/twitter/login<%=logintag%>" class="auth_img sprite-twitter16">&nbsp;&nbsp;&nbsp;</a>
+        <a id="head_twitter"  href="/api/user/oauth/twitter/login<%=logintag%>">Twitter</a>
+      </div>
+      <div>      
+        <a id="head_facebook" href="/api/user/oauth/facebook/login<%=logintag%>" class="auth_img sprite-facebook16">&nbsp;&nbsp;&nbsp;</a>
+        <a id="head_facebook" href="/api/user/oauth/facebook/login<%=logintag%>">Facebook</a>      
+      </div>
+  </div>
 
   <h2>Or Register:</h2>
   
-  Username:<br />
-  <input id="register_username"><br />
+  <label for="register_username">Username</label>
+  <input id="register_username">
 
-  Email:<br />
-  <input id="register_email"><br />
+  <label for="register_email">Email</label>
+  <input id="register_email">
   
-  Password:<br />
-  <input type="password" id="register_password"><br />
+  <label for="register_password">Password</label>
+  <input type="password" id="register_password">
 
-  Repeat Password:<br />
+  <label for="register_repeat">Repeat Password</label>
   <input type="password" id="register_repeat"><br />
   
-  <a href="javascript:void(0)" id="register_registerbtn" class="textbtn">register</a>
+  <a href="javascript:void(0)" id="register_registerbtn" class="textbtn">Register</a>
   
   <p id="register_msg"></p>
 </div>
@@ -387,19 +400,19 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
   <div id="hostchat_details">
   <h2>Create Your Chat</h2>
   
-  Event title:<br />
-  <input id="hostchat_title"><br />
+  <label for="hostchat_title">Event title</label>
+  <input id="hostchat_title">
 
-  Moderated by:<br />
+  <label for="hostchat_modname">Moderated by</label>
   <input id="hostchat_modname"><br />
 
-  Scheduled for:<br />
+  <label for="hostchat_whenstr">Scheduled for</label>
   <input id="hostchat_whenstr"><br />
 
-  Twitter hashtag:<br />
+  <label for="hostchat_hashtag">Twitter hashtag</label>
   <input id="hostchat_hashtag"><br />
 
-  Description:<br />
+  <label for="hostchat_desc">Description</label>
   <textarea id="hostchat_desc">
   </textarea>
   <br />
@@ -419,10 +432,10 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
   <a href="javascript:void(0)" id="hostchat_lessbtn" class="textbtn">less</a>
 
   <li id="hostchat_topicitem_tm" class="hostchat_topic">
-    <label>Topic name</label><br />
+    <label>Topic name</label>
     <input><br />
 
-    <label>Topic description</label><br />
+    <label>Topic description</label>
     <textarea>
     </textarea>
   </li>

@@ -3,7 +3,7 @@ a {
   a:hover {
     text-decoration: underline; }
   a.textbtn {
-    color: #9e9e9e; }
+    color: #268cbf; }
   a.imgbtn {
     display: inline-block;
     width: 15px;
@@ -47,7 +47,8 @@ p {
   margin: 0 0 1em 0; }
 
 input {
-  font-size: 15px; }
+  font-size: 13px;
+  padding: 2px; }
 
 .content, .container {
   width: 980px;
@@ -79,7 +80,8 @@ div ul.topnav {
     div ul.topnav li a {
       padding: 5px 7px;
       background-color: #666666;
-      color: white; }
+      color: white;
+      text-decoration: none; }
     div ul.topnav li.navgroup {
       margin: 0px 1px 0px -5px; }
       div ul.topnav li.navgroup a {
@@ -196,9 +198,9 @@ div.midcol {
       margin: 0px;
       padding: 0px; }
       div.midcol div.postsarea ul.topicposts li.message {
-        -moz-box-shadow: 1px 1px 3px #bfbfbf;
-        -webkit-box-shadow: 1px 1px 3px #bfbfbf;
-        box-shadow: 1px 1px 3px #bfbfbf;
+        -moz-box-shadow: 0px 1px 3px #bfbfbf;
+        -webkit-box-shadow: 0px 1px 3px #bfbfbf;
+        box-shadow: 0px 1px 3px #bfbfbf;
         margin: 0 0 3px 0;
         padding: 5px;
         background-color: #fff; }
@@ -242,13 +244,13 @@ div.rightcol {
   div.rightcol div.sidesection {
     padding: 10px 15px;
     border-bottom: 1px solid #e2e2e2; }
-    div.rightcol div.sidesection#rally_miniavatars {
-      border: none; }
     div.rightcol div.sidesection h2 {
       float: left; }
     div.rightcol div.sidesection .sidenav {
       float: right; }
-    div.rightcol div.sidesection.miniavatar {
+    div.rightcol div.sidesection#rally_miniavatars {
+      border: none; }
+    div.rightcol div.sidesection sidesection.miniavatar {
       width: 32px;
       height: 32px;
       float: left;
@@ -265,7 +267,7 @@ div.rightcol {
           float: left;
           color: #999999; }
   div.rightcol #avatar_box {
-    height: 140px;
+    /*       height: 140px; */
     overflow: hidden; }
 
 p.post {
@@ -273,10 +275,12 @@ p.post {
   clear: both; }
 
 div.modalbox {
-  -moz-box-shadow: 1px 1px 3px #666;
-  -webkit-box-shadow: 1px 1px 3px #666;
-  box-shadow: 1px 1px 3px #666;
-  background-color: #e6e6e6;
+  -moz-box-shadow: 0px 1px 3px #666;
+  -webkit-box-shadow: 0px 1px 3px #666;
+  box-shadow: 0px 1px 3px #666;
+  /*   background-color: $modalbgC; */
+  background-repeat: repeat-x repeat-y;
+  background-image: url(/img/background_noise.png);
   padding: 20px;
   display: none;
   position: absolute;
@@ -287,12 +291,25 @@ div.modalbox {
     position: absolute;
     top: 5px;
     left: 200px; }
+  div.modalbox label {
+    display: block;
+    clear: both;
+    margin: 10px 0 0 0;
+    font-weight: bold; }
 
 #login_box {
-  height: 250px; }
+  /*   height: 250px; */ }
 
 #signup_box {
-  height: 350px; }
+  /*   height: 350px; */ }
+
+.auth_vertlist {
+  margin: 10px 0 25px 0; }
+  .auth_vertlist div {
+    margin-bottom: 10px; }
+
+.auth_img {
+  padding: 5px 7px; }
 
 #hostchat_box {
   height: 500px;
@@ -355,10 +372,10 @@ div.modalbox {
   width: 40px; }
 
 #head_linkedin {
-  background-position: 7px -616px; }
+  background-position: 7px -390px; }
 
 #head_twitter {
-  background-position: 7px -834px; }
+  background-position: 7px -963px; }
 
 #head_facebook {
-  background-position: 7px -256px; }
+  background-position: 7px -255px; }
