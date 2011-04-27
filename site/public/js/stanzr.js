@@ -432,7 +432,9 @@ $(function(){
           approve.css({background:'transparent'})
         })
 
-        msg.an = _.include( (msg.an = msg.an || []), nick )
+        msg.an = msg.an || []
+        msg.an.push(nick)
+        msg.an = _.uniq(msg.an)
         msg.a = msg.an.length
 
         post.find('.agrees').text('x'+msg.a)
