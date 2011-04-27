@@ -243,7 +243,7 @@ div.rightcol {
         div.rightcol div ul.sideposts li span.shares {
           float: left;
           color: #999999; }
-  div.rightcol #avatar_box {
+  div.rightcol.rightbarbox {
     height: 140px;
     overflow: hidden; }
 
@@ -298,6 +298,12 @@ div.modalbox {
 #avatar_drillup {
   opacity: 0.001; }
 
+#agree_drillup {
+  opacity: 0.001; }
+
+#reply_drillup {
+  opacity: 0.001; }
+
 #miniavatar_tm {
   display: none; }
 
@@ -324,9 +330,6 @@ div.modalbox {
 
 #mostagreed_msg_tm {
   display: none; }
-
-#mostagreed_drillup {
-  opacity: 0.001; }
 
 #head_nick_img {
   background-position: 7px -616px;
