@@ -239,25 +239,29 @@ div.rightcol {
   width: 265px;
   float: left;
   overflow: auto; }
-  div.rightcol div {
+  div.rightcol div.sidesection {
     padding: 10px 15px;
     border-bottom: 1px solid #e2e2e2; }
-    div.rightcol div#rally_miniavatars {
+    div.rightcol div.sidesection#rally_miniavatars {
       border: none; }
-    div.rightcol div.miniavatar {
+    div.rightcol div.sidesection h2 {
+      float: left; }
+    div.rightcol div.sidesection .sidenav {
+      float: right; }
+    div.rightcol div.sidesection.miniavatar {
       width: 32px;
       height: 32px;
       float: left;
       margin: 0px 8px 8px 0px;
       padding: 0px;
       border: none; }
-    div.rightcol div ul.sideposts {
+    div.rightcol div.sidesection ul.sideposts {
       list-style-type: none;
       margin: 0px;
       padding: 0px; }
-      div.rightcol div ul.sideposts li {
+      div.rightcol div.sidesection ul.sideposts li {
         margin: 8px 0 8px 0; }
-        div.rightcol div ul.sideposts li span.shares {
+        div.rightcol div.sidesection ul.sideposts li span.shares {
           float: left;
           color: #999999; }
   div.rightcol #avatar_box {

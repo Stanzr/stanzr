@@ -391,12 +391,15 @@ div {
     float: left;
     overflow: auto;
 
-    div {
+    div.sidesection {
       @include sidecont();
 
       &#rally_miniavatars {
         border: none;
       }
+      
+      h2 {float: left;}
+      .sidenav {float: right;}
 
       &.miniavatar {
         width: 32px;
