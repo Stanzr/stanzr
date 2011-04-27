@@ -3,7 +3,8 @@ a {
   a:hover {
     text-decoration: underline; }
   a.textbtn {
-    color: #268cbf; }
+    color: #268cbf;
+    font-weight: bold; }
   a.imgbtn {
     display: inline-block;
     width: 15px;
@@ -289,8 +290,14 @@ div.modalbox {
   width: 200px; }
   div.modalbox div.modal_close {
     position: absolute;
-    top: 5px;
-    left: 200px; }
+    top: 10px;
+    right: 5px;
+    font-size: 30px;
+    padding: 1px 2px;
+    line-height: 0; }
+    div.modalbox div.modal_close a {
+      text-decoration: none;
+      color: #999999; }
   div.modalbox label {
     display: block;
     clear: both;
@@ -312,7 +319,7 @@ div.modalbox {
   padding: 5px 7px; }
 
 #hostchat_box {
-  height: 500px;
+  /*   height: 500px; */
   width: 250px; }
   #hostchat_box input {
     width: 200px; }
@@ -327,6 +334,10 @@ div.modalbox {
     padding: 0px; }
     #hostchat_box #hostchat_topiclist li {
       margin: 5px 0px 0px 0px; }
+  #hostchat_box #hostchat_backbtn {
+    margin: 0 0 15px 0; }
+  #hostchat_box #hostchat_addremove {
+    margin: 0 0 15px 0; }
   #hostchat_box #hostchat_topicitem_tm {
     display: none; }
 

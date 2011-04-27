@@ -9,6 +9,7 @@ $lent:   5px;
 $len2: 2 * $len;
 
 $headC: #39c;
+$linkC: #268cbf;
 $footC: #999;
 $locolC: #fff;
 $hicolC: #f7efe1;
@@ -91,7 +92,8 @@ a {
   }
 
   &.textbtn {
-    color: #268cbf;
+    color: $linkC;
+    font-weight: bold;
   }
 
   &.imgbtn {
@@ -460,8 +462,12 @@ div.modalbox {
 
   div.modal_close {
     position: absolute;
-    top: 5px;
-    left:200px;
+    top: 10px;
+    right:5px;
+    font-size: 30px;
+    padding: 1px 2px;
+    line-height: 0;
+    a {text-decoration: none; color: $fontmetaC;}
   }
   
   label {display: block; clear: both; margin: 10px 0 0 0; font-weight: bold;}
@@ -486,7 +492,7 @@ div.modalbox {
 }
 
 #hostchat_box {
-  height: 500px;
+/*   height: 500px; */
   width: 250px;
 
   input {
@@ -508,6 +514,9 @@ div.modalbox {
       margin: 5px 0px 0px 0px;
     }
   }
+
+  #hostchat_backbtn {margin: 0 0 15px 0;}
+  #hostchat_addremove {margin: 0 0 15px 0;}
 
   #hostchat_topicitem_tm {
     display: none;
