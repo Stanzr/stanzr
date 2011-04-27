@@ -3,7 +3,8 @@ a {
   a:hover {
     text-decoration: underline; }
   a.textbtn {
-    color: #9e9e9e; }
+    color: #268cbf;
+    font-weight: bold; }
   a.imgbtn {
     display: inline-block;
     width: 15px;
@@ -41,14 +42,14 @@ h3 {
 h4 {
   font-size: 13px;
   font-weight: bold;
-  float: left;
   margin: 0px; }
 
 p {
   margin: 0 0 1em 0; }
 
 input {
-  font-size: 15px; }
+  font-size: 13px;
+  padding: 2px; }
 
 .content, .container {
   width: 980px;
@@ -64,64 +65,71 @@ div.header {
     color: #fff;
     padding: 15px;
     float: left; }
-  div.header ul.topnav {
-    float: right;
-    list-style-type: none;
-    margin: 20px 5px; }
-    div.header ul.topnav li {
-      padding: 0px;
-      display: inline; }
-      div.header ul.topnav li a {
-        padding: 5px 7px;
-        background-color: #666666;
-        color: white; }
-      div.header ul.topnav li.navgroup {
-        margin: 0px 1px 0px -5px; }
-        div.header ul.topnav li.navgroup a {
-          border-left: 1px solid #999; }
-      div.header ul.topnav li.navgroup-left {
-        margin: 0px 1px 0px 5px; }
-        div.header ul.topnav li.navgroup-left a.first {
-          -moz-border-top-left-radius: 4px;
-          -webkit-border-top-left-radius: 4px;
-          border-top-left-radius: 4px;
-          -moz-border-bottom-left-radius: 4px;
-          -webkit-border-bottom-left-radius: 4px;
-          border-bottom-left-radius: 4px; }
-        div.header ul.topnav li.navgroup-left a.last {
-          -moz-border-top-right-radius: 4px;
-          -webkit-border-top-right-radius: 4px;
-          border-top-right-radius: 4px;
-          -moz-border-bottom-right-radius: 4px;
-          -webkit-border-bottom-right-radius: 4px;
-          border-bottom-right-radius: 4px; }
-        div.header ul.topnav li.navgroup-left a {
-          margin-right: -5px; }
-      div.header ul.topnav li.navgroup-right {
-        margin: 0px 1px 0px -5px; }
-        div.header ul.topnav li.navgroup-right a {
-          border-left: 1px solid #999;
-          -moz-border-top-right-radius: 4px;
-          -webkit-border-top-right-radius: 4px;
-          border-top-right-radius: 4px;
-          -moz-border-bottom-right-radius: 4px;
-          -webkit-border-bottom-right-radius: 4px;
-          border-bottom-right-radius: 4px; }
-      div.header ul.topnav li.navgroup-alone {
-        margin: 0px 1px 0px 5px; }
-        div.header ul.topnav li.navgroup-alone a {
-          -moz-border-top-left-radius: 4px;
-          -webkit-border-top-left-radius: 4px;
-          border-top-left-radius: 4px;
-          -moz-border-bottom-left-radius: 4px;
-          -webkit-border-bottom-left-radius: 4px;
-          border-bottom-left-radius: 4px;
-          -moz-border-top-right-radius: 4px;
-          -webkit-border-top-right-radius: 4px;
-          border-top-right-radius: 4px;
-          -moz-border-bottom-right-radius: 4px;
-          -webkit-border-bottom-right-radius: 4px;
-          border-bottom-right-radius: 4px; }
+div ul.topnav {
+  float: right;
+  list-style-type: none;
+  margin: 20px 5px; }
+  div ul.topnav.popup {
+    float: none;
+    padding: 0px;
+    margin: 20px 0px; }
+    div ul.topnav.popup li {
+      margin: 0px; }
+  div ul.topnav li {
+    padding: 0px;
+    display: inline; }
+    div ul.topnav li a {
+      padding: 5px 7px;
+      background-color: #666666;
+      color: white;
+      text-decoration: none; }
+    div ul.topnav li.navgroup {
+      margin: 0px 1px 0px -5px; }
+      div ul.topnav li.navgroup a {
+        border-left: 1px solid #999; }
+    div ul.topnav li.navgroup-left {
+      margin: 0px 1px 0px 5px; }
+      div ul.topnav li.navgroup-left a.first {
+        -moz-border-top-left-radius: 4px;
+        -webkit-border-top-left-radius: 4px;
+        border-top-left-radius: 4px;
+        -moz-border-bottom-left-radius: 4px;
+        -webkit-border-bottom-left-radius: 4px;
+        border-bottom-left-radius: 4px; }
+      div ul.topnav li.navgroup-left a.last {
+        -moz-border-top-right-radius: 4px;
+        -webkit-border-top-right-radius: 4px;
+        border-top-right-radius: 4px;
+        -moz-border-bottom-right-radius: 4px;
+        -webkit-border-bottom-right-radius: 4px;
+        border-bottom-right-radius: 4px; }
+      div ul.topnav li.navgroup-left a {
+        margin-right: -5px; }
+    div ul.topnav li.navgroup-right {
+      margin: 0px 1px 0px -5px; }
+      div ul.topnav li.navgroup-right a {
+        border-left: 1px solid #999;
+        -moz-border-top-right-radius: 4px;
+        -webkit-border-top-right-radius: 4px;
+        border-top-right-radius: 4px;
+        -moz-border-bottom-right-radius: 4px;
+        -webkit-border-bottom-right-radius: 4px;
+        border-bottom-right-radius: 4px; }
+    div ul.topnav li.navgroup-alone {
+      margin: 0px 1px 0px 5px; }
+      div ul.topnav li.navgroup-alone a {
+        -moz-border-top-left-radius: 4px;
+        -webkit-border-top-left-radius: 4px;
+        border-top-left-radius: 4px;
+        -moz-border-bottom-left-radius: 4px;
+        -webkit-border-bottom-left-radius: 4px;
+        border-bottom-left-radius: 4px;
+        -moz-border-top-right-radius: 4px;
+        -webkit-border-top-right-radius: 4px;
+        border-top-right-radius: 4px;
+        -moz-border-bottom-right-radius: 4px;
+        -webkit-border-bottom-right-radius: 4px;
+        border-bottom-right-radius: 4px; }
 div.leftcol {
   background-color: white;
   margin-right: 0px;
@@ -141,16 +149,26 @@ div.midcol {
   width: 450px;
   float: left; }
   div.midcol > div {
-    padding: 10px 5px 10px 15px; }
+    padding: 10px; }
   div.midcol div.topichead {
     background-color: #d1cabf;
     padding: 10px; }
+    div.midcol div.topichead h4 {
+      width: 375px;
+      float: left; }
     div.midcol div.topichead p.rally_topicdesc {
-      float: left;
-      width: 360px;
-      margin: 0px;
-      clear: both; }
+      margin: 0px; }
     div.midcol div.topichead div.rally_gotoactive {
+      -moz-border-radius: 4px;
+      /* FF1+ */
+      -webkit-border-radius: 4px;
+      /* Saf3-4, iOS 1+, Android 1.5+ */
+      border-radius: 4px;
+      /* Opera 10.5, IE9, Saf5, Chrome, FF4 */
+      /* useful if you don't want a bg color from leaking outside the border: */
+      -moz-background-clip: padding;
+      -webkit-background-clip: padding-box;
+      background-clip: padding-box;
       display: none;
       background-color: #575450;
       clear: both;
@@ -171,8 +189,7 @@ div.midcol {
       margin-top: 5px; }
     div.midcol div.topichead div.navbox {
       width: 50px;
-      float: right;
-      margin-bottom: 5px; }
+      float: right; }
   div.midcol div.postsarea {
     overflow: auto; }
     div.midcol div.postsarea #posts_tm {
@@ -182,16 +199,23 @@ div.midcol {
       margin: 0px;
       padding: 0px; }
       div.midcol div.postsarea ul.topicposts li.message {
-        margin: 10px 0px;
-        border: 1px solid #ccc;
-        padding: 10px;
+        -moz-box-shadow: 0px 1px 3px #bfbfbf;
+        -webkit-box-shadow: 0px 1px 3px #bfbfbf;
+        box-shadow: 0px 1px 3px #bfbfbf;
+        margin: 0 0 3px 0;
+        padding: 5px;
         background-color: #fff; }
         div.midcol div.postsarea ul.topicposts li.message div.post_avatar {
           width: 32px;
           float: left; }
         div.midcol div.postsarea ul.topicposts li.message div.post_content {
-          width: 280px;
-          float: right; }
+          width: 340px;
+          float: left;
+          margin-left: 10px; }
+          div.midcol div.postsarea ul.topicposts li.message div.post_content h4 {
+            float: left; }
+          div.midcol div.postsarea ul.topicposts li.message div.post_content .post_actions {
+            float: right; }
         div.midcol div.postsarea ul.topicposts li.message span.shares {
           color: #999999; }
         div.midcol div.postsarea ul.topicposts li.message span.agrees {
@@ -203,38 +227,46 @@ div.midcol {
           margin: 0px;
           padding: 0px; }
   div.midcol div.topicsend {
-    display: none; }
+    display: none;
+    padding: 0px 5px 5px 10px; }
     div.midcol div.topicsend #post_text {
-      border: 1px solid #ccc;
-      font-size: 16px;
+      border: 1px solid #999;
+      font-size: 13px;
       background-color: #fff;
-      width: 300px; }
-    div.midcol div.topicsend p.tweetout {
+      width: 370px;
+      padding: 2px; }
+    div.midcol div.topicsend div.tweetout {
       color: #999999; }
 div.rightcol {
   background-color: white;
   width: 265px;
   float: left;
   overflow: auto; }
-  div.rightcol div {
+  div.rightcol div.sidesection {
     padding: 10px 15px;
-    border-bottom: 1px solid #e2e2e2; }
-    div.rightcol div#rally_miniavatars {
+    border-bottom: 1px solid #e2e2e2;
+    height: 140px;
+    overflow: hidden; }
+    div.rightcol div.sidesection h2 {
+      float: left; }
+    div.rightcol div.sidesection .sidenav {
+      float: right; }
+    div.rightcol div.sidesection#rally_miniavatars {
       border: none; }
-    div.rightcol div.miniavatar {
+    div.rightcol div.sidesection div.miniavatar {
       width: 32px;
       height: 32px;
       float: left;
-      margin: 0px 8px 8px 0px;
+      margin: 0px 8px 8px 0px !important;
       padding: 0px;
       border: none; }
-    div.rightcol div ul.sideposts {
+    div.rightcol div.sidesection ul.sideposts {
       list-style-type: none;
       margin: 0px;
       padding: 0px; }
-      div.rightcol div ul.sideposts li {
+      div.rightcol div.sidesection ul.sideposts li {
         margin: 8px 0 8px 0; }
-        div.rightcol div ul.sideposts li span.shares {
+        div.rightcol div.sidesection ul.sideposts li span.shares {
           float: left;
           color: #999999; }
 
@@ -243,10 +275,12 @@ p.post {
   clear: both; }
 
 div.modalbox {
-  -moz-box-shadow: 1px 1px 3px #666;
-  -webkit-box-shadow: 1px 1px 3px #666;
-  box-shadow: 1px 1px 3px #666;
-  background-color: #e6e6e6;
+  -moz-box-shadow: 0px 1px 3px #666;
+  -webkit-box-shadow: 0px 1px 3px #666;
+  box-shadow: 0px 1px 3px #666;
+  /*   background-color: $modalbgC; */
+  background-repeat: repeat-x repeat-y;
+  background-image: url(/img/background_noise.png);
   padding: 20px;
   display: none;
   position: absolute;
@@ -255,20 +289,68 @@ div.modalbox {
   width: 200px; }
   div.modalbox div.modal_close {
     position: absolute;
-    top: 5px;
-    left: 200px; }
+    top: 10px;
+    right: 5px;
+    font-size: 30px;
+    padding: 1px 2px;
+    line-height: 0; }
+    div.modalbox div.modal_close a {
+      text-decoration: none;
+      color: #999999; }
+  div.modalbox label {
+    display: block;
+    clear: both;
+    margin: 10px 0 0 0;
+    font-weight: bold; }
 
 #login_box {
-  height: 200px; }
+  /*   height: 250px; */ }
 
 #signup_box {
-  height: 300px; }
+  /*   height: 350px; */ }
+
+.auth_vertlist {
+  margin: 10px 0 25px 0; }
+  .auth_vertlist div {
+    margin-bottom: 10px; }
+
+.auth_img {
+  padding: 5px 7px; }
 
 #hostchat_box {
-  height: 400px; }
+  /*   height: 500px; */
+  width: 250px; }
+  #hostchat_box input {
+    width: 200px; }
+  #hostchat_box textarea {
+    width: 195px;
+    height: 30px; }
+  #hostchat_box #hostchat_topiclist {
+    overflow: auto;
+    height: 400px;
+    list-style-type: none;
+    margin: 0px;
+    padding: 0px; }
+    #hostchat_box #hostchat_topiclist li {
+      margin: 5px 0px 0px 0px; }
+  #hostchat_box #hostchat_backbtn {
+    margin: 0 0 15px 0; }
+  #hostchat_box #hostchat_addremove {
+    margin: 0 0 15px 0; }
+  #hostchat_box #hostchat_topicitem_tm {
+    display: none; }
 
 #profile_box {
   height: 100px; }
+
+#avatar_drillup {
+  display: none; }
+
+#agree_drillup {
+  display: none; }
+
+#reply_drillup {
+  display: none; }
 
 #miniavatar_tm {
   display: none; }
@@ -291,22 +373,22 @@ div.modalbox {
 #rally_desc {
   padding: 0px; }
 
+#rally_editbtn {
+  display: none; }
+
 #mostagreed_msg_tm {
   display: none; }
 
-#mostagreed_drillup {
-  opacity: 0.001; }
-
 #head_nick_img {
-  background-position: 7px -616px;
+  background-position: 7px -746px;
   margin-right: -5px;
   width: 40px; }
 
 #head_linkedin {
-  background-position: 7px -616px; }
+  background-position: 7px -390px; }
 
 #head_twitter {
-  background-position: 7px -834px; }
+  background-position: 7px -963px; }
 
 #head_facebook {
-  background-position: 7px -256px; }
+  background-position: 7px -255px; }

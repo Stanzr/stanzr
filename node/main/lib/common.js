@@ -68,6 +68,18 @@ var conf = exports.conf = config('conf',{
   keys: {
     chartaca: {
       key: '3b206e8c-f57a-49f1-9ee3-34fd3b6ce2b5'
+    },
+    linkedin: {
+        key:'k',
+        secret:'s',
+    },
+    twitter: {
+      key:'k',
+      secret:'s'
+    },
+    facebook: {
+      key:'k',
+      secret:'s'
     }
   },
   mongo: {

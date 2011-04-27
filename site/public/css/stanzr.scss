@@ -9,6 +9,7 @@ $lent:   5px;
 $len2: 2 * $len;
 
 $headC: #39c;
+$linkC: #268cbf;
 $footC: #999;
 $locolC: #fff;
 $hicolC: #f7efe1;
@@ -60,9 +61,15 @@ $fontnavC:  #fff;
 }
 
 @mixin modalshadow {
-  -moz-box-shadow: 1px 1px 3px #666; 
-  -webkit-box-shadow: 1px 1px 3px #666;
-  box-shadow: 1px 1px 3px #666; 
+  -moz-box-shadow: 0px 1px 3px #666; 
+  -webkit-box-shadow: 0px 1px 3px #666;
+  box-shadow: 0px 1px 3px #666; 
+}
+
+@mixin messageshadow {
+  -moz-box-shadow: 0px 1px 3px #bfbfbf; 
+  -webkit-box-shadow: 0px 1px 3px #bfbfbf;
+  box-shadow: 0px 1px 3px #bfbfbf; 
 }
 
 @mixin clearfix {
@@ -85,7 +92,8 @@ a {
   }
 
   &.textbtn {
-    color: #9e9e9e;
+    color: $linkC;
+    font-weight: bold;
   }
 
   &.imgbtn {
@@ -138,7 +146,6 @@ h3 {
 h4 {
   font-size: 13px;
   font-weight: bold;
-  float: left;
   margin: 0px;
 }
 
@@ -147,7 +154,8 @@ p {
 }
 
 input {
-  font-size: 15px;
+  font-size: 13px;
+  padding: 2px;
 }
 
 
@@ -171,54 +179,64 @@ div {
       padding: $lenm;
       float:left;
     }
+  }
 
-    ul.topnav {
-      float: right;
-      list-style-type: none;
-      margin: $lenb $lent;
+  ul.topnav {
+    float: right;
+    list-style-type: none;
+    margin: $lenb $lent;
 
+    &.popup {
+      float: none;
+      padding: 0px;
+      margin: $lenb 0px;
       li {
-        padding: 0px;
-        display: inline;
-
-        a {
-          padding: 5px 7px;
-          background-color: $navbgC;
-          color: $fontnavC;
-        }
-
-        &.navgroup {
-          margin: 0px 1px 0px -5px;
-          a {
-            border-left: 1px solid #999;
-          }
-        }        
-
-        &.navgroup-left {
-          margin: 0px 1px 0px 5px;
-          a.first { @include box-round-left(4px); }
-          a.last { @include box-round-right(4px); }
-          a {
-            margin-right: -5px;
-          }
-        }        
-
-        &.navgroup-right {
-          margin: 0px 1px 0px -5px;
-          a { 
-            border-left: 1px solid #999;
-            @include box-round-right(4px); 
-          }
-        }        
-
-        &.navgroup-alone {
-          margin: 0px 1px 0px 5px;
-          a {
-            @include box-round-left(4px);
-            @include box-round-right(4px);
-          }
-        }        
+        margin: 0px;
       }
+    }
+
+    li {
+      padding: 0px;
+      display: inline;
+
+      a {
+        padding: 5px 7px;
+        background-color: $navbgC;
+        color: $fontnavC;
+        text-decoration: none;
+      }
+
+      &.navgroup {
+        margin: 0px 1px 0px -5px;
+        a {
+          border-left: 1px solid #999;
+        }
+      }        
+
+      &.navgroup-left {
+        margin: 0px 1px 0px 5px;
+        a.first { @include box-round-left(4px); }
+        a.last { @include box-round-right(4px); }
+        a {
+          margin-right: -5px;
+        }
+      }        
+
+      &.navgroup-right {
+        margin: 0px 1px 0px -5px;
+        a { 
+          border-left: 1px solid #999;
+          @include box-round-right(4px); 
+        }
+      }        
+
+      &.navgroup-alone {
+        margin: 0px 1px 0px 5px;
+        a {
+          @include box-round-left(4px);
+          @include box-round-right(4px);
+        }
+      }        
     }
   }
 
@@ -250,21 +268,21 @@ div {
     float: left;
 
     &>div {
-      padding: $lens 5px $lens $lenm;
+      padding: 10px
     }
 
     div.topichead {
       background-color: $topicheadbgC;
       padding: 10px;
+      
+      h4 {width: 375px; float: left;}
 
       p.rally_topicdesc {
-        float: left;
-        width: 360px;
         margin: 0px;
-        clear:both;
       }
 
       div.rally_gotoactive {
+        @include box-round;
         display: none;
         background-color: #575450;
         clear:both;
@@ -294,7 +312,6 @@ div {
       div.navbox {
         width: 50px;
         float: right;
-        margin-bottom: 5px;
       }
     }
 
@@ -311,22 +328,25 @@ div {
         padding: 0px;
     
         li.message {
-          margin: $lens 0px;
-          border: 1px solid #ccc;
-          padding: $lens;
+          @include messageshadow;
+          margin: 0 0 3px 0;
+          padding: 5px;
           background-color: #fff;
-
-
+          
           div.post_avatar {
             width: 32px;
             float: left;
           }
 
           div.post_content {
-            width: 280px;
-            float: right;
+            width: 340px;
+            float: left;
+            margin-left: 10px;
+            
+            h4 {float: left;}
+            
+            .post_actions {float: right;}
           }
-
 
           span.shares {
             color: $fontmetaC;
@@ -352,15 +372,17 @@ div {
 
     div.topicsend {
       display: none;
+      padding: 0px 5px 5px 10px;
 
       #post_text {
-        border: 1px solid #ccc;
-        font-size: 16px;
+        border: 1px solid #999;
+        font-size: 13px;
         background-color: #fff;
-        width: 300px;
+        width: 370px;
+        padding: 2px;
       }
 
-      p.tweetout {
+      div.tweetout {
         color: $fontmetaC;
       }
     }
@@ -373,21 +395,27 @@ div {
     float: left;
     overflow: auto;
 
-    div {
+    div.sidesection {
       @include sidecont();
+      height: 140px;
+      overflow: hidden;
+
+      h2 {float: left;}
+      .sidenav {float: right;}
 
       &#rally_miniavatars {
         border: none;
       }
 
-      &.miniavatar {
+      div.miniavatar {
         width: 32px;
         height: 32px;
         float: left;
-        margin: 0px 8px 8px 0px;
+        margin: 0px 8px 8px 0px !important;
         padding: 0px;
         border: none;
       }
+      
 
       ul.sideposts {
         list-style-type: none;
@@ -418,7 +446,9 @@ p {
 
 div.modalbox {
   @include modalshadow;
-  background-color: $modalbgC;
+/*   background-color: $modalbgC; */
+  background-repeat: repeat-x repeat-y;
+  background-image: url(/img/background_noise.png);
   padding: 20px;
   display: none;
   position: absolute;
@@ -428,23 +458,65 @@ div.modalbox {
 
   div.modal_close {
     position: absolute;
-    top: 5px;
-    left:200px;
+    top: 10px;
+    right:5px;
+    font-size: 30px;
+    padding: 1px 2px;
+    line-height: 0;
+    a {text-decoration: none; color: $fontmetaC;}
   }
-
+  
+  label {display: block; clear: both; margin: 10px 0 0 0; font-weight: bold;}
 
 }
 
 #login_box {
-  height: 200px;
+/*   height: 250px; */
 }
 
 #signup_box {
-  height: 300px;
+/*   height: 350px; */
+}
+
+.auth_vertlist {
+  margin: 10px 0 25px 0;
+  
+  div {margin-bottom: 10px;}
+}
+.auth_img {
+  padding: 5px 7px;
 }
 
 #hostchat_box {
-  height: 400px;
+/*   height: 500px; */
+  width: 250px;
+
+  input {
+    width: 200px;
+  }
+  textarea {
+    width: 195px;
+    height: 30px;
+  }
+
+  #hostchat_topiclist {
+    overflow: auto;
+    height: 400px;
+    list-style-type: none;
+    margin: 0px;
+    padding: 0px;
+
+    li {
+      margin: 5px 0px 0px 0px;
+    }
+  }
+
+  #hostchat_backbtn {margin: 0 0 15px 0;}
+  #hostchat_addremove {margin: 0 0 15px 0;}
+
+  #hostchat_topicitem_tm {
+    display: none;
+  }
 }
 
 #profile_box {
@@ -453,6 +525,15 @@ div.modalbox {
 
 
 
+#avatar_drillup {
+  display: none;
+}
+#agree_drillup {
+  display: none;
+}
+#reply_drillup {
+  display: none;
+}
 
 #miniavatar_tm {
    display: none;
@@ -483,30 +564,30 @@ div.modalbox {
   padding: 0px;
 }
 
+#rally_editbtn {
+  display:none;
+}
 
 #mostagreed_msg_tm {
   display: none;                    
 }
 
-#mostagreed_drillup {
-  opacity: 0.001;
-}
 
 
 #head_nick_img {
-  background-position: 7px -616px; 
+  background-position: 7px -746px; 
   margin-right: -5px;
   width: 40px;
 }
 
 #head_linkedin {
-  background-position: 7px -616px; 
+  background-position: 7px -390px; 
 }
 
 #head_twitter {
-  background-position: 7px -834px;
+  background-position: 7px -963px;
 }
 
 #head_facebook {
-  background-position: 7px -256px;
+  background-position: 7px -255px;
 }

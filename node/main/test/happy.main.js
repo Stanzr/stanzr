@@ -58,7 +58,7 @@ module.exports = {
 
       ;seneca.act({on:'stanzr',cmd:'ping-mongo'},function(err,out){
         assert.isNull(err)
-        assert.equal( 1, out.a )
+        assert.ok( 1, out.a )
 
       }) // mongo-ping
       }) // time
@@ -69,13 +69,13 @@ module.exports = {
   ping: function() {
     getseneca(function(seneca){
 
-      main.api.ping(req({kind:'node'}),res(function(res){
+      main.api.ping(mockreq({kind:'node'}),mockres(function(res){
         assert.equal(200,res.status)
         assert.equal('application/json',res.headers['Content-Type'])
         assert.ok( JSON.parse(res.body).ok )
       }))
 
-      main.api.ping(req({kind:'diag'},{foo:'bar'},{nick:'nock'}),res(function(res){
+      main.api.ping(mockreq({kind:'diag'},{foo:'bar'},{nick:'nock'}),mockres(function(res){
         assert.equal(200,res.status)
         assert.equal('application/json',res.headers['Content-Type'])
         var out = JSON.parse(res.body)
@@ -92,7 +92,7 @@ module.exports = {
     getseneca(function(seneca){
       var nick = 'test-'+uuid().substring(0,8)
 
-      ;main.api.chat.put(
+      ;main.api.chat.save(
         mockreq(
           {},
           {title:'t1',moderator:nick,topics:[
@@ -108,12 +108,37 @@ module.exports = {
           var chatid = chat.chatid
           assert.ok(chatid)
 
+      ;main.chat.get(chatid,function(err,chat){
+        assert.isNull(err)
+        eyes.inspect(chat,'chat')
+        assert.equal(chatid,chat.chatid)
+        assert.equal('t1',chat.title)
+
+
+
+      ;main.api.chat.save(
+        mockreq(
+          {chatid:chat.chatid},
+          {title:'t1x',moderator:nick,topics:[
+            {title:'t1',desc:'d1'},
+            {title:'t2',desc:'d2'},
+            {title:'t3',desc:'d3'},
+          ]},
+          {nick:nick}),
+        mockres(function(res){
+          eyes.inspect(res)
+          assert.equal(200,res.status)
+          var chat = JSON.parse(res.body)
+          var chatid = chat.chatid
+          assert.ok(chatid)
 
       ;main.chat.get(chatid,function(err,chat){
         assert.isNull(err)
         eyes.inspect(chat,'chat')
         assert.equal(chatid,chat.chatid)
+        assert.equal('t1x',chat.title)
 
+        
 
       ;main.api.chat.topic.get(
         mockreq(
@@ -157,6 +182,10 @@ module.exports = {
       })) // api topic post_active
       })) // api topic post
       })) // api topic get
+
+      })  // main chat get          
+      })) // api chat post
+
       })  // main chat get          
       })) // api chat put
 

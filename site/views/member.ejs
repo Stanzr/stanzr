@@ -11,31 +11,48 @@
       <li><a id="head_nick" href="javascript:void(0)"><%=val.nick%></a></li>
       <li><a id="head_logout" href="javascript:void(0)">Log out</a></li>
       <% } else { %>
-      <li><a id="head_signup" href="javascript:void(0)">Sign up</a></li>
-      <li><a id="head_login" href="javascript:void(0)">Log in</a></li>
+
+      <% var logintag = '/'+(val.chatid||'member') %>
+
+      <li class="navgroup-left">
+        <a id="head_linkedin" href="/api/user/oauth/linkedin/login<%=logintag%>" class="first sprite-linkedin16">&nbsp;&nbsp;&nbsp;</a>
+        <a id="head_twitter"  href="/api/user/oauth/twitter/login<%=logintag%>" class="sprite-twitter16">&nbsp;&nbsp;&nbsp;</a>
+        <a id="head_facebook" href="/api/user/oauth/facebook/login<%=logintag%>" class="sprite-facebook16">&nbsp;&nbsp;&nbsp;</a>
+        <a id="head_signup" href="javascript:void(0)" class="last">Sign up</a>
+      </li>
+
+      <li class="navgroup-alone"><a id="head_login" href="javascript:void(0)">Log in</a></li>
       <% } %>
     </ul>
   </div>
   
   <div class="span-7 leftcol col">
     <div>
-      <h1 id="rally_title">Chat Title Lorem Ipsum Dolor</h1>
+      <h1 id="rally_title"></h1>
       <h2>#<%=val.hashtag%></h2>
+      <a href="javascript:void(0)" id="rally_editbtn" class="textbtn">edit</a>
     </div>
 
     <div>
-      <h2>Moderated by <a id="rally_modname">Person Name</a></h2>
-      <h3 id="rally_modtitle">Title, Company</h3>
+      <h2>Moderated by <a id="rally_modname"></a></h2>
+      <h3 id="rally_modtitle"></h3>
       <a id="rally_modmsgB" href="javascript:void(0)" class="textbtn">send a message</a>
     </div>
 
     <div>
-      <h2>Scheduled for <span id="rally_date">April 12</span></h2>
-      <h3 id="rally_whenstr">from 8-9 PM</h3>
-      <a id="rally_remindB" href="javascript:void(0)" class="textbtn">remind me</a>
+      <h2>Scheduled for <span id="rally_date"></span></h2>
+      <h3 id="rally_whenstr"></h3>
       <br />
-      <a href="javascript:void(0)">[Like]</a>
-      <a href="javascript:void(0)">[Tweet]</a>
+
+<!-- AddThis Button BEGIN -->
+<div class="addthis_toolbox addthis_default_style " style="width:250px">
+<a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+<a class="addthis_button_tweet"></a>
+</div>
+<script type="text/javascript">var addthis_config = {"data_track_clickback":true};</script>
+<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid=ra-4da9f0b86183f2b2"></script>
+<!-- AddThis Button END -->
+
     </div>
 
     <div class="chat_description">
@@ -153,19 +170,21 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
 
   <div class="span-10 midcol clearfix col">
     <div id="topichead_tm" class="topichead clearfix">
-      <h4 class="rally_topictitle"></h4>
-      <p  class="rally_topicdesc"></p>
-      <div class="navbox">
-        <a class="imgbtn sprite-page-backward-fill">&nbsp;</a>
-        <a href="javascript:void(0)" class="imgbtn sprite-page-backward">&nbsp;</a>
-        <a href="javascript:void(0)" class="imgbtn sprite-page-forward">&nbsp;</a>
+      <div class="clearfix">
+        <h4 class="rally_topictitle"></h4>
+        <div class="navbox">
+          <a class="imgbtn sprite-page-backward-fill">&nbsp;</a>
+          <a href="javascript:void(0)" class="imgbtn sprite-page-backward">&nbsp;</a>
+          <a href="javascript:void(0)" class="imgbtn sprite-page-forward">&nbsp;</a>
+        </div>      
       </div>
+      <p  class="rally_topicdesc"></p>
       <div class="rally_gotoactive clearfix">
         <p class="left">Next topic started</p>
         <p class="right">Go &gt;</p>
       </div>
       <div class="rally_makeactive clearfix">
-        <a href="javascript:void(0)" class="textbtn">Start this topic</a>
+        <a href="javascript:void(0)">Start this topic</a>
       </div>
     </div>
 
@@ -194,14 +213,16 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
         <li class="message clearfix">
           <div class="post_avatar sprite-silhouette32"></div>
           <div class="post_content">
-            <h4></h4>
 
-            &nbsp;&nbsp;
-            &nbsp;&nbsp;<a href="javascript:void(0)" class="imgbtn sprite-at-reply">&nbsp;</a>
-            &nbsp;&nbsp;<span class="shares"></span>
-            &nbsp;&nbsp;
-            &nbsp;&nbsp;<a href="javascript:void(0)" class="imgbtn sprite-approve">&nbsp;</a>
-            &nbsp;&nbsp;<span class="agrees"></span>
+            <div class="clearfix">
+              <h4></h4>
+              <div class="post_actions">
+                <a class="imgbtn sprite-at-reply">&nbsp;</a>
+                <span class="shares"></span>
+                <a class="imgbtn sprite-approve">&nbsp;</a>
+                <span class="agrees"></span>
+              </div>            
+            </div>
 
             <p class="post"></p>
           </div>
@@ -216,9 +237,9 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
     <div class="topicsend">
       <input type="text" id="post_text" >
       <input type="button" value="Send" id="post_send">
-      <p class="tweetout">
+      <div class="tweetout">
         <input type="checkbox" checked="yes"> Also post on Twitter - appends <span id="rally_hash">#<%=val.hashtag%></span> 
-      </p>
+      </div>
     </div>
 
 
@@ -227,27 +248,27 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
 
   <div class="span-7 last rightcol col">
 
-    <div class="clearfix" id="rally_members">
-      <h2>
-        <span id="rally_pcount">0</span> people in this chat 
-        <a id="rally_pcount_drilldown" href="javascript:void(0)" class="imgbtn sprite-drilldown">&nbsp;</a>
-      </h2>
-      
-
-      <div id="rally_miniavatars" class="clearfix">
-
+    <div class="sidesection clearfix rightbarbox" id="avatar_box">
+      <div class="sideheader clearfix">
+        <h2><span id="rally_pcount">0</span> people in this chat </h2>
+        <div class="sidenav">
+          <a id="avatar_drilldown" class="imgbtn sprite-drilldown">&nbsp;</a>
+          <a id="avatar_drillup" class="imgbtn sprite-drillup">&nbsp;</a>
+        </div>      
       </div>
-
+      
+      <div id="rally_miniavatars" class="clearfix"></div>
       <div id="miniavatar_tm" class="miniavatar sprite-silhouette32"></div>
     </div>
 
-    <div>
-      <h2>
-        <a href="javascript:void(0)" class="imgbtn sprite-approve">&nbsp;</a> 
-        Most agreed upon
-        <a id="mostagreed_drillup"   href="javascript:void(0)" class="imgbtn sprite-drillup">&nbsp;</a>
-        <a id="mostagreed_drilldown" href="javascript:void(0)" class="imgbtn sprite-drilldown">&nbsp;</a>
-      </h2>
+    <div class="sidesection clearfix rightbarbox" id="agree_box">
+      <div class="sideheader clearfix">
+        <h2><a href="javascript:void(0)" class="imgbtn sprite-approve">&nbsp;</a>Most agreed upon</h2>
+        <div class="sidenav">
+          <a id="agree_drilldown" class="imgbtn sprite-drilldown">&nbsp;</a>
+          <a id="agree_drillup" class="imgbtn sprite-drillup">&nbsp;</a>
+        </div>
+      </div>
       
       <ul id="rally_mostagreed" class="sideposts">
       </ul>
@@ -260,12 +281,15 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
 
     </div>
 
-    <!--
-    <div>
-      <h2>
-        Top shares
-        <a href="javascript:void(0)" class="imgbtn sprite-drilldown">&nbsp;</a>
-      </h2>
+
+    <div class="sidesection clearfix rightbarbox" id="reply_box">
+      <div class="sideheader clearfix">
+        <h2><a href="javascript:void(0)" class="imgbtn sprite-approve">&nbsp;</a>Replies</h2>
+        <div class="sidenav">
+          <a id="reply_drilldown" class="imgbtn sprite-drilldown">&nbsp;</a>
+          <a id="reply_drillup" class="imgbtn sprite-drillup">&nbsp;</a>
+        </div>
+      </div>
 
       <ul id="rally_topshares" class="sideposts">
         <li>
@@ -291,21 +315,37 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
         </li>
       </ul>
     </div>
-    -->
 
   </div>   
 </div>
   
 
 <div id="login_box" class="modalbox">
-  <div class="modal_close"><a href="javascript:void(0)" onclick="$('#login_box').hide();" class="textbtn">close</a></div>
+  <div class="modal_close"><a href="javascript:void(0)" onclick="$('#login_box').hide();" class="textbtn">&times;</a></div>
 
-  <h2>Log in</h2>
+  <h2>Login Using:</h2>
   
-  Username:<br />
-  <input id="login_username"><br />
+  <div class="auth_vertlist">
+      <div>
+        <a id="head_linkedin" href="/api/user/oauth/linkedin/login<%=logintag%>" class="auth_img sprite-linkedin16">&nbsp;&nbsp;&nbsp;</a>
+        <a id="head_linkedin" href="/api/user/oauth/linkedin/login<%=logintag%>">LinkedIn</a>
+      </div>
+      <div>
+        <a id="head_twitter"  href="/api/user/oauth/twitter/login<%=logintag%>" class="auth_img sprite-twitter16">&nbsp;&nbsp;&nbsp;</a>
+        <a id="head_twitter"  href="/api/user/oauth/twitter/login<%=logintag%>">Twitter</a>
+      </div>
+      <div>      
+        <a id="head_facebook" href="/api/user/oauth/facebook/login<%=logintag%>" class="auth_img sprite-facebook16">&nbsp;&nbsp;&nbsp;</a>
+        <a id="head_facebook" href="/api/user/oauth/facebook/login<%=logintag%>">Facebook</a>      
+      </div>
+  </div>
+
+  <h2>Or Login Directly</h2>
   
-  Password:<br />
+  <label for="login_username">Username</label>
+  <input id="login_username">
+  
+  <label for="login_password">Password</label>
   <input type="password" id="login_password"><br />
   
   <a href="javascript:void(0)" id="login_loginbtn" class="textbtn">login</a>
@@ -315,65 +355,102 @@ IDoxjDyk70hfjbQiPZJy7pel1lEVjuTJJb68Ff2fAAMAhW+wVhwFA8UAAAAASUVORK5CYII=">
 
 
 <div id="signup_box" class="modalbox">
-  <div class="modal_close"><a href="javascript:void(0)" onclick="$('#signup_box').hide()" class="textbtn">close</a></div>
+  <div class="modal_close"><a href="javascript:void(0)" onclick="$('#signup_box').hide()" class="textbtn">&times;</a></div>
 
-  <h2>Register</h2>
+  <h2>Login Using:</h2>
+
+  <div class="auth_vertlist">
+      <div>
+        <a id="head_linkedin" href="/api/user/oauth/linkedin/login<%=logintag%>" class="auth_img sprite-linkedin16">&nbsp;&nbsp;&nbsp;</a>
+        <a id="head_linkedin" href="/api/user/oauth/linkedin/login<%=logintag%>">LinkedIn</a>
+      </div>
+      <div>
+        <a id="head_twitter"  href="/api/user/oauth/twitter/login<%=logintag%>" class="auth_img sprite-twitter16">&nbsp;&nbsp;&nbsp;</a>
+        <a id="head_twitter"  href="/api/user/oauth/twitter/login<%=logintag%>">Twitter</a>
+      </div>
+      <div>      
+        <a id="head_facebook" href="/api/user/oauth/facebook/login<%=logintag%>" class="auth_img sprite-facebook16">&nbsp;&nbsp;&nbsp;</a>
+        <a id="head_facebook" href="/api/user/oauth/facebook/login<%=logintag%>">Facebook</a>      
+      </div>
+  </div>
+
+  <h2>Or Register:</h2>
   
-  Username:<br />
-  <input id="register_username"><br />
+  <label for="register_username">Username</label>
+  <input id="register_username">
 
-  Email:<br />
-  <input id="register_email"><br />
+  <label for="register_email">Email</label>
+  <input id="register_email">
   
-  Password:<br />
-  <input type="password" id="register_password"><br />
+  <label for="register_password">Password</label>
+  <input type="password" id="register_password">
 
-  Repeat Password:<br />
+  <label for="register_repeat">Repeat Password</label>
   <input type="password" id="register_repeat"><br />
   
-  <a href="javascript:void(0)" id="register_registerbtn" class="textbtn">register</a>
+  <a href="javascript:void(0)" id="register_registerbtn" class="textbtn">Register</a>
   
   <p id="register_msg"></p>
 </div>
 
 
 <div id="hostchat_box" class="modalbox">
-  <div class="modal_close"><a href="javascript:void(0)" onclick="$('#hostchat_box').hide()" class="textbtn">close</a></div>
+  <div class="modal_close"><a href="javascript:void(0)" onclick="$('#hostchat_box').hide()" class="textbtn">&times;</a></div>
 
+  <div id="hostchat_details">
   <h2>Create Your Chat</h2>
   
-  Session name:<br />
-  <input id="hostchat_title"><br />
+  <label for="hostchat_title">Event title</label>
+  <input id="hostchat_title">
 
-  Moderated by:<br />
+  <label for="hostchat_modname">Moderated by</label>
   <input id="hostchat_modname"><br />
 
-  Scheduled for:<br />
+  <label for="hostchat_whenstr">Scheduled for</label>
   <input id="hostchat_whenstr"><br />
 
-  Twitter hashtag:<br />
+  <label for="hostchat_hashtag">Twitter hashtag</label>
   <input id="hostchat_hashtag"><br />
 
-  Description:<br />
-  <textarea id="hostchat_desc" style="width:150px;height:30px">
+  <label for="hostchat_desc">Description</label>
+  <textarea id="hostchat_desc">
   </textarea>
   <br />
-  
-  Topics:<br />
-  <input id="hostchat_topic0"><br />
-  <input id="hostchat_topic1"><br />
-  <input id="hostchat_topic2"><br />
-  
-  <br />
 
-  <a href="javascript:void(0)" id="hostchat_createbtn" class="textbtn">create</a>
-  
+  <a href="javascript:void(0)" id="hostchat_createbtn" class="textbtn">Next</a>
+  </div>
+
+  <div id="hostchat_topics">
+  <a href="javascript:void(0)" id="hostchat_backbtn" class="textbtn">&laquo; Back</a>
+
+  <h2>Set Your Topics</h2>
+
+  <ul id="hostchat_topiclist">
+  </ul>
+  <div id="hostchat_addremove">
+    <a href="javascript:void(0)" id="hostchat_morebtn" class="textbtn">Another topic</a> &middot; 
+    <a href="javascript:void(0)" id="hostchat_lessbtn" class="textbtn">Remove topic</a>
+  </div>
+
+  <li id="hostchat_topicitem_tm" class="hostchat_topic">
+    <label>Topic name</label>
+    <input><br />
+
+    <label>Topic description</label>
+    <textarea>
+    </textarea>
+  </li>
+
+  <br />
+  <a href="javascript:void(0)" id="hostchat_donebtn" class="textbtn">Create this chat</a>
   <p id="hostchat_msg"></p>
+  </div>
+
 </div>
 
 
 <div id="profile_box" class="modalbox">
-  <div class="modal_close"><a href="javascript:void(0)" onclick="$('#profile_box').hide()" class="textbtn">close</a></div>
+  <div class="modal_close"><a href="javascript:void(0)" onclick="$('#profile_box').hide()" class="textbtn">&times;</a></div>
 
   <h2></h2>
   <div class="miniavatar sprite-silhouette32"></div>  
