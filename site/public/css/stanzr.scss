@@ -404,15 +404,16 @@ div {
       &#rally_miniavatars {
         border: none;
       }
-      
-      sidesection.miniavatar {
+
+      div.miniavatar {
         width: 32px;
         height: 32px;
         float: left;
-        margin: 0px 8px 8px 0px;
+        margin: 0px 8px 8px 0px !important;
         padding: 0px;
         border: none;
       }
+      
 
       ul.sideposts {
         list-style-type: none;

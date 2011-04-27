@@ -251,11 +251,11 @@ div.rightcol {
       float: right; }
     div.rightcol div.sidesection#rally_miniavatars {
       border: none; }
-    div.rightcol div.sidesection sidesection.miniavatar {
+    div.rightcol div.sidesection div.miniavatar {
       width: 32px;
       height: 32px;
       float: left;
-      margin: 0px 8px 8px 0px;
+      margin: 0px 8px 8px 0px !important;
       padding: 0px;
       border: none; }
     div.rightcol div.sidesection ul.sideposts {
