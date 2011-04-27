@@ -190,6 +190,7 @@ main.msg = {
     msgent.c = msg.c
     msgent.t = msg.t
     msgent.p = msg.p
+    msgent.r = msg.r
     msgent.save$(cb)
     return msgent
   },
@@ -590,13 +591,14 @@ main.api = {
           msg.a = msg.an.length
           msg.save$(onwin(res,function(msg){
             main.cache.set('topagrees-'+req.params.chatid,null,onwin(res,function(){
+
+              // do this here to prevent a cold cache stampede in get_agrees
               main.api.chat.msg.get_agrees(req,res)
 
               var group = now.getGroup(req.params.chatid)
               if( group.now.receiveMessage ) {
                 group.now.receiveMessage(req.user$.nick, JSON.stringify({type:'agree',msgid:msg.i}))
               }
-
             }))
           }))
         }))
@@ -783,9 +785,20 @@ Seneca.init(
       var nick = this.now.name
       var group = now.getGroup(chatid)
 
+      var text = msg.t
+      msg.r = []
+      var m = text.match(/@\S+/g)
+      if( m ) {
+        for (i=0; i<m.length; i++) {
+          var rt = m[i].substring(1)
+          msg.r.push(rt)
+        }
+      }
+
 
       var msgid = uuid().toLowerCase()
-      var unsavedmsgent = main.msg.save({i:msgid,f:nick,c:chatid,p:msg.p,t:msg.t})
+      var unsavedmsgent = main.msg.save({i:msgid,f:nick,c:chatid,p:msg.p,t:msg.t,r:msg.r})
+      eyes.inspect(unsavedmsgent)
 
       group.now.receiveMessage(
         nick, 
@@ -795,6 +808,7 @@ Seneca.init(
             c:chatid,
             t:msg.t, 
             p:msg.p,
+            r:msg.r,
             i:msgid,
             f:nick,
             a:0,

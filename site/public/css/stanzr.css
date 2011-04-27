@@ -216,9 +216,7 @@ div.midcol {
             float: left; }
           div.midcol div.postsarea ul.topicposts li.message div.post_content .post_actions {
             float: right; }
-        div.midcol div.postsarea ul.topicposts li.message span.shares {
-          color: #999999; }
-        div.midcol div.postsarea ul.topicposts li.message span.agrees {
+        div.midcol div.postsarea ul.topicposts li.message span.count {
           color: #999999; }
       div.midcol div.postsarea ul.topicposts li.infomsg {
         margin: 10px 0px; }
@@ -266,8 +264,12 @@ div.rightcol {
       padding: 0px; }
       div.rightcol div.sidesection ul.sideposts li {
         margin: 8px 0 8px 0; }
-        div.rightcol div.sidesection ul.sideposts li span.shares {
-          float: left;
+        div.rightcol div.sidesection ul.sideposts li h4 {
+          display: inline-block;
+          margin: 0px !important;
+          width: 70%; }
+        div.rightcol div.sidesection ul.sideposts li span.count {
+          float: right;
           color: #999999; }
 
 p.post {
@@ -376,7 +378,10 @@ div.modalbox {
 #rally_editbtn {
   display: none; }
 
-#mostagreed_msg_tm {
+#agree_msg_tm {
+  display: none; }
+
+#reply_msg_tm {
   display: none; }
 
 #head_nick_img {

@@ -5,9 +5,7 @@ var app = {
   active_topic: 0,
   chat: {},
   msgcache: {},
-  agrees: [],
   nickmap: {},
-  agrees_start: 0,
 
 
   text: {
@@ -70,7 +68,7 @@ var app = {
   resize: function() {
     var winh    = $(window).height()
     var headerh = $('div.header').height()
-    var colh    = Math.max( 400, winh - headerh - 30 );
+    var colh    = Math.max( 400, winh - headerh );
     $('div.col').height(colh)
     var thh = app.topichead.height() || 50
     var sbh = $('div.topicsend').height() || 100
@@ -123,106 +121,23 @@ var app = {
   },
 
 
-  agree: function(msgid,cb) {
+  agree: function(msgid) {
     $.ajax({
       url:'/api/chat/'+app.chat.chatid+'/msg/'+msgid+'/agree',
       type:'POST',
       contentType:'application/json',
       data:'{}',
       dataType:'json',
-      success:function(res){
-        cb(res)
-      }
+      success:function(res){}
     })
   },
 
 
-  topagrees: function(cb) {
-    $.ajax({
-      url:'/api/chat/'+app.chat.chatid+'/msgs/agrees',
-      dataType:'json',
-      success:function(res){
-        var msgids = []
-        for(var i = 0; i < res.length; i++) {
-          var msg = res[i]
-          msg && ( app.msgcache[msg.i] = msg, msgids.push(msg.i) )
-        }
-        app.agrees = msgids
-        cb(res)
-      }
-    })
-  },
-
-
-  loadagrees: function() {
-    $.ajax({
-      url:'/api/chat/'+chatid+'/msgs/agrees',
-      type:'GET',
-      dataType:'json',
-      success:function(res){
-        app.agrees = res
-        app.displayagrees()
-      }})
-  },
-
-
-  displayagrees: function(start){
-    app.agrees_start = start || app.agrees_start
-
-/*
-    var mostagreed_drilldown = $('#mostagreed_drilldown')
-    if( 3 < app.agrees.length && app.agrees_start < app.agrees.length ) {
-      mostagreed_drilldown.show()
-    }
-    else {
-      mostagreed_drilldown.hide()
-    }
-
-    var mostagreed_drillup = $('#mostagreed_drillup')
-    if( 3 <= app.agrees_start ) {
-      mostagreed_drillup.css({opacity:1})
-    }
-    else {
-      mostagreed_drillup.css({opacity:0.001})
-    }
-*/
-
-    var rally_mostagreed = $('#rally_mostagreed')
-    var mostagreed_msg_tm = $('#mostagreed_msg_tm')
-
-    rally_mostagreed.empty()
-
-    for( var i = app.agrees_start; i < app.agrees_start+3; i++ ) {
-      function displaymostagreed(msg){
-        var msgdiv = mostagreed_msg_tm.clone().attr('id','')
-        msgdiv.find('h4').text(msg.f)
-        msgdiv.find('.agrees').text(msg.a)
-        msgdiv.find('.post').text(msg.t)
-        rally_mostagreed.append(msgdiv.fadeIn())
-      }
-
-      var msgid = app.agrees[i]
-      if( msgid ) {
-        var msg = app.msgcache[msgid]
-        if( !msg ) {
-          app.loadmsg(msgid,function(msg){
-            displaymostagreed(msg)
-          })
-        }
-        else {
-          displaymostagreed(msg)
-        }
-      }
-
-    }
-  },
 
   rightbar: {
     box: {},
 
     show: function(others) {
-      console.log(others)
-
       for( var i = 0; i < others.length; i++ ) {
         var box = app.rightbar.box[others[i]]
         box && box.show()
@@ -230,8 +145,6 @@ var app = {
     },
     
     hide: function(others) {
-      console.log(others)
-
       for( var i = 0; i < others.length; i++ ) {
         var box = app.rightbar.box[others[i]]
         box && box.hide()
@@ -284,17 +197,6 @@ $(function(){
     }
   })
 
-  $('#mostagreed_drillup').click(function(){
-    if( 3 <= app.agrees_start ) {
-      app.displayagrees(app.agrees_start-3)
-    }
-  })
-
-  $('#mostagreed_drilldown').click(function(){
-    app.displayagrees(app.agrees_start+3)
-  })
-
-
 
 
   function enterkey(cb) {
@@ -316,15 +218,21 @@ $(function(){
         if( !app.msgcache[msg.i] ) {
           app.msgcache[msg.i] = msg
           display(msg)
+          app.rightbar.box.reply.set(msg)
         }
       }
       else if( 'join' == msg.type ) {
-        if( nick == msg.nick && chatid ) {
-          app.sendbox()
-        }
-        infomsg( msg.nick + ' has joined' )
+        if( msg.nick ) {
+          if( nick == msg.nick && chatid ) {
+            app.sendbox()
+          }
+          else if( !app.nickmap[nick] ) {
+            infomsg( msg.nick + ' has joined' )
+          }
 
-        app.rightbar.box.avatar.add(from)
+          app.nickmap[nick] = true
+          app.rightbar.box.avatar.add(from)
+        }
       }
       else if( 'topic' == msg.type ) {
         if( app.active_topic != msg.topic ) {
@@ -348,6 +256,8 @@ $(function(){
           msg.an = msg.an || []
           msg.an.push(from)
           msg.an = _.uniq(msg.an)
+
+          app.rightbar.box.agree.render(msg)
         }
 
         if( app.msgcache[msgid] ) {
@@ -359,7 +269,6 @@ $(function(){
           })
         }
 
-        app.loadagrees()
       }
       
     }
@@ -522,15 +431,12 @@ $(function(){
           approve.css({background:'transparent'})
         })
 
-        app.agree(msg.i,function(res){
-          msg.a = msg.a || 1
-          msg.an = _.include( (msg.an = msg.an || []), nick )
+        msg.a = msg.a || 0
+        msg.an = _.include( (msg.an = msg.an || []), nick )
 
-          post.find('.agrees').text('x'+msg.a)
+        post.find('.agrees').text('x'+msg.a)
 
-          app.agrees = res
-          app.displayagrees()
-        })
+        app.agree(msg.i)
       })
     }
 
@@ -563,9 +469,9 @@ $(function(){
         var nicks = res.nicks || []
         for( var i = 0; i < nicks.length; i++ ) {
           var other = nicks[i]
-          if( other != nick ) {
+          //if( other != nick ) {
             app.rightbar.box.avatar.add(other)
-          }
+          //}
         }
 
 
@@ -649,7 +555,8 @@ $(function(){
               display(msg)
             }
 
-            app.loadagrees()
+            app.rightbar.box.agree.load()
+            app.rightbar.box.reply.set(res)
           }
         })
       }
@@ -669,6 +576,8 @@ $(function(){
 
 
 function RightbarBox() {
+  this.drill = 'up'
+
   this.hide = function() {
     this.el.box.slideUp();
   }
@@ -683,12 +592,16 @@ function RightbarBox() {
       self.el.box.animate({height:140})
       setTimeout(function(){
         app.rightbar.show(others)
+        self.drill = 'up'
+        self.render()
       },200)
       self.el.drilldown.show()
       self.el.drillup.hide()
     })
 
     self.el.drilldown.click(function(){
+      self.drill = 'down'
+      self.render()
       app.rightbar.hide(others)
       setTimeout(function(){
         self.el.box.animate({height:$('div.rightcol').height()-21})
@@ -708,11 +621,77 @@ function AgreeBox() {
     ,drilldown: $('#agree_drilldown')
     ,drillup: $('#agree_drillup')
     ,box: $('#agree_box')
+
+    ,msgs: $('#rally_agree')
+    ,msg_tm: $('#agree_msg_tm')
+
   }
 
   self.init(['reply','avatar'])
+
+  var agrees = []
+
+
+  self.render = function(msg) {
+    if( msg ) {
+      agrees.push(msg.i)
+      agrees = _.uniq(agrees)
+    }
+
+    agrees.sort(function(a,b){
+      var ma = app.msgcache[a]
+      var mb = app.msgcache[b]
+      return ma && mb ? mb.a - ma.a : 0;
+    })
+
+    self.el.msgs.empty()
+
+    for( var i = 0; i < agrees.length; i++ ) {
+      function displaymostagreed(msg){
+        if( 1 <= msg.a ) {
+          var msgdiv = self.el.msg_tm.clone().attr('id','')
+          msgdiv.find('h4').text(msg.f)
+          msgdiv.find('.count').text('x'+msg.a)
+          msgdiv.find('.post').text(msg.t)
+          self.el.msgs.append(msgdiv.fadeIn())
+
+          if( 'up' == self.drill && 100 < self.el.msgs.height() ) {
+            i = agrees.length
+          }
+        }
+      }
+
+      var msgid = agrees[i]
+      if( msgid ) {
+        var msg = app.msgcache[msgid]
+        if( !msg ) {
+          app.loadmsg(msgid,function(msg){
+            displaymostagreed(msg)
+          })
+        }
+        else {
+          displaymostagreed(msg)
+        }
+      }
+    }
+  }
+
+
+  self.load = function() {
+    $.ajax({
+      url:'/api/chat/'+chatid+'/msgs/agrees',
+      type:'GET',
+      dataType:'json',
+      success:function(res){
+        agrees = res
+        self.render()
+      }
+    })
+  }
+
 }
 AgreeBox.prototype = new RightbarBox()
+
 
 
 function ReplyBox() {
@@ -723,11 +702,79 @@ function ReplyBox() {
     ,drilldown: $('#reply_drilldown')
     ,drillup: $('#reply_drillup')
     ,box: $('#reply_box')
+
+    ,msgs: $('#rally_reply')
+    ,msg_tm: $('#reply_msg_tm')
   }
 
   self.init(['agree','avatar'])
+
+
+  var replies = []
+
+  self.set = function(msgs) {
+    if( !_.isArray(msgs) ) {
+      msgs = [msgs]
+    }
+
+    var found = false
+
+    for( var i = 0; i < msgs.length; i++ ) {
+      var msg = msgs[i]
+      if( _.include(msg.r,nick) ) {
+        replies.unshift(msg.i)
+        found = true
+      }
+    }
+
+    if( found ) {
+      self.render()
+    }
+  }
+
+
+  self.render = function(msg) {
+    if( msg ) {
+      replies.unshift(msg.i)
+      replies = _.uniq(replies)
+    }
+
+    self.el.msgs.empty()
+
+    for( var i = 0; i < replies.length; i++ ) {
+      function displayreply(msg){
+        var msgdiv = self.el.msg_tm.clone().attr('id','')
+        msgdiv.find('h4').text(msg.f)
+
+        if( msg.a ) {
+          msgdiv.find('.count').text('x'+msg.a)
+        }
+
+        msgdiv.find('.post').text(msg.t)
+        self.el.msgs.append(msgdiv.fadeIn())
+        if( 'up' == self.drill && 100 < self.el.msgs.height() ) {
+          i = replies.length
+        }
+      }
+
+      var msgid = replies[i]
+      if( msgid ) {
+        var msg = app.msgcache[msgid]
+        if( !msg ) {
+          app.loadmsg(msgid,function(msg){
+            displayreply(msg)
+          })
+        }
+        else {
+          displayreply(msg)
+        }
+      }
+    }
+  }
+  
 }
 ReplyBox.prototype = new RightbarBox()
+
 
 
 function AvatarBox() {
@@ -745,34 +792,26 @@ function AvatarBox() {
   var avatars = {}
 
   self.add = function(avnick) {
-    app.nickmap[avnick] = true
+    if( avnick ) {
+      if( !avatars[avnick] ) {
+        avatars[avnick] = true
 
-    if( !avatars[avnick] ) {
-      avatars[avnick] = true
+        var avatar = $('#miniavatar_tm').clone()
+        avatar.click(function(){
+          $('#profile_box').show().find('h2').text(avnick)
+        })
+        $('#rally_miniavatars').append(avatar)
+        avatar.show()
 
-      var avatar = $('#miniavatar_tm').clone().attr('id','side_avatar_'+avnick).show()
-      avatar.click(function(){
-        $('#profile_box').show().find('h2').text(avnick)
-      })
-      $('#rally_miniavatars').append(avatar)
-
-      var pcount = $('#rally_pcount').text()
-      pcount = '' == pcount ? 0 : parseInt(pcount,10)
-      pcount++
-      $('#rally_pcount').text(''+pcount)
-
-      var rally_pcount_drilldown = $('#rally_pcount_drilldown')
-      if( 20 < pcount ) {
-        rally_pcount_drilldown.show()
-      }
-      else {
-        rally_pcount_drilldown.hide()
+        var pcount = $('#rally_pcount').text()
+        pcount = '' == pcount ? 0 : parseInt(pcount,10)
+        pcount++
+        $('#rally_pcount').text(''+pcount)
       }
     }
   }
 
-
-
+  self.render = function() {}
 }
 AvatarBox.prototype = new RightbarBox()
 

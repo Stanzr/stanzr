@@ -348,11 +348,7 @@ div {
             .post_actions {float: right;}
           }
 
-          span.shares {
-            color: $fontmetaC;
-          }    
-
-          span.agrees {
+          span.count {
             color: $fontmetaC;
           }    
 
@@ -424,9 +420,15 @@ div {
     
         li {
           margin: 8px 0 8px 0;
+          
+          h4 {
+            display: inline-block;
+            margin: 0px !important;
+            width: 70%;
+          }
 
-          span.shares {
-            float: left;
+          span.count {
+            float: right;
             color: $fontmetaC;
           }    
         }
@@ -568,7 +570,11 @@ div.modalbox {
   display:none;
 }
 
-#mostagreed_msg_tm {
+#agree_msg_tm {
+  display: none;                    
+}
+
+#reply_msg_tm {
   display: none;                    
 }
 
