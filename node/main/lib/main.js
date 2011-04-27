@@ -462,7 +462,7 @@ main.api = {
           })
         }
 
-        if( chat ) {
+        if( chat && chat.chatid ) {
           chat.topics = json.topics
           savechat(chat)
         }
