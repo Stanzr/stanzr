@@ -346,6 +346,7 @@ div.modalbox {
   height: 100px; }
 
 #chat_logo {
+  margin-top: 10px;
   text-align: center; }
   #chat_logo img {
     display: none;

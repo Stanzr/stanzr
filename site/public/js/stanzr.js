@@ -545,14 +545,6 @@ $(function(){
         app.changetopic(app.active_topic)            
 
 
-        $('#rally_title').text(res.title)
-        $('#rally_modname').text(res.modname)
-        $('#rally_whenstr').text(res.whenstr)
-        $('#rally_desc').text(res.desc)
-
-        if( app.chat.modnicks && app.chat.modnicks[nick] ) {
-          $('#rally_editbtn').show().click(app.hostchatbox.editchat)
-        }
 
         app.leftbar.box.detail.init(res)
         
@@ -596,6 +588,18 @@ function ChatDetailsBox() {
   }
 
   self.init = function(chat) {
+
+    $('#rally_title').text(chat.title)
+    $('#rally_modname').text(chat.modname)
+    $('#rally_whenstr').text(chat.whenstr)
+    
+    $('#rally_desc').html( markdown.toHTML(chat.desc) )
+    
+    if( app.chat.modnicks && app.chat.modnicks[nick] ) {
+      $('#rally_editbtn').show().click(app.hostchatbox.editchat)
+    }
+
+
     if( chat.logo ) {
       var imgurl = 'http://c1.stanzr.com/img/logo/'+chat.logo
       var imgobj = new Image()
