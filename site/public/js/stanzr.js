@@ -151,6 +151,11 @@ var app = {
         box && box.hide()
       }
     }
+  },
+
+  
+  leftbar: {
+    box: {}
   }
   
 }
@@ -180,6 +185,8 @@ $(function(){
 
 
   app.hostchatbox = new HostChatBox()
+
+  app.leftbar.box.detail  = new ChatDetailsBox()
 
   app.rightbar.box.avatar = new AvatarBox()
   app.rightbar.box.agree  = new AgreeBox()
@@ -547,6 +554,9 @@ $(function(){
           $('#rally_editbtn').show().click(app.hostchatbox.editchat)
         }
 
+        app.leftbar.box.detail.init(res)
+        
+
         $.ajax({
           url:'/api/chat/'+chatid+'/msgs',
           type:'GET',
@@ -575,6 +585,28 @@ $(function(){
   }
   
 });
+
+
+function ChatDetailsBox() {
+  var self = this
+
+  self.el = {
+    dummy: null
+    ,img: $('#chat_logo img')  
+  }
+
+  self.init = function(chat) {
+    if( chat.logo ) {
+      var imgurl = 'http://c1.stanzr.com/img/logo/'+chat.logo
+      var imgobj = new Image()
+      imgobj.src = imgurl
+      imgobj.onload = function() {
+        var width = 200 < imgobj.width ? 200 : imgobj.width
+        self.el.img.css({width:width}).attr('src',imgurl).show()
+      }
+    }
+  }
+}
 
 
 

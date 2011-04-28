@@ -527,6 +527,15 @@ div.modalbox {
 
 
 
+#chat_logo {
+  text-align: center;
+  img {
+    display: none;
+    border: none;  
+  }
+}
+
+
 #avatar_drillup {
   display: none;
 }

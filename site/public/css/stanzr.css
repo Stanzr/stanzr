@@ -345,6 +345,12 @@ div.modalbox {
 #profile_box {
   height: 100px; }
 
+#chat_logo {
+  text-align: center; }
+  #chat_logo img {
+    display: none;
+    border: none; }
+
 #avatar_drillup {
   display: none; }
 
