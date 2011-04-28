@@ -1,0 +1,78 @@
+
+
+Required Development Tools
+--------------------------
+
+On Linux:
+  apt-get install build-essential
+  apt-get install libssl-dev
+  apt-get install git
+
+On Mac:
+  Install Xcode
+
+On Windows:
+  Install Cygwin
+  Make sure to install the development packages
+
+
+Database:
+Install MongoDB from http://mongodb.org
+
+
+
+To get the repo:
+
+git clone git@github.com:Stanzr/stanzr.git
+
+You should be familiar with git. Please use feature branches.
+See http://book.git-scm.com/ and the github docs
+
+
+Node.js:
+
+Run these commands:
+(on windows, do this in cygwin, and refer to nodejs.org for any windows issues)
+
+mkdir build
+cd build
+
+# you should now have two folders in your project folder: stanzr and build
+
+wget http://nodejs.org/dist/node-v0.4.5.tar.gz
+tar -xzf node-v0.4.5.tar.gz
+cd node-v0.4.5
+./configure
+make
+make install
+
+
+cd ../stanzr
+sudo -s
+curl http://npmjs.org/install.sh | sh
+sh node/npm-install.sh
+
+cd node/support
+./clone.sh
+cd node-mongodb-native
+make
+
+
+
+Local domain names:
+You can access the development site at http://localhost:8080
+
+
+
+Running:
+
+- ensure mongod is running: e.g. 
+    mkdir /tmp/stanzrdb
+    mongod --dbpath /tmp/stanzrdb
+
+
+- run node in development, from the stanzr folder:
+    node node/main/lib/main.js
+
+- run node with a particular configuration - not needed for development
+   node node/main/lib/main.js -config ./conf/node/demo.js

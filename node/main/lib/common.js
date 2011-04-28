@@ -58,6 +58,7 @@ var now      = exports.now   = require('now')
 var config = require('config')
 var conf = exports.conf = config('conf',{
   env: 'dev',
+  hosturl:'http://localhost:8080',
   web: {
     port: 8080
   },
