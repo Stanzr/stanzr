@@ -247,7 +247,8 @@ div {
     margin-right: 0px;
     width: 265px;
     float: left;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
 
     h1,h2,h3 {
       color: $fontsideC;
