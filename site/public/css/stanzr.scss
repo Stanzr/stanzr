@@ -1,5 +1,5 @@
 
-
+ 
 $len:   30px;
 $lenb:  20px;
 $lenm:  15px;
@@ -118,6 +118,7 @@ body {
   color: $fontbodyC;
   background-color: $bodybgC;
   line-height: 1.3;
+  height: 100%;
 }
 
 h1 {
@@ -607,3 +608,23 @@ div.modalbox {
 #head_facebook {
   background-position: 7px -255px;
 }
+
+
+/* LANDING PAGE */
+* html .landing {height: 100%} /* IE6 hack */
+html, body {height: 100%; }
+.landing {background-color: $headC; min-height: 100%;}
+.coming_soon {margin: 0 auto; padding-top: 200px; width: 315px;}
+.coming_soon img {display: block;}
+.coming_soon h1 {font-size: 21px; margin: 25px 0 10px 0; border-top: 1px solid #fff; padding-top: 25px; color: #fff;}
+.coming_soon .textfield {width: 250px; margin: 0 0 5px 0;}
+.coming_soon input[type="submit"] {font-size: 17px;}
+
+
+
+
+
+
+
+
+
