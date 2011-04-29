@@ -419,57 +419,62 @@ $(function(){
   function display(msg) {
     app.nickmap[msg.f] = true
 
+    msg.p = 'undefined'==typeof(msg.p) ? app.topic : msg.p
+
     var post = $('#posts_tm li.message').clone()
     post.attr('id','topic_'+msg.p+'_post_'+msg.i)
     post.find('h4').text(msg.f)
     post.find('p').text(msg.t)
 
-    if( 0 < msg.a ) {
-      post.find('.agrees').text('x'+msg.a)
-    }
 
-
-    post.find('a.sprite-at-reply').click(function(){
-      var txt = $('#post_text').val()
-      if( -1 == txt.indexOf( msg.f ) ) {
-        $('#post_text').val( '@'+msg.f+' '+txt ) 
-      }
-      $('#post_text').focus()
-    })
-
-    var approve = post.find('a.sprite-approve')
-    if( (msg.an && _.include(msg.an,nick)) || nick == msg.f ) {
-      approve.css({background:'transparent'})
-    }
-    else {
-      approve.click(function(){
-        approve.animate({opacity:0.01},function(){
-          approve.css({background:'transparent'})
-        })
-
-        msg.an = msg.an || []
-        msg.an.push(nick)
-        msg.an = _.uniq(msg.an)
-        msg.a = msg.an.length
-
+    if( !msg.x ) {
+      if( 0 < msg.a ) {
         post.find('.agrees').text('x'+msg.a)
+      }
 
-        app.agree(msg.i)
+      post.find('a.sprite-at-reply').click(function(){
+        var txt = $('#post_text').val()
+        if( -1 == txt.indexOf( msg.f ) ) {
+          $('#post_text').val( '@'+msg.f+' '+txt ) 
+        }
+        $('#post_text').focus()
       })
-    }
 
+      var approve = post.find('a.sprite-approve')
+      if( (msg.an && _.include(msg.an,nick)) || nick == msg.f ) {
+        approve.css({background:'transparent'})
+      }
+      else {
+        approve.click(function(){
+          approve.animate({opacity:0.01},function(){
+            approve.css({background:'transparent'})
+          })
+
+          msg.an = msg.an || []
+          msg.an.push(nick)
+          msg.an = _.uniq(msg.an)
+          msg.a = msg.an.length
+
+          post.find('.agrees').text('x'+msg.a)
+
+          app.agree(msg.i)
+        })
+      }
+    }
 
     post.css({opacity:0})
     
     var topicposts = $('#topic_posts_'+msg.p)
     topicposts.append(post)
 
+    var opacity = msg.x ? 0.5 : 1.0
+
     if( msg.p == app.topic ) {
-      post.animate({opacity:1},500)
+      post.animate({opacity:opacity},500)
       app.postbottom()
     }
     else {
-      post.css({opacity:1})
+      post.css({opacity:opacity})
     }
   }
 

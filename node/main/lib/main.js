@@ -17,6 +17,7 @@ var twitter = common.twitter
 
 var log     = common.log
 
+var TweetSearch = require('./TweetSearch')
 
 var main = {}
 
@@ -115,6 +116,42 @@ main.util = {
     }
     else {
       denied(res)
+    }
+  },
+
+  tweetsearch: function(chatid,hashtag) {
+    console.log('================================= '+chatid+' '+hashtag)
+
+    var tsm = (main.util.tsm = main.util.tsm || {})
+    var ts = tsm[chatid]
+    console.dir(ts)
+    
+    if( !ts ) {
+      hashtag = '#'==hashtag[0] ? hashtag : '#'+hashtag
+      ts = tsm[chatid] = new TweetSearch(hashtag)
+    }
+    if( !ts.running ) {
+      ts.start(60*60*1000,function(tweet){
+        var nick = tweet.user.screen_name
+        var msgid = uuid().toLowerCase()
+        var group = now.getGroup(chatid)        
+        group.now.receiveMessage(
+          nick, 
+          JSON.stringify(
+            {
+              type:'message', 
+              c:chatid,
+              t:tweet.text, 
+              r:[],
+              i:msgid,
+              f:nick,
+              a:0,
+              an:[],
+              x:1
+            }
+          )
+        )
+      })
     }
   }
 }
@@ -440,19 +477,6 @@ main.api = {
       }
       else {
         common.sendjson(res,req.chat$.data$())
-        /*
-        main.chat.get(chatid,function(err,chat){
-          if( err ) {
-            failed(res,err)
-          }
-          else if( chat ) {
-            common.sendjson(res,chat)
-          }
-          else {
-            lost(res)
-          }
-        })
-        */
       }
     },
 
@@ -691,6 +715,7 @@ function loadchat(req,res,next) {
     chat.load$({chatid:chatid},onwin(res,function(chat){
       if( chat ) {
         req.chat$ = chat
+        main.util.tweetsearch(chat.chatid,chat.hashtag)
         next()
       }
       else {

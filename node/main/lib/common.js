@@ -48,7 +48,10 @@ var cookies  = exports.cookies   = require('cookies')
 var _        = exports._         = require('underscore')
 var oauth    = exports.oauth     = require('oauth')
 var url      = exports.url       = require('url')
+
+
 var twitter  = exports.twitter   = require('twitter')
+//var twitter  = exports.twitter   = require('../../support/node-twitter')
 
 var seneca   = exports.seneca    = require('../../support/seneca')
 //var seneca   = exports.seneca    = require('seneca')
@@ -74,7 +77,11 @@ var conf = exports.conf = config('conf',{
     },
     twitter: {
       key:'k',
-      secret:'s'
+      secret:'s',
+      token: {
+        key: 'k',
+        secret: 's'
+      }
     },
     facebook: {
       key:'k',
