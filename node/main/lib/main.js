@@ -457,6 +457,7 @@ main.api = {
 
     save: function(req,res) {
       var json = req.json$
+      util.debug('savechat:'+JSON.stringify(json))
       var chat = main.seneca.make('stanzr','app','chat')
 
       chat.load$({chatid:req.params.chatid},onwin(res,function(chat){
@@ -705,15 +706,19 @@ function loadchat(req,res,next) {
 function auth(req,res,next) {
   main.util.authuser(req,res,onwin(res,function(user,login){
     if( user ) {
+      req.user$ = user
+      req.login$ = login
+
       if( req.chat$ ) {
         if( !req.chat$.bans[user.nick] ) {
-          req.user$ = user
-          req.login$ = login
           next()
+        }
+        else {
+          denied(res)
         }
       }
       else {
-        denied(res)
+        next()
       }
     }
     else {
