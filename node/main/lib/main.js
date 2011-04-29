@@ -22,11 +22,11 @@ var main = {}
 var MAX_INFO_LIST = 30
 
 
-/*
+
 process.on('uncaughtException', function (err) {
   log('error','uncaught',err)
 });
-*/
+
 
 function sendcode(code,res) {
   try {
@@ -140,13 +140,23 @@ main.chat = {
 
   addnick: function(chatid,nick,cb) {
     main.chat.get(chatid,function(err,chat){
+
       if( err ) {
         cb(err)
       }
       else if( chat ) {
+
         var nicks = chat.nicks || []
         nicks.push(nick)
+        nicks = _.select(nicks,function(nick){
+          return null != nick
+        })
         chat.nicks = _.uniq(nicks)
+
+        if( !chat.bans || _.isArray(chat.bans) ) {
+          chat.bans = {}
+        }
+
         chat.save$(cb)
       }
       else {
@@ -428,6 +438,8 @@ main.api = {
         })
       }
       else {
+        common.sendjson(res,req.chat$.data$())
+        /*
         main.chat.get(chatid,function(err,chat){
           if( err ) {
             failed(res,err)
@@ -439,6 +451,7 @@ main.api = {
             lost(res)
           }
         })
+        */
       }
     },
 
@@ -473,7 +486,7 @@ main.api = {
           chat.topics[0].active = true
           chat.topic = 0
           
-          chat.bans = []
+          chat.bans = {}
           chat.nicks = []
           chat.modnicks = {}
           chat.modnicks[json.moderator]=1
@@ -603,6 +616,27 @@ main.api = {
           }))
         }))
       }
+
+
+    }, // msg
+
+    user: {
+      post_status:
+      function(req,res){
+        var nick = req.params.nick
+        if( nick ) {
+          req.chat$.bans[nick] = req.json$.ban
+
+          main.cache.set(req.chat$.chatid+'.bans',req.chat$.bans,onwin(res,function(){
+            req.chat$.save$( onwin(res, function(){
+              common.sendjson(res,{nick:nick,ban:req.chat$.bans[nick]})
+            }))
+          }))
+        }
+        else {
+          bad(res)
+        }
+      }
     }
   }
 }
@@ -632,12 +666,55 @@ var mongourl =
   mm.server+':'+mm.port+'/'+mm.name
 
 
+function mustbemod(req,res,next) {
+  if( req.chat$ ) {
+    if( req.chat$.modnicks[req.user$.nick] ) {
+      next()
+    }
+    else {
+      denied(res)
+    }
+  }
+  else {
+    bad(res)
+  }
+}
+
+
+function loadchat(req,res,next) {
+  var m = /^\/api\/chat\/([^\/]+)/.exec(req.url)
+  if( m ) {
+    var chatid = m[1]
+    var chat = main.seneca.make('stanzr','app','chat')
+    chat.load$({chatid:chatid},onwin(res,function(chat){
+      if( chat ) {
+        req.chat$ = chat
+        next()
+      }
+      else {
+        lost(res)
+      }
+    }))
+  }
+  else {
+    next()
+  }
+}
+
+
 function auth(req,res,next) {
   main.util.authuser(req,res,onwin(res,function(user,login){
     if( user ) {
-      req.user$ = user
-      req.login$ = login
-      next()
+      if( req.chat$ ) {
+        if( !req.chat$.bans[user.nick] ) {
+          req.user$ = user
+          req.login$ = login
+          next()
+        }
+      }
+      else {
+        denied(res)
+      }
     }
     else {
       denied(res)
@@ -724,6 +801,7 @@ Seneca.init(
 
     
     app.use( json )
+    app.use( loadchat )
 
     app.use( 
       connect.router(function(capp){
@@ -754,14 +832,26 @@ Seneca.init(
         capp.get('/api/user/:nick', main.api.user.get)
 
         capp.put('/api/chat', main.api.chat.save)
+
+        capp.post('/api/chat/:chatid/msg/:msgid/agree', main.api.chat.msg.post_agree)
+      })
+    )
+
+
+    app.use( mustbemod )
+
+    app.use( 
+      connect.router(function(capp){
         capp.post('/api/chat/:chatid', main.api.chat.save)
 
         capp.post('/api/chat/:chatid/topic/:topic', main.api.chat.topic.post)
         capp.post('/api/chat/:chatid/topic/:topic/active', main.api.chat.topic.post_active)
 
-        capp.post('/api/chat/:chatid/msg/:msgid/agree', main.api.chat.msg.post_agree)
+        capp.post('/api/chat/:chatid/user/:nick/status', main.api.chat.user.post_status)
       })
     )
+
+
 
 
 
@@ -783,41 +873,56 @@ Seneca.init(
 
       var chatid = msg.c
       var nick = this.now.name
-      var group = now.getGroup(chatid)
 
-      var text = msg.t
-      msg.r = []
-      var m = text.match(/@\S+/g)
-      if( m ) {
-        for (i=0; i<m.length; i++) {
-          var rt = m[i].substring(1)
-          msg.r.push(rt)
-        }
-      }
+      main.cache.get(chatid+'.bans',function(err,bans){
+        if( err ) { log('cache',err) }
+        else {
 
+          var group = now.getGroup(chatid)
 
-      var msgid = uuid().toLowerCase()
-      var unsavedmsgent = main.msg.save({i:msgid,f:nick,c:chatid,p:msg.p,t:msg.t,r:msg.r})
-      eyes.inspect(unsavedmsgent)
-
-      group.now.receiveMessage(
-        nick, 
-        JSON.stringify(
-          {
-            type:'message', 
-            c:chatid,
-            t:msg.t, 
-            p:msg.p,
-            r:msg.r,
-            i:msgid,
-            f:nick,
-            a:0,
-            an:[]
+          var text = msg.t
+          msg.r = []
+          var m = text.match(/@\S+/g)
+          if( m ) {
+            for (i=0; i<m.length; i++) {
+              var rt = m[i].substring(1)
+              msg.r.push(rt)
+            }
           }
-        )
-      )
 
-      cb(unsavedmsgent.data$())
+          
+          var msgid = uuid().toLowerCase()
+          var msgdata = {i:msgid,f:nick,c:chatid,p:msg.p,t:msg.t,r:msg.r}
+
+          if( !bans || !bans[nick] ) {
+            var unsavedmsgent = main.msg.save(msgdata)
+            cb(unsavedmsgent.data$())
+
+            eyes.inspect(unsavedmsgent)
+
+            group.now.receiveMessage(
+              nick, 
+              JSON.stringify(
+                {
+                  type:'message', 
+                  c:chatid,
+                  t:msg.t, 
+                  p:msg.p,
+                  r:msg.r,
+                  i:msgid,
+                  f:nick,
+                  a:0,
+                  an:[]
+                }
+              )
+            )
+          }
+          else {
+            cb(msgdata)
+          }
+        }
+      })
+
     }
   }
 )

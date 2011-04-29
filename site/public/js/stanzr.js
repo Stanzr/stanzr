@@ -134,6 +134,10 @@ var app = {
   },
 
 
+  popup: {
+    box: {}
+  },
+
 
   rightbar: {
     box: {},
@@ -184,7 +188,8 @@ $(function(){
   }
 
 
-  app.hostchatbox = new HostChatBox()
+  app.popup.box.hostchat  = new HostChatBox()
+  app.popup.box.profile   = new ProfileBox()
 
   app.leftbar.box.detail  = new ChatDetailsBox()
 
@@ -192,16 +197,17 @@ $(function(){
   app.rightbar.box.agree  = new AgreeBox()
   app.rightbar.box.reply  = new ReplyBox()
 
-  app.el.head_hostchat.click(killpopups(app.hostchatbox.hostchat))
+  app.el.head_hostchat.click(killpopups(app.popup.box.hostchat.hostchat))
   app.el.head_signup.click(killpopups(signupbox))
   app.el.head_login.click(killpopups(loginbox))
+
 
 
 
   $('h4').live('click',function(event){
     var n = $(event.target).text()
     if( app.nickmap[n] ) {
-      $('#profile_box').show().find('h2').text(n)
+      app.popup.box.profile.render(n)
     }
   })
 
@@ -217,7 +223,6 @@ $(function(){
 
   function inituser(){    
     now.name = nick
-
     
     now.receiveMessage = function(from, jsonstr){
       var msg = JSON.parse(jsonstr)
@@ -289,6 +294,8 @@ $(function(){
 
       now.distributeMessage(JSON.stringify(msg),function(msg){
         app.msgcache[msg.i] = msg
+        display(msg)
+        //app.msgcache[msg.i] = msg
       })
     }
     
@@ -476,12 +483,12 @@ $(function(){
       dataType:'json',
       success:function(res){
         app.chat = res
+        app.ismod = app.chat.modnicks && app.chat.modnicks[nick]
+
         var nicks = res.nicks || []
         for( var i = 0; i < nicks.length; i++ ) {
           var other = nicks[i]
-          //if( other != nick ) {
-            app.rightbar.box.avatar.add(other)
-          //}
+          app.rightbar.box.avatar.add(other)
         }
 
 
@@ -596,7 +603,7 @@ function ChatDetailsBox() {
     $('#rally_desc').html( markdown.toHTML(chat.desc) )
     
     if( app.chat.modnicks && app.chat.modnicks[nick] ) {
-      $('#rally_editbtn').show().click(app.hostchatbox.editchat)
+      $('#rally_editbtn').show().click(app.popup.box.hostchat.editchat)
     }
 
 
@@ -830,25 +837,37 @@ function AvatarBox() {
 
   var avatars = {}
 
-  self.add = function(avnick) {
+  self.add = function(avnick,banned) {
     if( avnick ) {
       if( !avatars[avnick] ) {
-        avatars[avnick] = true
 
         var avatar = $('#miniavatar_tm').clone()
         avatar.click(function(){
-          $('#profile_box').show().find('h2').text(avnick)
+          app.popup.box.profile.render(avnick)
         })
         $('#rally_miniavatars').append(avatar)
         avatar.show()
+        avatars[avnick] = avatar
 
         var pcount = $('#rally_pcount').text()
         pcount = '' == pcount ? 0 : parseInt(pcount,10)
         pcount++
         $('#rally_pcount').text(''+pcount)
+
+        if( app.ismod && app.chat.bans[avnick] ) {
+          self.ban(true,avnick)
+        }
       }
     }
   }
+
+  
+  self.ban = function(ban,bnick) {
+    if( avatars[bnick] ) {
+      avatars[bnick].css({opacity:ban?0.5:1.0})
+    }
+  }
+  
 
   self.render = function() {}
 }
@@ -1044,4 +1063,116 @@ function HostChatBox() {
   self.el.lessbtn.click(function(){
     lesstopic()
   })
+}
+
+
+function showif(obj,spec) {
+  if( spec ) { 
+    obj.__showif = spec
+  }
+  else if( obj.__showif ) {
+    for( var en in obj.__showif ) {
+      var elem = obj.el[en]
+      var show = (obj.__showif[en])()
+      if( show ) {
+        elem.show()
+      }
+      else {
+        elem.hide()
+      }
+    }
+  }
+}
+
+
+function ProfileBox() {
+  var self = this
+
+  self.el = {
+    dummy: null
+
+    ,box: $('#profile_box')
+
+    ,messagebtn: $('#profile_messagebtn')
+    ,banbtn: $('#profile_banbtn')
+    ,unbanbtn: $('#profile_unbanbtn')
+
+    ,you: $('#profile_you')
+
+  }
+  self.el.nick = self.el.box.find('h2')
+
+  var cnick
+
+
+  showif(self,{
+    messagebtn: function(){
+      return nick != cnick
+    },
+    banbtn: function(){
+      return app.ismod && nick != cnick && !app.chat.bans[cnick]
+    },
+    unbanbtn: function(){
+      return app.ismod && nick != cnick && app.chat.bans[cnick]
+    },
+    you: function(){
+      return nick == cnick
+    }
+  })
+
+
+  self.render = function(pnick) {
+    cnick = pnick
+    
+    self.el.box.show()
+    self.el.nick.text(cnick)
+
+    showif(self)
+  }
+
+
+  self.el.messagebtn.click(function(){
+    /* expand to show textarea
+    $.ajax({
+      url:'/api/user/'+cnick+'/msg',
+      type:'POST',
+      contentType:'application/json',
+      dataType:'json',
+      data:'{}',
+      success:function(res){
+      }
+    })
+    */
+  })
+
+
+  function sendban(ban,cb) {
+    $.ajax({
+      url:'/api/chat/'+app.chat.chatid+'/user/'+cnick+'/status',
+      type:'POST',
+      contentType:'application/json',
+      dataType:'json',
+      data:JSON.stringify({ban:ban}),
+      success:function(res){
+        cb(res)
+      }
+    })
+  }
+
+  self.el.banbtn.click(function(){
+    app.chat.bans[cnick]=1
+    showif(self)
+    app.rightbar.box.avatar.ban(true,cnick)
+    sendban(true,function(){
+    })
+  })
+
+  self.el.unbanbtn.click(function(){
+    delete app.chat.bans[cnick]
+    showif(self)
+    app.rightbar.box.avatar.ban(false,cnick)
+    sendban(false,function(){
+    })    
+  })
+
 }
