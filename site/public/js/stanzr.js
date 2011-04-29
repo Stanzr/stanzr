@@ -288,7 +288,8 @@ $(function(){
 
     
     function post(){
-      var msg = {c:chatid,t:$("#post_text").val(),type:'message',p:app.topic}
+      var tweet = $('#send_tweet').attr('checked')
+      var msg = {c:chatid,t:$("#post_text").val(),type:'message',p:app.topic,w:tweet}
       $("#post_text").val("");
       $("#post_text").focus();
 
@@ -842,12 +843,30 @@ function AvatarBox() {
       if( !avatars[avnick] ) {
 
         var avatar = $('#miniavatar_tm').clone()
+        avatar.attr('id','miniavatar_'+avnick)
         avatar.click(function(){
           app.popup.box.profile.render(avnick)
         })
         $('#rally_miniavatars').append(avatar)
         avatar.show()
         avatars[avnick] = avatar
+
+        $.ajax({
+          url:'/api/user/'+avnick,
+          type:'GET',
+          dataType:'json',
+          success:function(res){
+            if( res.avimg ) {
+              console.log(avatar,res.avimg)
+              avatar.css({
+                'background-image':'url('+res.avimg+')',
+                'background-position':'0% 0%',
+                'background-size':'32px 32px'
+              })
+            }
+          }
+        })
+        
 
         var pcount = $('#rally_pcount').text()
         pcount = '' == pcount ? 0 : parseInt(pcount,10)

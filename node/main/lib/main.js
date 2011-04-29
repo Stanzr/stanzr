@@ -13,6 +13,7 @@ var Cookies = common.cookies
 var _       = common._
 var uuid    = common.uuid
 var conf    = common.conf
+var twitter = common.twitter
 
 var log     = common.log
 
@@ -409,7 +410,7 @@ main.api = {
       var user = main.ent.make$('sys','user')
       user.load$({nick:nick},onwin(res,function(user){
         if( user ) {
-          common.sendjson(res,{nick:user.nick,email:user.email})
+          common.sendjson(res,{nick:user.nick,email:user.email,avimg:user.avimg})
         }
         else {
           lost(res)
@@ -796,6 +797,37 @@ Seneca.init(
         failed(ctxt.res,err)
       }
       else {
+        var user = ctxt.user
+
+        if( user.social && 'twitter' == user.social.service ) {
+
+          var twit = new twitter({
+            consumer_key: conf.keys.twitter.key,
+            consumer_secret: conf.keys.twitter.secret,
+            access_token_key: user.social.key,
+            access_token_secret: user.social.secret
+          });
+
+          twit.showUser(ctxt.username,function(data){
+            console.dir(data)
+
+            if( 'Error' != data.name ) {
+              user.avimg = data.profile_image_url
+              user.save$(function(err,user){
+                if( err ) {
+                  log('error',{social:'twitter',kind:'avatar',user:user})
+                }
+              })
+            }
+            else {
+              if( err ) {
+                log('error',{social:'twitter',kind:'showUser',user:user})
+              }
+            }
+          })
+
+        }
+
         var res = ctxt.res
         res.writeHead( 301, {
           'Location':"/"+(ctxt.tag?ctxt.tag:'')
@@ -874,6 +906,7 @@ Seneca.init(
 
 
     main.everyone.now.distributeMessage = function(msgjson,cb){
+      console.log('*************************** '+msgjson)
       var msg = JSON.parse(msgjson)
 
       var chatid = msg.c
@@ -904,6 +937,31 @@ Seneca.init(
             cb(unsavedmsgent.data$())
 
             eyes.inspect(unsavedmsgent)
+
+
+            if( msg.w ) {
+              var user = main.seneca.make('stanzr','sys','user')
+              user.load$({nick:nick},function(err,user){
+                if( err ) { log('tweet',err) }
+                else if( user.social && 'twitter' == user.social.service ) {
+
+                  var twit = new twitter({
+                    consumer_key: conf.keys.twitter.key,
+                    consumer_secret: conf.keys.twitter.secret,
+                    access_token_key: user.social.key,
+                    access_token_secret: user.social.secret
+                  });
+
+                  twit.updateStatus(
+                    msg.t,
+                    function (data) {
+                      console.dir(data)
+                    }
+                  )
+
+                }
+              })
+            }
 
             group.now.receiveMessage(
               nick, 

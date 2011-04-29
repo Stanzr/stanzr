@@ -10,7 +10,10 @@
 2011-04-22:
  - npm updates:
    sudo npm install oauth
-   npm install cookies
-   npm install xml2js
+   sudo npm install cookies
+   sudo npm install xml2js
 
+2011-04-29
+ - npm updates:
+ sudo npm install twitter
 

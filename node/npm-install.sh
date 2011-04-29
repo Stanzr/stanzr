@@ -13,6 +13,7 @@ npm install cookies
 npm install config
 npm install oauth
 npm install xml2js
+npm install twitter
 
 
 
