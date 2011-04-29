@@ -953,7 +953,7 @@ Seneca.init(
                   });
 
                   twit.updateStatus(
-                    msg.t,
+                    msg.t + ' #'+msg.h,
                     function (data) {
                       console.dir(data)
                     }

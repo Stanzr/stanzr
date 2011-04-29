@@ -289,7 +289,7 @@ $(function(){
     
     function post(){
       var tweet = $('#send_tweet').attr('checked')
-      var msg = {c:chatid,t:$("#post_text").val(),type:'message',p:app.topic,w:tweet}
+      var msg = {c:chatid,t:$("#post_text").val(),type:'message',p:app.topic,w:tweet,h:app.chat.hashtag}
       $("#post_text").val("");
       $("#post_text").focus();
 
