@@ -17,7 +17,7 @@ var twitter = common.twitter
 
 var log     = common.log
 
-var TweetSearch = require('./TweetSearch')
+var TweetSearch = require('./tweetsearch')
 
 var main = {}
 
