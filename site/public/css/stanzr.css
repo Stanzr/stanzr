@@ -139,7 +139,8 @@ div.leftcol {
   margin-right: 0px;
   width: 265px;
   float: left;
-  overflow: auto; }
+  overflow-y: auto;
+  overflow-x: hidden; }
   div.leftcol h1, div.leftcol h2, div.leftcol h3 {
     color: #666666; }
   div.leftcol > div {
