@@ -125,32 +125,42 @@ main.util = {
     var tsm = (main.util.tsm = main.util.tsm || {})
     var ts = tsm[chatid]
     console.dir(ts)
+
+    var newhashtag = (ts && ts.term != hashtag) || true
     
     if( !ts ) {
       hashtag = '#'==hashtag[0] ? hashtag : '#'+hashtag
       ts = tsm[chatid] = new TweetSearch(hashtag)
     }
+
+    if( ts.running && newhashtag ) {
+      ts.stop()
+      ts = tsm[chatid] = new TweetSearch(hashtag)
+    }
+
     if( !ts.running ) {
       ts.start(60*60*1000,function(tweet){
         var nick = tweet.user.screen_name
         var msgid = uuid().toLowerCase()
         var group = now.getGroup(chatid)        
-        group.now.receiveMessage(
-          nick, 
-          JSON.stringify(
-            {
-              type:'message', 
-              c:chatid,
-              t:tweet.text, 
-              r:[],
-              i:msgid,
-              f:nick,
-              a:0,
-              an:[],
-              x:1
-            }
+        if( group.now.receiveMessage ) {
+          group.now.receiveMessage(
+            nick, 
+            JSON.stringify(
+              {
+                type:'message', 
+                c:chatid,
+                t:tweet.text, 
+                r:[],
+                i:msgid,
+                f:nick,
+                a:0,
+                an:[],
+                x:1
+              }
+            )
           )
-        )
+        }
       })
     }
   }
@@ -496,6 +506,7 @@ main.api = {
             chat.desc    = json.desc || ''
         
             chat.save$(onwin(res,function(chat){
+              main.util.tweetsearch(chat.chatid,chat.hashtag)
               common.sendjson(res,chat.data$())
             }))
           })
@@ -924,7 +935,10 @@ Seneca.init(
       var nick = this.now.name
       var group = now.getGroup(msg.chat)
       group.addUser(this.user.clientId);
-      group.now.receiveMessage(nick, JSON.stringify({type:'join', nick:nick}))
+
+      if( group.now.receiveMessage ) {
+        group.now.receiveMessage(nick, JSON.stringify({type:'join', nick:nick}))
+      }
 
       main.chat.addnick(msg.chat,nick)
     }
@@ -988,22 +1002,24 @@ Seneca.init(
               })
             }
 
-            group.now.receiveMessage(
-              nick, 
-              JSON.stringify(
-                {
-                  type:'message', 
-                  c:chatid,
-                  t:msg.t, 
-                  p:msg.p,
-                  r:msg.r,
-                  i:msgid,
-                  f:nick,
-                  a:0,
-                  an:[]
-                }
+            if( group.now.receiveMessage ) {
+              group.now.receiveMessage(
+                nick, 
+                JSON.stringify(
+                  {
+                    type:'message', 
+                    c:chatid,
+                    t:msg.t, 
+                    p:msg.p,
+                    r:msg.r,
+                    i:msgid,
+                    f:nick,
+                    a:0,
+                    an:[]
+                  }
+                )
               )
-            )
+            }
           }
           else {
             cb(msgdata)

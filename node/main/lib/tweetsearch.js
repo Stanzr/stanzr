@@ -16,6 +16,7 @@ var twitter  = common.twitter
 var TweetSearch = function(term) {
   var self = this
 
+  self.term = term
   self.running = false
 
 
@@ -32,6 +33,7 @@ var TweetSearch = function(term) {
     self.running = true
 
     twit.stream('statuses/filter', {track:term}, function(stream) {
+      self.stream = stream
 
       stream.on('data', function(tweet) {
         cb(tweet)
@@ -53,6 +55,15 @@ var TweetSearch = function(term) {
     })
   }
 
+
+  self.stop = function() {
+    if( self.running && self.stream ) {
+      console.log('++++++++++++++++++ STOP '+self.term)
+
+      self.stream.destroy()
+      self.running = false
+    }
+  }
 }
 
 
