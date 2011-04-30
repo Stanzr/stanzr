@@ -3,6 +3,7 @@ module.exports = {
   conf: {
     env:'demo',
     hosturl:'http://stanzr.com',
+    tweetsearch:true,
     web: {
       port: 8080
     },

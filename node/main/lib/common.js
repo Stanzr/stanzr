@@ -64,6 +64,7 @@ var config = require('config')
 var conf = exports.conf = config('conf',{
   env: 'dev',
   hosturl:'http://localhost:8080',
+  tweetsearch:false,
   web: {
     port: 8080
   },

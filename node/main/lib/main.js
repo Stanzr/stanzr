@@ -133,7 +133,7 @@ main.util = {
   },
 
   tweetsearch: function(chatid,hashtag) {
-    if( 2 <= hashtag.length ) {
+    if( 2 <= hashtag.length && conf.tweetsearch ) {
 
       var tsm = (main.util.tsm = main.util.tsm || {})
       var ts = tsm[chatid]
@@ -194,7 +194,7 @@ main.util = {
   tweet: function(msg) {
     console.dir(msg)
     if( msg.w ) {
-      var user = main.seneca.make('stanzr','sys','user')
+      var user = main.ent.make$('sys','user')
       user.load$({nick:msg.f},LE(function(user){
         if( user.social && 'twitter' == user.social.service ) {
           
@@ -236,7 +236,24 @@ main.util = {
         )
       )
     }
+  },
+
+  dmnotify: function(chatid,from,to,dmid) {
+    var group = now.getGroup(chatid)
+    if( group.now.receiveMessage ) {
+      group.now.receiveMessage(
+        from, 
+        JSON.stringify(
+          {
+            type:'dm', 
+            to:to,
+            dm:dmid
+          }
+        )
+      )
+    }
   }
+
   
 }
 
@@ -249,7 +266,7 @@ main.chat = {
   },
 
   get: function(chatid,cb) {
-    var chatent = main.seneca.make('stanzr','app','chat')
+    var chatent = main.ent.make$('app','chat')
     chatent.load$({chatid:chatid},function(err,chat){
       cb(err,chat)
     })
@@ -280,7 +297,7 @@ main.chat = {
   },
 
   topagrees:function(chatid,cb){
-    var msgent = main.seneca.make$('stanzr','app','msg')
+    var msgent = main.ent.make$('app','msg')
     var db = msgent.$.store$()._db()
 
     db.collection('app_msg',function(err,app_msg){
@@ -303,7 +320,7 @@ main.chat = {
 main.msg = {
   map: {},
   save: function(msg,cb) {
-    var msgent = main.seneca.make('stanzr','app','msg')
+    var msgent = main.ent.make$('app','msg')
     msgent.i = msg.i
     msgent.s = new Date()
     msgent.f = msg.f
@@ -316,7 +333,7 @@ main.msg = {
   },
 
   list: function(chatid,cb) {
-    var msgent = main.seneca.make('stanzr','app','msg')
+    var msgent = main.ent.make$('app','msg')
     msgent.list$({c:chatid},cb)
   }
 }
@@ -337,7 +354,7 @@ main.view = {
           }
 
           if( req.params.chatid ) {
-            var chatent = main.seneca.make('stanzr','app','chat')
+            var chatent = main.ent.make$('app','chat')
             chatent.load$({chatid:req.params.chatid},RE(res,function(chat){
               if( chat ) {
                 res.render(
@@ -555,7 +572,7 @@ main.api = {
     save: function(req,res) {
       var json = req.json$
       util.debug('savechat:'+JSON.stringify(json))
-      var chat = main.seneca.make('stanzr','app','chat')
+      var chat = main.ent.make$('app','chat')
 
       chat.load$({chatid:req.params.chatid},RE(res,function(chat){
 
@@ -579,7 +596,7 @@ main.api = {
           savechat(chat)
         }
         else {
-          chat = main.seneca.make('stanzr','app','chat')
+          chat = main.ent.make$('app','chat')
 
           chat.topics  = json.topics || [{title:'General',desc:'Open discussion'}]
           chat.topics[0].active = true
@@ -659,7 +676,7 @@ main.api = {
     msg: {
       get: 
       function(req,res){
-        var msgent = main.seneca.make$('stanzr','app','msg')
+        var msgent = main.ent.make$('app','msg')
         msgent.load$({c:req.params.chatid,i:req.params.msgid},RE(res,function(msg){
           if(!msg){
             lost(res)
@@ -692,7 +709,7 @@ main.api = {
 
       post_agree: 
         function(req,res){
-        var msgent = main.seneca.make$('stanzr','app','msg')
+        var msgent = main.ent.make$('app','msg')
         msgent.load$({c:req.params.chatid,i:req.params.msgid},RE(res,function(msg){
           if( !msg ) {
             return lost(msg)
@@ -715,9 +732,8 @@ main.api = {
           }))
         }))
       }
-
-
     }, // msg
+
 
     user: {
       post_status:
@@ -735,6 +751,67 @@ main.api = {
         else {
           bad(res)
         }
+      }
+    }, // user
+
+
+    dm: {
+      put:
+      function(req,res){
+        var chatid = req.chat$.chatid
+        var from   = req.user$.nick
+        var to     = req.params.nick
+        var mark   = [from,to].sort().join('~')
+        var body   = req.json$.body
+        var dmid   = uuid()
+
+        var dm = main.ent.make$('app','dm',{i:dmid,c:chatid,f:from,t:to,m:mark,b:body,w:new Date()})
+        dm.save$(LE(function(dm){
+          util.debug(dm)
+        }))
+
+        main.util.dmnotify(chatid,from,to,dmid)
+
+        common.sendjson(res,dm.data$())
+      },
+
+      get:
+      function(req,res){
+        var dmid   = req.params.dmid
+        var chatid = req.chat$.chatid
+        var to     = req.user$.nick
+
+        var dm = main.ent.make$('app','dm')
+        
+        if( dmid ) {
+          dm.load$({i:dmid,c:chatid,t:to},RE(res,function(dm){
+            if( dm ) {
+              common.sendjson(res,dm.data$())
+            }
+            else {
+              lost(res)
+            }
+          }))
+        }
+        else {
+          dm.list$({c:chatid,t:to,sort$:{w:-1}},RE(res,function(out){
+            common.sendjson(res,out)
+          }))
+        }
+      },
+
+      get_conv:
+      function(req,res){
+        var chatid = req.chat$.chatid
+        var me     = req.user$.nick
+        var other  = req.params.nick
+        var mark   = [me,other].sort().join('~')
+
+        var dm = main.ent.make$('app','dm')
+
+        dm.list$({c:chatid,m:mark,sort$:{w:-1}},RE(res,function(out){
+          common.sendjson(res,out)
+        }))
       }
     }
   }
@@ -784,7 +861,7 @@ function loadchat(req,res,next) {
   var m = /^\/api\/chat\/([^\/]+)/.exec(req.url)
   if( m ) {
     var chatid = m[1]
-    var chat = main.seneca.make('stanzr','app','chat')
+    var chat = main.ent.make$('app','chat')
     chat.load$({chatid:chatid},RE(res,function(chat){
       if( chat ) {
         req.chat$ = chat
@@ -969,6 +1046,11 @@ Seneca.init(
         capp.put('/api/chat', main.api.chat.save)
 
         capp.post('/api/chat/:chatid/msg/:msgid/agree', main.api.chat.msg.post_agree)
+
+        capp.put('/api/chat/:chatid/user/:nick/dm', main.api.chat.dm.put)
+        capp.get('/api/chat/:chatid/user/:nick/dm', main.api.chat.dm.get_conv)
+        capp.get('/api/chat/:chatid/dm/:dmid?', main.api.chat.dm.get)
+        capp.get('/api/chat/:chatid/dm', main.api.chat.dm.get)
       })
     )
 

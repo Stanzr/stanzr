@@ -115,7 +115,7 @@ var app = {
       dataType:'json',
       success:function(res){
         app.msgcache[msgid] = res
-        cb(res)
+        cb && cb(res)
       }
     })
   },
@@ -132,6 +132,36 @@ var app = {
       }
     })
   },
+
+
+  dm: function(to,body) {
+    $.ajax({
+      url:'/api/chat/'+app.chat.chatid+'/user/'+to+'/dm',
+      type:'PUT',
+      contentType:'application/json',
+      data:JSON.stringify({body:body}),
+      dataType:'json',
+      success:function(res){
+        console.log(res)
+      }
+    })
+  },
+
+
+  loaddm: function(dmid,other,cb) {
+    $.ajax({
+      url:'/api/chat/'+app.chat.chatid+
+        (other?'/user/'+other:'')+
+        '/dm'+(dmid?'/'+dmid:''),
+      dataType:'json',
+      success:function(res){
+        console.log(res)
+        cb && cb(res)
+      }
+    })
+  },
+
+
 
 
   popup: {
@@ -281,7 +311,9 @@ $(function(){
             incmsg(app.msgcache[msgid])
           })
         }
-
+      }
+      else if( 'dm' == msg.type ) {
+        console.log(msg)
       }
       
     }

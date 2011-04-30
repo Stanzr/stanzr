@@ -3,6 +3,7 @@ module.exports = {
   conf: {
     env:'staging',
     hosturl:'http://staging.stanzr.com',
+    tweetsearch:true,
     web: {
       port: 8090
     },
