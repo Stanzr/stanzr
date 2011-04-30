@@ -1,5 +1,14 @@
 
 
+function enterkey(cb) {
+  return function(event) {
+    if( 13 == event.keyCode ) {
+      cb()
+    }
+  }
+}
+
+
 var app = {
   topic: 0,
   active_topic: 0,
@@ -134,7 +143,7 @@ var app = {
   },
 
 
-  dm: function(to,body) {
+  dm: function(to,body,cb) {
     $.ajax({
       url:'/api/chat/'+app.chat.chatid+'/user/'+to+'/dm',
       type:'PUT',
@@ -142,7 +151,7 @@ var app = {
       data:JSON.stringify({body:body}),
       dataType:'json',
       success:function(res){
-        console.log(res)
+        cb && cb(res)
       }
     })
   },
@@ -155,7 +164,6 @@ var app = {
         '/dm'+(dmid?'/'+dmid:''),
       dataType:'json',
       success:function(res){
-        console.log(res)
         cb && cb(res)
       }
     })
@@ -226,6 +234,7 @@ $(function(){
   app.rightbar.box.avatar = new AvatarBox()
   app.rightbar.box.agree  = new AgreeBox()
   app.rightbar.box.reply  = new ReplyBox()
+  app.rightbar.box.dm     = new DirectMessageBox()
 
   app.el.head_hostchat.click(killpopups(app.popup.box.hostchat.hostchat))
   app.el.head_signup.click(killpopups(signupbox))
@@ -243,13 +252,6 @@ $(function(){
 
 
 
-  function enterkey(cb) {
-    return function(event) {
-      if( 13 == event.keyCode ) {
-        cb()
-      }
-    }
-  }
 
   function inituser(){    
     now.name = nick
@@ -313,7 +315,11 @@ $(function(){
         }
       }
       else if( 'dm' == msg.type ) {
-        console.log(msg)
+        if( msg.to == nick ) {
+          app.loaddm(msg.dm,null,function(msg){
+            app.rightbar.box.dm.add(msg)
+          })
+        }
       }
       
     }
@@ -607,6 +613,7 @@ $(function(){
 
             app.rightbar.box.agree.load()
             app.rightbar.box.reply.set(res)
+            app.rightbar.box.dm.load()
           }
         })
       }
@@ -622,6 +629,26 @@ $(function(){
   }
   
 });
+
+
+
+function showif(obj,spec) {
+  if( spec ) { 
+    obj.__showif = spec
+  }
+  else if( obj.__showif ) {
+    for( var en in obj.__showif ) {
+      var elem = obj.el[en]
+      var show = (obj.__showif[en])()
+      if( show ) {
+        elem.show()
+      }
+      else {
+        elem.hide()
+      }
+    }
+  }
+}
 
 
 function ChatDetailsBox() {
@@ -670,9 +697,11 @@ function RightbarBox() {
     this.el.box.slideDown();
   }
 
-  this.init = function(others) {
-    var self = this
-    self.el.drillup.click(function(){
+  this.all = ['avatar','agree','reply','dm']
+
+
+  function drillup(self,others){
+    return function() {
       self.el.box.animate({height:140})
       setTimeout(function(){
         app.rightbar.show(others)
@@ -681,9 +710,12 @@ function RightbarBox() {
       },200)
       self.el.drilldown.show()
       self.el.drillup.hide()
-    })
+      return self
+    }
+  }
 
-    self.el.drilldown.click(function(){
+  function drilldown(self,others){
+    return function() {
       self.drill = 'down'
       self.render()
       app.rightbar.hide(others)
@@ -692,9 +724,169 @@ function RightbarBox() {
       },200)
       self.el.drilldown.hide()
       self.el.drillup.css({display:'inline-block'})
-    })
+      return self
+    }
+  }
+  
+
+  this.init = function(me) {
+    var self = this
+    var others = []
+    for(var i = 0; i < this.all.length; i++) {
+      if( me != this.all[i] ) {
+        others.push(this.all[i])
+      }
+    }
+
+    self.drillup = drillup(self,others)
+    self.drilldown = drilldown(self,others)
+
+    self.el.drillup.click(self.drillup)
+    self.el.drilldown.click(self.drilldown)
   }
 }
+
+
+
+function DirectMessageBox() {
+  var self = this
+
+  self.el = {
+    dummy: null
+    ,drilldown: $('#dm_drilldown')
+    ,drillup: $('#dm_drillup')
+    ,box: $('#dm_box')
+
+    ,list: $('#dm_list')
+    ,msg_tm: $('#dm_msg_tm')
+
+    ,text: $('#dm_text')
+    ,send: $('#dm_send')
+    ,sendbtn: $('#dm_sendbtn')
+    ,allbtn: $('#dm_allbtn')
+  }
+
+  self.init('dm')
+
+  self.other = null
+  self.todm = []
+  self.conv = {}
+
+
+  self.el.allbtn.click(function(){
+    self.other = null
+    self.render()
+  })
+
+
+  self.el.sendbtn.click(function(){
+    var body = self.el.text.val()
+    self.el.text.val('')
+    app.dm(self.other,body,function(msg){
+      self.add(msg)
+      self.render()
+    })
+  })
+  self.el.text.keypress(enterkey(function(){self.el.sendbtn.click()}))
+
+
+  showif(self,{
+    send: function(){
+      return !!self.other && 'down' == self.drill
+    },
+    allbtn: function(){
+      return !!self.other
+    }
+  })
+
+
+
+  self.render = function(other) {
+    self.el.list.empty()
+
+    other = other || self.other
+
+    var dmlist = self.todm
+    if( other ) {
+      self.other = other
+
+      if( !self.conv[other] ) {
+        app.loaddm(null,other,function(dmlist){
+          self.conv[other] = dmlist
+          buildlist(dmlist)
+        })
+      }
+      else {
+        buildlist(self.conv[other])
+      }
+    }
+    else {
+      buildlist(dmlist)
+    }
+
+    function buildlist(dmlist) {
+      for( var i = 0; i < dmlist.length; i++ ) {
+        var msg = dmlist[i]
+        var msgdiv = self.el.msg_tm.clone().attr('id','').css({display:'block'})
+        msgdiv.find('h4').text(msg.f)
+        msgdiv.find('.post').text(msg.b)
+        self.el.list.append(msgdiv.fadeIn())
+
+        if( !other ) {
+          msgdiv.click(
+            (function(from){
+              return function(){
+                self.render(from)
+              }
+            })(msg.f)
+          )
+        }
+
+        if( 'up' == self.drill && 100 < self.el.list.height() ) {
+          i = dmlist.length
+        }
+      }
+
+      showif(self)
+
+      if( 'down' == self.drill ) {
+        if( self.other ) {
+          self.el.box.css({'overflow-y':'auto'})
+
+          self.el.box.scrollTop(
+            self.el.send.offset().top - self.el.box.offset().top
+          )
+        }
+        else {
+          self.el.box.css({'overflow-y':'hidden'})
+        }
+      }
+    }
+  }
+
+
+  self.load = function() {
+    app.loaddm(null,null,function(dmlist){
+      self.todm = dmlist
+      self.render()
+    })
+  }
+
+  
+  self.add = function(dm) {
+    self.todm.unshift(dm)
+    var other = dm.f
+    if( nick == other ) {
+      other = dm.t
+    }
+    self.conv[other] = self.conv[other] || []
+    self.conv[other].push(dm)
+    self.render()
+  }
+
+}
+DirectMessageBox.prototype = new RightbarBox()
+
 
 
 function AgreeBox() {
@@ -711,7 +903,7 @@ function AgreeBox() {
 
   }
 
-  self.init(['reply','avatar'])
+  self.init('agree')
 
   var agrees = []
 
@@ -791,7 +983,7 @@ function ReplyBox() {
     ,msg_tm: $('#reply_msg_tm')
   }
 
-  self.init(['agree','avatar'])
+  self.init('reply')
 
 
   var replies = []
@@ -871,7 +1063,7 @@ function AvatarBox() {
     ,box: $('#avatar_box')
   }
 
-  self.init(['agree','reply'])
+  self.init('avatar')
 
   var avatars = {}
 
@@ -894,7 +1086,6 @@ function AvatarBox() {
           dataType:'json',
           success:function(res){
             if( res.avimg ) {
-              console.log(avatar,res.avimg)
               avatar.css({
                 'background-image':'url('+res.avimg+')',
                 'background-position':'0% 0%',
@@ -1122,23 +1313,6 @@ function HostChatBox() {
 }
 
 
-function showif(obj,spec) {
-  if( spec ) { 
-    obj.__showif = spec
-  }
-  else if( obj.__showif ) {
-    for( var en in obj.__showif ) {
-      var elem = obj.el[en]
-      var show = (obj.__showif[en])()
-      if( show ) {
-        elem.show()
-      }
-      else {
-        elem.hide()
-      }
-    }
-  }
-}
 
 
 function ProfileBox() {
@@ -1214,6 +1388,13 @@ function ProfileBox() {
       }
     })
   }
+
+
+  self.el.messagebtn.click(function(){
+    self.el.box.hide()
+    app.rightbar.box.dm.other = cnick
+    app.rightbar.box.dm.drilldown()
+  })
 
   self.el.banbtn.click(function(){
     app.chat.bans[cnick]=1

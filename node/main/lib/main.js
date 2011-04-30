@@ -809,7 +809,7 @@ main.api = {
 
         var dm = main.ent.make$('app','dm')
 
-        dm.list$({c:chatid,m:mark,sort$:{w:-1}},RE(res,function(out){
+        dm.list$({c:chatid,m:mark,sort$:{w:1}},RE(res,function(out){
           common.sendjson(res,out)
         }))
       }

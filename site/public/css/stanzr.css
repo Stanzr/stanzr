@@ -366,6 +366,12 @@ div.modalbox {
 #reply_drillup {
   display: none; }
 
+#dm_drillup {
+  display: none; }
+
+#cc_drillup {
+  display: none; }
+
 #miniavatar_tm {
   display: none; }
 
@@ -395,6 +401,10 @@ div.modalbox {
 
 #reply_msg_tm {
   display: none; }
+
+#dm_text {
+  width: 200px;
+  height: 50px; }
 
 #head_nick_img {
   background-position: 7px -746px;
