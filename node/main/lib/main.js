@@ -45,11 +45,12 @@ function denied(res) { sendcode(401,res) }
 function failed(res,err) { sendcode(500,res); log('error',err) } 
 function found(res,obj,cb) { if(obj){cb(obj)} else {lost(res)} }
 
-function onwin(res,win){
+
+function RE(res,win){
   return function(err){
     if( err ) {
       log('error',err)
-      bad(res,err)
+      failed(res,err)
     }
     else {
       try {
@@ -57,6 +58,23 @@ function onwin(res,win){
       }
       catch( ex ) {
         failed(res,ex)
+      }
+    }
+  }
+}
+
+
+function LE(win){
+  return function(err){
+    if( err ) {
+      log('error',err)
+    }
+    else {
+      try {
+        win && win.apply( this, [].slice.call(arguments,1) )
+      }
+      catch( ex ) {
+        log('ex',ex)
       }
     }
   }
@@ -94,19 +112,14 @@ main.util = {
         cmd:'auth',
         token:token,
       }, 
-      function(err,out){
-        if( err ) {
-          failed(res,err)
+      RE(res,function(out){
+        if( out.auth ) {
+          cb(null,out.user,out.login)
         }
         else {
-          if( out.auth ) {
-            cb(null,out.user,out.login)
-          }
-          else {
-            cb(null,null,null)
-          }
+          cb(null,null,null)
         }
-      }
+      })
     )
   },
   
@@ -120,56 +133,117 @@ main.util = {
   },
 
   tweetsearch: function(chatid,hashtag) {
-    console.log('================================= '+chatid+' '+hashtag)
+    if( 2 <= hashtag.length ) {
 
-    var tsm = (main.util.tsm = main.util.tsm || {})
-    var ts = tsm[chatid]
-    console.dir(ts)
+      var tsm = (main.util.tsm = main.util.tsm || {})
+      var ts = tsm[chatid]
+      console.dir(ts)
 
-    var newhashtag = (ts && ts.term != hashtag) || true
-    
-    if( !ts ) {
-      hashtag = '#'==hashtag[0] ? hashtag : '#'+hashtag
-      ts = tsm[chatid] = new TweetSearch(hashtag)
-    }
+      var newhashtag = (ts && ts.term != hashtag) || true
+      
+      if( !ts ) {
+        hashtag = '#'==hashtag[0] ? hashtag : '#'+hashtag
+        ts = tsm[chatid] = new TweetSearch(hashtag)
+      }
 
-    if( ts.running && newhashtag ) {
-      ts.stop()
-      ts = tsm[chatid] = new TweetSearch(hashtag)
-    }
+      if( ts.running && newhashtag ) {
+        ts.stop()
+        ts = tsm[chatid] = new TweetSearch(hashtag)
+      }
 
-    if( !ts.running ) {
-      ts.start(60*60*1000,function(tweet){
-        var nick = tweet.user.screen_name
-        var msgid = uuid().toLowerCase()
-        var group = now.getGroup(chatid)        
-        if( group.now.receiveMessage ) {
-          group.now.receiveMessage(
-            nick, 
-            JSON.stringify(
-              {
-                type:'message', 
-                c:chatid,
-                t:tweet.text, 
-                r:[],
-                i:msgid,
-                f:nick,
-                a:0,
-                an:[],
-                x:1
-              }
+      if( !ts.running ) {
+        ts.start(60*60*1000,function(tweet){
+          var nick = tweet.user.screen_name
+          var msgid = uuid().toLowerCase()
+          var group = now.getGroup(chatid)        
+          if( group.now.receiveMessage ) {
+            group.now.receiveMessage(
+              nick, 
+              JSON.stringify(
+                {
+                  type:'message', 
+                  c:chatid,
+                  t:tweet.text, 
+                  r:[],
+                  i:msgid,
+                  f:nick,
+                  a:0,
+                  an:[],
+                  x:1
+                }
+              )
             )
+          }
+        })
+      }
+    }
+  },
+
+  parsereply: function(text) {
+    var r = []
+    var m = text.match(/@\S+/g)
+    if( m ) {
+      for (i=0; i<m.length; i++) {
+        var rnick = m[i].substring(1)
+        r.push(rnick)
+      }
+    }
+    return r
+  },
+
+  tweet: function(msg) {
+    console.dir(msg)
+    if( msg.w ) {
+      var user = main.seneca.make('stanzr','sys','user')
+      user.load$({nick:msg.f},LE(function(user){
+        if( user.social && 'twitter' == user.social.service ) {
+          
+          var twit = new twitter({
+            consumer_key: conf.keys.twitter.key,
+            consumer_secret: conf.keys.twitter.secret,
+            access_token_key: user.social.key,
+            access_token_secret: user.social.secret
+          });
+          
+          twit.updateStatus(
+            msg.t + ' #'+msg.h,
+            function (data) {
+              console.dir(data)
+            }
           )
+          
         }
-      })
+      }))
+    }
+  },
+
+  sendtogroup: function(group,type,msg) {
+    if( group.now.receiveMessage ) {
+      group.now.receiveMessage(
+        msg.f, 
+        JSON.stringify(
+          {
+            type:type, 
+            c:msg.c,
+            t:msg.t, 
+            p:msg.p,
+            r:msg.r,
+            f:msg.f,
+            i:msg.i,
+            a:0,
+            an:[]
+          }
+        )
+      )
     }
   }
+  
 }
 
 
 main.chat = {
   getreq: function(req,res,cb) {
-    main.chat.get( req.params.chatid, onwin(res,function(chat){
+    main.chat.get( req.params.chatid, RE(res,function(chat){
       found( res, chat, cb )
     }))
   },
@@ -177,23 +251,15 @@ main.chat = {
   get: function(chatid,cb) {
     var chatent = main.seneca.make('stanzr','app','chat')
     chatent.load$({chatid:chatid},function(err,chat){
-      if( err ) {
-        cb(err)
-      }
-      else {
-        cb(null,chat)
-      }
+      cb(err,chat)
     })
   },
 
   addnick: function(chatid,nick,cb) {
     main.chat.get(chatid,function(err,chat){
+      if( err ) return cb(err);
 
-      if( err ) {
-        cb(err)
-      }
-      else if( chat ) {
-
+      if( chat ) {
         var nicks = chat.nicks || []
         nicks.push(nick)
         nicks = _.select(nicks,function(nick){
@@ -218,20 +284,16 @@ main.chat = {
     var db = msgent.$.store$()._db()
 
     db.collection('app_msg',function(err,app_msg){
-      if( err ) return cb(err)
+      if( err ) return cb(err);
 
       app_msg.find(
         {c:chatid},
         {sort:[['a',-1]],limit:MAX_INFO_LIST},
 
         function(res,cur){
-          if( err ) return cb(err)
+          if( err ) return cb(err);
 
-          cur.toArray(function(err,msgs){
-            if( err ) return cb(err)
-
-            cb(null,msgs)
-          })
+          cur.toArray(cb)
         })
     })
   }
@@ -243,7 +305,7 @@ main.msg = {
   save: function(msg,cb) {
     var msgent = main.seneca.make('stanzr','app','msg')
     msgent.i = msg.i
-    msgent.w = new Date()
+    msgent.s = new Date()
     msgent.f = msg.f
     msgent.c = msg.c
     msgent.t = msg.t
@@ -269,14 +331,14 @@ main.view = {
         next()
       }
       else {
-        main.util.authuser(req,res,onwin(res,function(user,login){
+        main.util.authuser(req,res,RE(res,function(user,login){
           if( user ) {
             var nick = user.nick
           }
 
           if( req.params.chatid ) {
             var chatent = main.seneca.make('stanzr','app','chat')
-            chatent.load$({chatid:req.params.chatid},onwin(res,function(chat){
+            chatent.load$({chatid:req.params.chatid},RE(res,function(chat){
               if( chat ) {
                 res.render(
                   'member', 
@@ -380,7 +442,7 @@ main.api = {
               password:json.password,
               active:true
             }, 
-            onwin(res,function(out){
+            RE(res,function(out){
               eyes.inspect(out)
 
               if( out.ok ) {
@@ -392,7 +454,7 @@ main.api = {
                     nick:json.nick,
                     auto:true
                   }, 
-                  onwin(res,function(out){
+                  RE(res,function(out){
                     eyes.inspect(out)
 
                     if( out.pass ) {
@@ -417,7 +479,7 @@ main.api = {
               email:json.email,
               password:json.password
             }, 
-            onwin(res,function(out){
+            RE(res,function(out){
               if( out.pass ) {
                 setlogincookie(out.login.token)
               }
@@ -437,7 +499,7 @@ main.api = {
               cmd:'logout',
               token:token
             }, 
-            onwin(res,function(out){
+            RE(res,function(out){
               if( out.logout ) {
                 cookies.set('stanzr',null)
               }
@@ -455,7 +517,7 @@ main.api = {
     get: function(req,res) {
       var nick = req.params.nick
       var user = main.ent.make$('sys','user')
-      user.load$({nick:nick},onwin(res,function(user){
+      user.load$({nick:nick},RE(res,function(user){
         if( user ) {
           common.sendjson(res,{nick:user.nick,email:user.email,avimg:user.avimg})
         }
@@ -495,7 +557,7 @@ main.api = {
       util.debug('savechat:'+JSON.stringify(json))
       var chat = main.seneca.make('stanzr','app','chat')
 
-      chat.load$({chatid:req.params.chatid},onwin(res,function(chat){
+      chat.load$({chatid:req.params.chatid},RE(res,function(chat){
 
         function savechat(chat) {
           main.util.mustbemod( req, res, chat.modnicks, function() {
@@ -505,7 +567,7 @@ main.api = {
             chat.hashtag = json.hashtag || ''
             chat.desc    = json.desc || ''
         
-            chat.save$(onwin(res,function(chat){
+            chat.save$(RE(res,function(chat){
               main.util.tweetsearch(chat.chatid,chat.hashtag)
               common.sendjson(res,chat.data$())
             }))
@@ -528,7 +590,7 @@ main.api = {
           chat.modnicks = {}
           chat.modnicks[json.moderator]=1
 
-          main.seneca.act({on:'util',cmd:'quickcode',len:6},onwin(res,function(quickcode){
+          main.seneca.act({on:'util',cmd:'quickcode',len:6},RE(res,function(quickcode){
             chat.chatid = quickcode
             savechat(chat)
           }))
@@ -539,7 +601,7 @@ main.api = {
 
     topic: {
       get: function(req,res) {
-        main.chat.get( req.params.chatid, onwin(res,function(chat){
+        main.chat.get( req.params.chatid, RE(res,function(chat){
           if( !chat ) {
             return lost(res); 
           }
@@ -550,7 +612,7 @@ main.api = {
       },
 
       post: function(req,res) {
-        main.chat.get( req.params.chatid, onwin(res,function(chat){
+        main.chat.get( req.params.chatid, RE(res,function(chat){
           if( !chat ) {
             return lost(res); 
           }
@@ -563,7 +625,7 @@ main.api = {
               topic = _.extend(topic,req.json$)
               chat.topics[tI] = topic
 
-              chat.save$(onwin(res,function(chat){
+              chat.save$(RE(res,function(chat){
                 common.sendjson(res,{ok:true,topic:topic})
               }))
             })
@@ -580,7 +642,7 @@ main.api = {
               chat.topics[tI].active = (tI == at)
             }
 
-            chat.save$(onwin(res,function(chat){
+            chat.save$(RE(res,function(chat){
               common.sendjson(res,{ok:true,topic:at})                
               
               var group = now.getGroup(chat.chatid)
@@ -598,7 +660,7 @@ main.api = {
       get: 
       function(req,res){
         var msgent = main.seneca.make$('stanzr','app','msg')
-        msgent.load$({c:req.params.chatid,i:req.params.msgid},onwin(res,function(msg){
+        msgent.load$({c:req.params.chatid,i:req.params.msgid},RE(res,function(msg){
           if(!msg){
             lost(res)
           }
@@ -610,17 +672,17 @@ main.api = {
 
       get_agrees: 
       function(req,res){
-        var msgids = main.cache.get('topagrees-'+req.params.chatid,onwin(res,function(msgids){
+        var msgids = main.cache.get('topagrees-'+req.params.chatid,RE(res,function(msgids){
           if( msgids ) {
             common.sendjson(res,msgids)
           }
           else {
-            main.chat.topagrees(req.params.chatid,onwin(res,function(msgs){
+            main.chat.topagrees(req.params.chatid,RE(res,function(msgs){
               var msgids = []
               for(var i = 0; i < msgs.length; i++) {
                 msgids.push(msgs[i].i)
               }
-              main.cache.set('topagrees-'+req.params.chatid,msgids,onwin(res,function(key,msgids){
+              main.cache.set('topagrees-'+req.params.chatid,msgids,RE(res,function(key,msgids){
                 common.sendjson(res,msgids)
               }))
             }))
@@ -631,7 +693,7 @@ main.api = {
       post_agree: 
         function(req,res){
         var msgent = main.seneca.make$('stanzr','app','msg')
-        msgent.load$({c:req.params.chatid,i:req.params.msgid},onwin(res,function(msg){
+        msgent.load$({c:req.params.chatid,i:req.params.msgid},RE(res,function(msg){
           if( !msg ) {
             return lost(msg)
           }
@@ -639,8 +701,8 @@ main.api = {
           msg.an.push(req.user$.nick)
           msg.an = _.uniq(msg.an)
           msg.a = msg.an.length
-          msg.save$(onwin(res,function(msg){
-            main.cache.set('topagrees-'+req.params.chatid,null,onwin(res,function(){
+          msg.save$(RE(res,function(msg){
+            main.cache.set('topagrees-'+req.params.chatid,null,RE(res,function(){
 
               // do this here to prevent a cold cache stampede in get_agrees
               main.api.chat.msg.get_agrees(req,res)
@@ -664,8 +726,8 @@ main.api = {
         if( nick ) {
           req.chat$.bans[nick] = req.json$.ban
 
-          main.cache.set(req.chat$.chatid+'.bans',req.chat$.bans,onwin(res,function(){
-            req.chat$.save$( onwin(res, function(){
+          main.cache.set(req.chat$.chatid+'.bans',req.chat$.bans,RE(res,function(){
+            req.chat$.save$( RE(res, function(){
               common.sendjson(res,{nick:nick,ban:req.chat$.bans[nick]})
             }))
           }))
@@ -723,7 +785,7 @@ function loadchat(req,res,next) {
   if( m ) {
     var chatid = m[1]
     var chat = main.seneca.make('stanzr','app','chat')
-    chat.load$({chatid:chatid},onwin(res,function(chat){
+    chat.load$({chatid:chatid},RE(res,function(chat){
       if( chat ) {
         req.chat$ = chat
         main.util.tweetsearch(chat.chatid,chat.hashtag)
@@ -741,7 +803,7 @@ function loadchat(req,res,next) {
 
 
 function auth(req,res,next) {
-  main.util.authuser(req,res,onwin(res,function(user,login){
+  main.util.authuser(req,res,RE(res,function(user,login){
     if( user ) {
       req.user$ = user
       req.login$ = login
@@ -945,88 +1007,31 @@ Seneca.init(
 
 
     main.everyone.now.distributeMessage = function(msgjson,cb){
-      console.log('*************************** '+msgjson)
       var msg = JSON.parse(msgjson)
 
       var chatid = msg.c
       var nick = this.now.name
+      msg.f = nick
 
-      main.cache.get(chatid+'.bans',function(err,bans){
-        if( err ) { log('cache',err) }
-        else {
+      main.cache.get(chatid+'.bans',LE(function(bans){
+        var group = now.getGroup(chatid)
 
-          var group = now.getGroup(chatid)
+        msg.r = main.util.parsereply(msg.t)
+        
+        msg.i = uuid().toLowerCase()
+        var msgdata = {i:msg.i,f:nick,c:chatid,p:msg.p,t:msg.t,r:msg.r}
 
-          var text = msg.t
-          msg.r = []
-          var m = text.match(/@\S+/g)
-          if( m ) {
-            for (i=0; i<m.length; i++) {
-              var rt = m[i].substring(1)
-              msg.r.push(rt)
-            }
-          }
+        if( !(bans && bans[nick]) ) {
+          var unsavedmsgent = main.msg.save(msgdata)
+          cb(unsavedmsgent.data$())
 
-          
-          var msgid = uuid().toLowerCase()
-          var msgdata = {i:msgid,f:nick,c:chatid,p:msg.p,t:msg.t,r:msg.r}
-
-          if( !bans || !bans[nick] ) {
-            var unsavedmsgent = main.msg.save(msgdata)
-            cb(unsavedmsgent.data$())
-
-            eyes.inspect(unsavedmsgent)
-
-
-            if( msg.w ) {
-              var user = main.seneca.make('stanzr','sys','user')
-              user.load$({nick:nick},function(err,user){
-                if( err ) { log('tweet',err) }
-                else if( user.social && 'twitter' == user.social.service ) {
-
-                  var twit = new twitter({
-                    consumer_key: conf.keys.twitter.key,
-                    consumer_secret: conf.keys.twitter.secret,
-                    access_token_key: user.social.key,
-                    access_token_secret: user.social.secret
-                  });
-
-                  twit.updateStatus(
-                    msg.t + ' #'+msg.h,
-                    function (data) {
-                      console.dir(data)
-                    }
-                  )
-
-                }
-              })
-            }
-
-            if( group.now.receiveMessage ) {
-              group.now.receiveMessage(
-                nick, 
-                JSON.stringify(
-                  {
-                    type:'message', 
-                    c:chatid,
-                    t:msg.t, 
-                    p:msg.p,
-                    r:msg.r,
-                    i:msgid,
-                    f:nick,
-                    a:0,
-                    an:[]
-                  }
-                )
-              )
-            }
-          }
-          else {
-            cb(msgdata)
-          }
+          main.util.tweet(msg)
+          main.util.sendtogroup(group,'message',msg)
         }
-      })
-
+        else {
+          cb(msgdata)
+        }
+      }))
     }
   }
 )
