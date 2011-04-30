@@ -115,7 +115,7 @@ var app = {
       dataType:'json',
       success:function(res){
         app.msgcache[msgid] = res
-        cb(res)
+        cb && cb(res)
       }
     })
   },
@@ -133,6 +133,40 @@ var app = {
     })
   },
 
+
+  dm: function(to,body) {
+    $.ajax({
+      url:'/api/chat/'+app.chat.chatid+'/user/'+to+'/dm',
+      type:'PUT',
+      contentType:'application/json',
+      data:JSON.stringify({body:body}),
+      dataType:'json',
+      success:function(res){
+        console.log(res)
+      }
+    })
+  },
+
+
+  loaddm: function(dmid,other,cb) {
+    $.ajax({
+      url:'/api/chat/'+app.chat.chatid+
+        (other?'/user/'+other:'')+
+        '/dm'+(dmid?'/'+dmid:''),
+      dataType:'json',
+      success:function(res){
+        console.log(res)
+        cb && cb(res)
+      }
+    })
+  },
+
+
+
+
+  popup: {
+    box: {}
+  },
 
 
   rightbar: {
@@ -184,7 +218,8 @@ $(function(){
   }
 
 
-  app.hostchatbox = new HostChatBox()
+  app.popup.box.hostchat  = new HostChatBox()
+  app.popup.box.profile   = new ProfileBox()
 
   app.leftbar.box.detail  = new ChatDetailsBox()
 
@@ -192,16 +227,17 @@ $(function(){
   app.rightbar.box.agree  = new AgreeBox()
   app.rightbar.box.reply  = new ReplyBox()
 
-  app.el.head_hostchat.click(killpopups(app.hostchatbox.hostchat))
+  app.el.head_hostchat.click(killpopups(app.popup.box.hostchat.hostchat))
   app.el.head_signup.click(killpopups(signupbox))
   app.el.head_login.click(killpopups(loginbox))
+
 
 
 
   $('h4').live('click',function(event){
     var n = $(event.target).text()
     if( app.nickmap[n] ) {
-      $('#profile_box').show().find('h2').text(n)
+      app.popup.box.profile.render(n)
     }
   })
 
@@ -217,7 +253,6 @@ $(function(){
 
   function inituser(){    
     now.name = nick
-
     
     now.receiveMessage = function(from, jsonstr){
       var msg = JSON.parse(jsonstr)
@@ -276,19 +311,24 @@ $(function(){
             incmsg(app.msgcache[msgid])
           })
         }
-
+      }
+      else if( 'dm' == msg.type ) {
+        console.log(msg)
       }
       
     }
 
     
     function post(){
-      var msg = {c:chatid,t:$("#post_text").val(),type:'message',p:app.topic}
+      var tweet = $('#send_tweet').attr('checked')
+      var msg = {c:chatid,t:$("#post_text").val(),type:'message',p:app.topic,w:tweet,h:app.chat.hashtag}
       $("#post_text").val("");
       $("#post_text").focus();
 
       now.distributeMessage(JSON.stringify(msg),function(msg){
         app.msgcache[msg.i] = msg
+        display(msg)
+        //app.msgcache[msg.i] = msg
       })
     }
     
@@ -411,57 +451,62 @@ $(function(){
   function display(msg) {
     app.nickmap[msg.f] = true
 
+    msg.p = 'undefined'==typeof(msg.p) ? app.topic : msg.p
+
     var post = $('#posts_tm li.message').clone()
     post.attr('id','topic_'+msg.p+'_post_'+msg.i)
     post.find('h4').text(msg.f)
     post.find('p').text(msg.t)
 
-    if( 0 < msg.a ) {
-      post.find('.agrees').text('x'+msg.a)
-    }
 
-
-    post.find('a.sprite-at-reply').click(function(){
-      var txt = $('#post_text').val()
-      if( -1 == txt.indexOf( msg.f ) ) {
-        $('#post_text').val( '@'+msg.f+' '+txt ) 
-      }
-      $('#post_text').focus()
-    })
-
-    var approve = post.find('a.sprite-approve')
-    if( (msg.an && _.include(msg.an,nick)) || nick == msg.f ) {
-      approve.css({background:'transparent'})
-    }
-    else {
-      approve.click(function(){
-        approve.animate({opacity:0.01},function(){
-          approve.css({background:'transparent'})
-        })
-
-        msg.an = msg.an || []
-        msg.an.push(nick)
-        msg.an = _.uniq(msg.an)
-        msg.a = msg.an.length
-
+    if( !msg.x ) {
+      if( 0 < msg.a ) {
         post.find('.agrees').text('x'+msg.a)
+      }
 
-        app.agree(msg.i)
+      post.find('a.sprite-at-reply').click(function(){
+        var txt = $('#post_text').val()
+        if( -1 == txt.indexOf( msg.f ) ) {
+          $('#post_text').val( '@'+msg.f+' '+txt ) 
+        }
+        $('#post_text').focus()
       })
-    }
 
+      var approve = post.find('a.sprite-approve')
+      if( (msg.an && _.include(msg.an,nick)) || nick == msg.f ) {
+        approve.css({background:'transparent'})
+      }
+      else {
+        approve.click(function(){
+          approve.animate({opacity:0.01},function(){
+            approve.css({background:'transparent'})
+          })
+
+          msg.an = msg.an || []
+          msg.an.push(nick)
+          msg.an = _.uniq(msg.an)
+          msg.a = msg.an.length
+
+          post.find('.agrees').text('x'+msg.a)
+
+          app.agree(msg.i)
+        })
+      }
+    }
 
     post.css({opacity:0})
     
     var topicposts = $('#topic_posts_'+msg.p)
     topicposts.append(post)
 
+    var opacity = msg.x ? 0.5 : 1.0
+
     if( msg.p == app.topic ) {
-      post.animate({opacity:1},500)
+      post.animate({opacity:opacity},500)
       app.postbottom()
     }
     else {
-      post.css({opacity:1})
+      post.css({opacity:opacity})
     }
   }
 
@@ -476,12 +521,12 @@ $(function(){
       dataType:'json',
       success:function(res){
         app.chat = res
+        app.ismod = app.chat.modnicks && app.chat.modnicks[nick]
+
         var nicks = res.nicks || []
         for( var i = 0; i < nicks.length; i++ ) {
           var other = nicks[i]
-          //if( other != nick ) {
-            app.rightbar.box.avatar.add(other)
-          //}
+          app.rightbar.box.avatar.add(other)
         }
 
 
@@ -596,7 +641,7 @@ function ChatDetailsBox() {
     $('#rally_desc').html( markdown.toHTML(chat.desc) )
     
     if( app.chat.modnicks && app.chat.modnicks[nick] ) {
-      $('#rally_editbtn').show().click(app.hostchatbox.editchat)
+      $('#rally_editbtn').show().click(app.popup.box.hostchat.editchat)
     }
 
 
@@ -830,25 +875,55 @@ function AvatarBox() {
 
   var avatars = {}
 
-  self.add = function(avnick) {
+  self.add = function(avnick,banned) {
     if( avnick ) {
       if( !avatars[avnick] ) {
-        avatars[avnick] = true
 
         var avatar = $('#miniavatar_tm').clone()
+        avatar.attr('id','miniavatar_'+avnick)
         avatar.click(function(){
-          $('#profile_box').show().find('h2').text(avnick)
+          app.popup.box.profile.render(avnick)
         })
         $('#rally_miniavatars').append(avatar)
         avatar.show()
+        avatars[avnick] = avatar
+
+        $.ajax({
+          url:'/api/user/'+avnick,
+          type:'GET',
+          dataType:'json',
+          success:function(res){
+            if( res.avimg ) {
+              console.log(avatar,res.avimg)
+              avatar.css({
+                'background-image':'url('+res.avimg+')',
+                'background-position':'0% 0%',
+                'background-size':'32px 32px'
+              })
+            }
+          }
+        })
+        
 
         var pcount = $('#rally_pcount').text()
         pcount = '' == pcount ? 0 : parseInt(pcount,10)
         pcount++
         $('#rally_pcount').text(''+pcount)
+
+        if( app.ismod && app.chat.bans[avnick] ) {
+          self.ban(true,avnick)
+        }
       }
     }
   }
+
+  
+  self.ban = function(ban,bnick) {
+    if( avatars[bnick] ) {
+      avatars[bnick].css({opacity:ban?0.5:1.0})
+    }
+  }
+  
 
   self.render = function() {}
 }
@@ -1044,4 +1119,116 @@ function HostChatBox() {
   self.el.lessbtn.click(function(){
     lesstopic()
   })
+}
+
+
+function showif(obj,spec) {
+  if( spec ) { 
+    obj.__showif = spec
+  }
+  else if( obj.__showif ) {
+    for( var en in obj.__showif ) {
+      var elem = obj.el[en]
+      var show = (obj.__showif[en])()
+      if( show ) {
+        elem.show()
+      }
+      else {
+        elem.hide()
+      }
+    }
+  }
+}
+
+
+function ProfileBox() {
+  var self = this
+
+  self.el = {
+    dummy: null
+
+    ,box: $('#profile_box')
+
+    ,messagebtn: $('#profile_messagebtn')
+    ,banbtn: $('#profile_banbtn')
+    ,unbanbtn: $('#profile_unbanbtn')
+
+    ,you: $('#profile_you')
+
+  }
+  self.el.nick = self.el.box.find('h2')
+
+  var cnick
+
+
+  showif(self,{
+    messagebtn: function(){
+      return nick != cnick
+    },
+    banbtn: function(){
+      return app.ismod && nick != cnick && !app.chat.bans[cnick]
+    },
+    unbanbtn: function(){
+      return app.ismod && nick != cnick && app.chat.bans[cnick]
+    },
+    you: function(){
+      return nick == cnick
+    }
+  })
+
+
+  self.render = function(pnick) {
+    cnick = pnick
+    
+    self.el.box.show()
+    self.el.nick.text(cnick)
+
+    showif(self)
+  }
+
+
+  self.el.messagebtn.click(function(){
+    /* expand to show textarea
+    $.ajax({
+      url:'/api/user/'+cnick+'/msg',
+      type:'POST',
+      contentType:'application/json',
+      dataType:'json',
+      data:'{}',
+      success:function(res){
+      }
+    })
+    */
+  })
+
+
+  function sendban(ban,cb) {
+    $.ajax({
+      url:'/api/chat/'+app.chat.chatid+'/user/'+cnick+'/status',
+      type:'POST',
+      contentType:'application/json',
+      dataType:'json',
+      data:JSON.stringify({ban:ban}),
+      success:function(res){
+        cb(res)
+      }
+    })
+  }
+
+  self.el.banbtn.click(function(){
+    app.chat.bans[cnick]=1
+    showif(self)
+    app.rightbar.box.avatar.ban(true,cnick)
+    sendban(true,function(){
+    })
+  })
+
+  self.el.unbanbtn.click(function(){
+    delete app.chat.bans[cnick]
+    showif(self)
+    app.rightbar.box.avatar.ban(false,cnick)
+    sendban(false,function(){
+    })    
+  })
+
 }

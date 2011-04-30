@@ -13,20 +13,22 @@ var Cookies = common.cookies
 var _       = common._
 var uuid    = common.uuid
 var conf    = common.conf
+var twitter = common.twitter
 
 var log     = common.log
 
+var TweetSearch = require('./tweetsearch')
 
 var main = {}
 
 var MAX_INFO_LIST = 30
 
 
-/*
+
 process.on('uncaughtException', function (err) {
   log('error','uncaught',err)
 });
-*/
+
 
 function sendcode(code,res) {
   try {
@@ -43,11 +45,12 @@ function denied(res) { sendcode(401,res) }
 function failed(res,err) { sendcode(500,res); log('error',err) } 
 function found(res,obj,cb) { if(obj){cb(obj)} else {lost(res)} }
 
-function onwin(res,win){
+
+function RE(res,win){
   return function(err){
     if( err ) {
       log('error',err)
-      bad(res,err)
+      failed(res,err)
     }
     else {
       try {
@@ -55,6 +58,23 @@ function onwin(res,win){
       }
       catch( ex ) {
         failed(res,ex)
+      }
+    }
+  }
+}
+
+
+function LE(win){
+  return function(err){
+    if( err ) {
+      log('error',err)
+    }
+    else {
+      try {
+        win && win.apply( this, [].slice.call(arguments,1) )
+      }
+      catch( ex ) {
+        log('ex',ex)
       }
     }
   }
@@ -92,19 +112,14 @@ main.util = {
         cmd:'auth',
         token:token,
       }, 
-      function(err,out){
-        if( err ) {
-          failed(res,err)
+      RE(res,function(out){
+        if( out.auth ) {
+          cb(null,out.user,out.login)
         }
         else {
-          if( out.auth ) {
-            cb(null,out.user,out.login)
-          }
-          else {
-            cb(null,null,null)
-          }
+          cb(null,null,null)
         }
-      }
+      })
     )
   },
   
@@ -115,38 +130,164 @@ main.util = {
     else {
       denied(res)
     }
+  },
+
+  tweetsearch: function(chatid,hashtag) {
+    if( 2 <= hashtag.length && conf.tweetsearch ) {
+
+      var tsm = (main.util.tsm = main.util.tsm || {})
+      var ts = tsm[chatid]
+      console.dir(ts)
+
+      var newhashtag = (ts && ts.term != hashtag) || true
+      
+      if( !ts ) {
+        hashtag = '#'==hashtag[0] ? hashtag : '#'+hashtag
+        ts = tsm[chatid] = new TweetSearch(hashtag)
+      }
+
+      if( ts.running && newhashtag ) {
+        ts.stop()
+        ts = tsm[chatid] = new TweetSearch(hashtag)
+      }
+
+      if( !ts.running ) {
+        ts.start(60*60*1000,function(tweet){
+          var nick = tweet.user.screen_name
+          var msgid = uuid().toLowerCase()
+          var group = now.getGroup(chatid)        
+          if( group.now.receiveMessage ) {
+            group.now.receiveMessage(
+              nick, 
+              JSON.stringify(
+                {
+                  type:'message', 
+                  c:chatid,
+                  t:tweet.text, 
+                  r:[],
+                  i:msgid,
+                  f:nick,
+                  a:0,
+                  an:[],
+                  x:1
+                }
+              )
+            )
+          }
+        })
+      }
+    }
+  },
+
+  parsereply: function(text) {
+    var r = []
+    var m = text.match(/@\S+/g)
+    if( m ) {
+      for (i=0; i<m.length; i++) {
+        var rnick = m[i].substring(1)
+        r.push(rnick)
+      }
+    }
+    return r
+  },
+
+  tweet: function(msg) {
+    console.dir(msg)
+    if( msg.w ) {
+      var user = main.ent.make$('sys','user')
+      user.load$({nick:msg.f},LE(function(user){
+        if( user.social && 'twitter' == user.social.service ) {
+          
+          var twit = new twitter({
+            consumer_key: conf.keys.twitter.key,
+            consumer_secret: conf.keys.twitter.secret,
+            access_token_key: user.social.key,
+            access_token_secret: user.social.secret
+          });
+          
+          twit.updateStatus(
+            msg.t + ' #'+msg.h,
+            function (data) {
+              console.dir(data)
+            }
+          )
+          
+        }
+      }))
+    }
+  },
+
+  sendtogroup: function(group,type,msg) {
+    if( group.now.receiveMessage ) {
+      group.now.receiveMessage(
+        msg.f, 
+        JSON.stringify(
+          {
+            type:type, 
+            c:msg.c,
+            t:msg.t, 
+            p:msg.p,
+            r:msg.r,
+            f:msg.f,
+            i:msg.i,
+            a:0,
+            an:[]
+          }
+        )
+      )
+    }
+  },
+
+  dmnotify: function(chatid,from,to,dmid) {
+    var group = now.getGroup(chatid)
+    if( group.now.receiveMessage ) {
+      group.now.receiveMessage(
+        from, 
+        JSON.stringify(
+          {
+            type:'dm', 
+            to:to,
+            dm:dmid
+          }
+        )
+      )
+    }
   }
+
+  
 }
 
 
 main.chat = {
   getreq: function(req,res,cb) {
-    main.chat.get( req.params.chatid, onwin(res,function(chat){
+    main.chat.get( req.params.chatid, RE(res,function(chat){
       found( res, chat, cb )
     }))
   },
 
   get: function(chatid,cb) {
-    var chatent = main.seneca.make('stanzr','app','chat')
+    var chatent = main.ent.make$('app','chat')
     chatent.load$({chatid:chatid},function(err,chat){
-      if( err ) {
-        cb(err)
-      }
-      else {
-        cb(null,chat)
-      }
+      cb(err,chat)
     })
   },
 
   addnick: function(chatid,nick,cb) {
     main.chat.get(chatid,function(err,chat){
-      if( err ) {
-        cb(err)
-      }
-      else if( chat ) {
+      if( err ) return cb(err);
+
+      if( chat ) {
         var nicks = chat.nicks || []
         nicks.push(nick)
+        nicks = _.select(nicks,function(nick){
+          return null != nick
+        })
         chat.nicks = _.uniq(nicks)
+
+        if( !chat.bans || _.isArray(chat.bans) ) {
+          chat.bans = {}
+        }
+
         chat.save$(cb)
       }
       else {
@@ -156,24 +297,20 @@ main.chat = {
   },
 
   topagrees:function(chatid,cb){
-    var msgent = main.seneca.make$('stanzr','app','msg')
+    var msgent = main.ent.make$('app','msg')
     var db = msgent.$.store$()._db()
 
     db.collection('app_msg',function(err,app_msg){
-      if( err ) return cb(err)
+      if( err ) return cb(err);
 
       app_msg.find(
         {c:chatid},
         {sort:[['a',-1]],limit:MAX_INFO_LIST},
 
         function(res,cur){
-          if( err ) return cb(err)
+          if( err ) return cb(err);
 
-          cur.toArray(function(err,msgs){
-            if( err ) return cb(err)
-
-            cb(null,msgs)
-          })
+          cur.toArray(cb)
         })
     })
   }
@@ -183,9 +320,9 @@ main.chat = {
 main.msg = {
   map: {},
   save: function(msg,cb) {
-    var msgent = main.seneca.make('stanzr','app','msg')
+    var msgent = main.ent.make$('app','msg')
     msgent.i = msg.i
-    msgent.w = new Date()
+    msgent.s = new Date()
     msgent.f = msg.f
     msgent.c = msg.c
     msgent.t = msg.t
@@ -196,7 +333,7 @@ main.msg = {
   },
 
   list: function(chatid,cb) {
-    var msgent = main.seneca.make('stanzr','app','msg')
+    var msgent = main.ent.make$('app','msg')
     msgent.list$({c:chatid},cb)
   }
 }
@@ -211,14 +348,14 @@ main.view = {
         next()
       }
       else {
-        main.util.authuser(req,res,onwin(res,function(user,login){
+        main.util.authuser(req,res,RE(res,function(user,login){
           if( user ) {
             var nick = user.nick
           }
 
           if( req.params.chatid ) {
-            var chatent = main.seneca.make('stanzr','app','chat')
-            chatent.load$({chatid:req.params.chatid},onwin(res,function(chat){
+            var chatent = main.ent.make$('app','chat')
+            chatent.load$({chatid:req.params.chatid},RE(res,function(chat){
               if( chat ) {
                 res.render(
                   'member', 
@@ -322,7 +459,7 @@ main.api = {
               password:json.password,
               active:true
             }, 
-            onwin(res,function(out){
+            RE(res,function(out){
               eyes.inspect(out)
 
               if( out.ok ) {
@@ -334,7 +471,7 @@ main.api = {
                     nick:json.nick,
                     auto:true
                   }, 
-                  onwin(res,function(out){
+                  RE(res,function(out){
                     eyes.inspect(out)
 
                     if( out.pass ) {
@@ -359,7 +496,7 @@ main.api = {
               email:json.email,
               password:json.password
             }, 
-            onwin(res,function(out){
+            RE(res,function(out){
               if( out.pass ) {
                 setlogincookie(out.login.token)
               }
@@ -379,7 +516,7 @@ main.api = {
               cmd:'logout',
               token:token
             }, 
-            onwin(res,function(out){
+            RE(res,function(out){
               if( out.logout ) {
                 cookies.set('stanzr',null)
               }
@@ -397,9 +534,9 @@ main.api = {
     get: function(req,res) {
       var nick = req.params.nick
       var user = main.ent.make$('sys','user')
-      user.load$({nick:nick},onwin(res,function(user){
+      user.load$({nick:nick},RE(res,function(user){
         if( user ) {
-          common.sendjson(res,{nick:user.nick,email:user.email})
+          common.sendjson(res,{nick:user.nick,email:user.email,avimg:user.avimg})
         }
         else {
           lost(res)
@@ -428,25 +565,16 @@ main.api = {
         })
       }
       else {
-        main.chat.get(chatid,function(err,chat){
-          if( err ) {
-            failed(res,err)
-          }
-          else if( chat ) {
-            common.sendjson(res,chat)
-          }
-          else {
-            lost(res)
-          }
-        })
+        common.sendjson(res,req.chat$.data$())
       }
     },
 
     save: function(req,res) {
       var json = req.json$
-      var chat = main.seneca.make('stanzr','app','chat')
+      util.debug('savechat:'+JSON.stringify(json))
+      var chat = main.ent.make$('app','chat')
 
-      chat.load$({chatid:req.params.chatid},onwin(res,function(chat){
+      chat.load$({chatid:req.params.chatid},RE(res,function(chat){
 
         function savechat(chat) {
           main.util.mustbemod( req, res, chat.modnicks, function() {
@@ -456,7 +584,8 @@ main.api = {
             chat.hashtag = json.hashtag || ''
             chat.desc    = json.desc || ''
         
-            chat.save$(onwin(res,function(chat){
+            chat.save$(RE(res,function(chat){
+              main.util.tweetsearch(chat.chatid,chat.hashtag)
               common.sendjson(res,chat.data$())
             }))
           })
@@ -467,18 +596,18 @@ main.api = {
           savechat(chat)
         }
         else {
-          chat = main.seneca.make('stanzr','app','chat')
+          chat = main.ent.make$('app','chat')
 
           chat.topics  = json.topics || [{title:'General',desc:'Open discussion'}]
           chat.topics[0].active = true
           chat.topic = 0
           
-          chat.bans = []
+          chat.bans = {}
           chat.nicks = []
           chat.modnicks = {}
           chat.modnicks[json.moderator]=1
 
-          main.seneca.act({on:'util',cmd:'quickcode',len:6},onwin(res,function(quickcode){
+          main.seneca.act({on:'util',cmd:'quickcode',len:6},RE(res,function(quickcode){
             chat.chatid = quickcode
             savechat(chat)
           }))
@@ -489,7 +618,7 @@ main.api = {
 
     topic: {
       get: function(req,res) {
-        main.chat.get( req.params.chatid, onwin(res,function(chat){
+        main.chat.get( req.params.chatid, RE(res,function(chat){
           if( !chat ) {
             return lost(res); 
           }
@@ -500,7 +629,7 @@ main.api = {
       },
 
       post: function(req,res) {
-        main.chat.get( req.params.chatid, onwin(res,function(chat){
+        main.chat.get( req.params.chatid, RE(res,function(chat){
           if( !chat ) {
             return lost(res); 
           }
@@ -513,7 +642,7 @@ main.api = {
               topic = _.extend(topic,req.json$)
               chat.topics[tI] = topic
 
-              chat.save$(onwin(res,function(chat){
+              chat.save$(RE(res,function(chat){
                 common.sendjson(res,{ok:true,topic:topic})
               }))
             })
@@ -530,7 +659,7 @@ main.api = {
               chat.topics[tI].active = (tI == at)
             }
 
-            chat.save$(onwin(res,function(chat){
+            chat.save$(RE(res,function(chat){
               common.sendjson(res,{ok:true,topic:at})                
               
               var group = now.getGroup(chat.chatid)
@@ -547,8 +676,8 @@ main.api = {
     msg: {
       get: 
       function(req,res){
-        var msgent = main.seneca.make$('stanzr','app','msg')
-        msgent.load$({c:req.params.chatid,i:req.params.msgid},onwin(res,function(msg){
+        var msgent = main.ent.make$('app','msg')
+        msgent.load$({c:req.params.chatid,i:req.params.msgid},RE(res,function(msg){
           if(!msg){
             lost(res)
           }
@@ -560,17 +689,17 @@ main.api = {
 
       get_agrees: 
       function(req,res){
-        var msgids = main.cache.get('topagrees-'+req.params.chatid,onwin(res,function(msgids){
+        var msgids = main.cache.get('topagrees-'+req.params.chatid,RE(res,function(msgids){
           if( msgids ) {
             common.sendjson(res,msgids)
           }
           else {
-            main.chat.topagrees(req.params.chatid,onwin(res,function(msgs){
+            main.chat.topagrees(req.params.chatid,RE(res,function(msgs){
               var msgids = []
               for(var i = 0; i < msgs.length; i++) {
                 msgids.push(msgs[i].i)
               }
-              main.cache.set('topagrees-'+req.params.chatid,msgids,onwin(res,function(key,msgids){
+              main.cache.set('topagrees-'+req.params.chatid,msgids,RE(res,function(key,msgids){
                 common.sendjson(res,msgids)
               }))
             }))
@@ -580,8 +709,8 @@ main.api = {
 
       post_agree: 
         function(req,res){
-        var msgent = main.seneca.make$('stanzr','app','msg')
-        msgent.load$({c:req.params.chatid,i:req.params.msgid},onwin(res,function(msg){
+        var msgent = main.ent.make$('app','msg')
+        msgent.load$({c:req.params.chatid,i:req.params.msgid},RE(res,function(msg){
           if( !msg ) {
             return lost(msg)
           }
@@ -589,8 +718,8 @@ main.api = {
           msg.an.push(req.user$.nick)
           msg.an = _.uniq(msg.an)
           msg.a = msg.an.length
-          msg.save$(onwin(res,function(msg){
-            main.cache.set('topagrees-'+req.params.chatid,null,onwin(res,function(){
+          msg.save$(RE(res,function(msg){
+            main.cache.set('topagrees-'+req.params.chatid,null,RE(res,function(){
 
               // do this here to prevent a cold cache stampede in get_agrees
               main.api.chat.msg.get_agrees(req,res)
@@ -601,6 +730,87 @@ main.api = {
               }
             }))
           }))
+        }))
+      }
+    }, // msg
+
+
+    user: {
+      post_status:
+      function(req,res){
+        var nick = req.params.nick
+        if( nick ) {
+          req.chat$.bans[nick] = req.json$.ban
+
+          main.cache.set(req.chat$.chatid+'.bans',req.chat$.bans,RE(res,function(){
+            req.chat$.save$( RE(res, function(){
+              common.sendjson(res,{nick:nick,ban:req.chat$.bans[nick]})
+            }))
+          }))
+        }
+        else {
+          bad(res)
+        }
+      }
+    }, // user
+
+
+    dm: {
+      put:
+      function(req,res){
+        var chatid = req.chat$.chatid
+        var from   = req.user$.nick
+        var to     = req.params.nick
+        var mark   = [from,to].sort().join('~')
+        var body   = req.json$.body
+        var dmid   = uuid()
+
+        var dm = main.ent.make$('app','dm',{i:dmid,c:chatid,f:from,t:to,m:mark,b:body,w:new Date()})
+        dm.save$(LE(function(dm){
+          util.debug(dm)
+        }))
+
+        main.util.dmnotify(chatid,from,to,dmid)
+
+        common.sendjson(res,dm.data$())
+      },
+
+      get:
+      function(req,res){
+        var dmid   = req.params.dmid
+        var chatid = req.chat$.chatid
+        var to     = req.user$.nick
+
+        var dm = main.ent.make$('app','dm')
+        
+        if( dmid ) {
+          dm.load$({i:dmid,c:chatid,t:to},RE(res,function(dm){
+            if( dm ) {
+              common.sendjson(res,dm.data$())
+            }
+            else {
+              lost(res)
+            }
+          }))
+        }
+        else {
+          dm.list$({c:chatid,t:to,sort$:{w:-1}},RE(res,function(out){
+            common.sendjson(res,out)
+          }))
+        }
+      },
+
+      get_conv:
+      function(req,res){
+        var chatid = req.chat$.chatid
+        var me     = req.user$.nick
+        var other  = req.params.nick
+        var mark   = [me,other].sort().join('~')
+
+        var dm = main.ent.make$('app','dm')
+
+        dm.list$({c:chatid,m:mark,sort$:{w:-1}},RE(res,function(out){
+          common.sendjson(res,out)
         }))
       }
     }
@@ -632,12 +842,60 @@ var mongourl =
   mm.server+':'+mm.port+'/'+mm.name
 
 
+function mustbemod(req,res,next) {
+  if( req.chat$ ) {
+    if( req.chat$.modnicks[req.user$.nick] ) {
+      next()
+    }
+    else {
+      denied(res)
+    }
+  }
+  else {
+    bad(res)
+  }
+}
+
+
+function loadchat(req,res,next) {
+  var m = /^\/api\/chat\/([^\/]+)/.exec(req.url)
+  if( m ) {
+    var chatid = m[1]
+    var chat = main.ent.make$('app','chat')
+    chat.load$({chatid:chatid},RE(res,function(chat){
+      if( chat ) {
+        req.chat$ = chat
+        main.util.tweetsearch(chat.chatid,chat.hashtag)
+        next()
+      }
+      else {
+        lost(res)
+      }
+    }))
+  }
+  else {
+    next()
+  }
+}
+
+
 function auth(req,res,next) {
-  main.util.authuser(req,res,onwin(res,function(user,login){
+  main.util.authuser(req,res,RE(res,function(user,login){
     if( user ) {
       req.user$ = user
       req.login$ = login
-      next()
+
+      if( req.chat$ ) {
+        if( !req.chat$.bans[user.nick] ) {
+          next()
+        }
+        else {
+          denied(res)
+        }
+      }
+      else {
+        next()
+      }
     }
     else {
       denied(res)
@@ -714,6 +972,37 @@ Seneca.init(
         failed(ctxt.res,err)
       }
       else {
+        var user = ctxt.user
+
+        if( user.social && 'twitter' == user.social.service ) {
+
+          var twit = new twitter({
+            consumer_key: conf.keys.twitter.key,
+            consumer_secret: conf.keys.twitter.secret,
+            access_token_key: user.social.key,
+            access_token_secret: user.social.secret
+          });
+
+          twit.showUser(ctxt.username,function(data){
+            console.dir(data)
+
+            if( 'Error' != data.name ) {
+              user.avimg = data.profile_image_url
+              user.save$(function(err,user){
+                if( err ) {
+                  log('error',{social:'twitter',kind:'avatar',user:user})
+                }
+              })
+            }
+            else {
+              if( err ) {
+                log('error',{social:'twitter',kind:'showUser',user:user})
+              }
+            }
+          })
+
+        }
+
         var res = ctxt.res
         res.writeHead( 301, {
           'Location':"/"+(ctxt.tag?ctxt.tag:'')
@@ -724,6 +1013,7 @@ Seneca.init(
 
     
     app.use( json )
+    app.use( loadchat )
 
     app.use( 
       connect.router(function(capp){
@@ -754,14 +1044,31 @@ Seneca.init(
         capp.get('/api/user/:nick', main.api.user.get)
 
         capp.put('/api/chat', main.api.chat.save)
+
+        capp.post('/api/chat/:chatid/msg/:msgid/agree', main.api.chat.msg.post_agree)
+
+        capp.put('/api/chat/:chatid/user/:nick/dm', main.api.chat.dm.put)
+        capp.get('/api/chat/:chatid/user/:nick/dm', main.api.chat.dm.get_conv)
+        capp.get('/api/chat/:chatid/dm/:dmid?', main.api.chat.dm.get)
+        capp.get('/api/chat/:chatid/dm', main.api.chat.dm.get)
+      })
+    )
+
+
+    app.use( mustbemod )
+
+    app.use( 
+      connect.router(function(capp){
         capp.post('/api/chat/:chatid', main.api.chat.save)
 
         capp.post('/api/chat/:chatid/topic/:topic', main.api.chat.topic.post)
         capp.post('/api/chat/:chatid/topic/:topic/active', main.api.chat.topic.post_active)
 
-        capp.post('/api/chat/:chatid/msg/:msgid/agree', main.api.chat.msg.post_agree)
+        capp.post('/api/chat/:chatid/user/:nick/status', main.api.chat.user.post_status)
       })
     )
+
+
 
 
 
@@ -772,7 +1079,10 @@ Seneca.init(
       var nick = this.now.name
       var group = now.getGroup(msg.chat)
       group.addUser(this.user.clientId);
-      group.now.receiveMessage(nick, JSON.stringify({type:'join', nick:nick}))
+
+      if( group.now.receiveMessage ) {
+        group.now.receiveMessage(nick, JSON.stringify({type:'join', nick:nick}))
+      }
 
       main.chat.addnick(msg.chat,nick)
     }
@@ -783,41 +1093,27 @@ Seneca.init(
 
       var chatid = msg.c
       var nick = this.now.name
-      var group = now.getGroup(chatid)
+      msg.f = nick
 
-      var text = msg.t
-      msg.r = []
-      var m = text.match(/@\S+/g)
-      if( m ) {
-        for (i=0; i<m.length; i++) {
-          var rt = m[i].substring(1)
-          msg.r.push(rt)
+      main.cache.get(chatid+'.bans',LE(function(bans){
+        var group = now.getGroup(chatid)
+
+        msg.r = main.util.parsereply(msg.t)
+        
+        msg.i = uuid().toLowerCase()
+        var msgdata = {i:msg.i,f:nick,c:chatid,p:msg.p,t:msg.t,r:msg.r}
+
+        if( !(bans && bans[nick]) ) {
+          var unsavedmsgent = main.msg.save(msgdata)
+          cb(unsavedmsgent.data$())
+
+          main.util.tweet(msg)
+          main.util.sendtogroup(group,'message',msg)
         }
-      }
-
-
-      var msgid = uuid().toLowerCase()
-      var unsavedmsgent = main.msg.save({i:msgid,f:nick,c:chatid,p:msg.p,t:msg.t,r:msg.r})
-      eyes.inspect(unsavedmsgent)
-
-      group.now.receiveMessage(
-        nick, 
-        JSON.stringify(
-          {
-            type:'message', 
-            c:chatid,
-            t:msg.t, 
-            p:msg.p,
-            r:msg.r,
-            i:msgid,
-            f:nick,
-            a:0,
-            an:[]
-          }
-        )
-      )
-
-      cb(unsavedmsgent.data$())
+        else {
+          cb(msgdata)
+        }
+      }))
     }
   }
 )

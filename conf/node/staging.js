@@ -3,6 +3,7 @@ module.exports = {
   conf: {
     env:'staging',
     hosturl:'http://staging.stanzr.com',
+    tweetsearch:true,
     web: {
       port: 8090
     },
@@ -22,7 +23,11 @@ module.exports = {
       },
       twitter: {
         key:'QQfcRCUXyQVPfQqrzw19Q',
-        secret:'dzJujZo6jUMExSAWa3qkcQjJwyVAb06QP9veL05nw'
+        secret:'dzJujZo6jUMExSAWa3qkcQjJwyVAb06QP9veL05nw',
+        token: {
+          key: '286375722-ArBDn9KfpYa3MAXxL9bN49BeWDv3nkQp6H4Btuzo',
+          secret: 'GGCNKmiYsnkQ6T3iIDYVaWbsFaJM2wZ2nU8R5ZT4Z0w' 
+        }
       },
       facebook: {
         rkey:'0190c50506a037b02a70fb5beafd6c54',

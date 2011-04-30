@@ -49,7 +49,12 @@ var _        = exports._         = require('underscore')
 var oauth    = exports.oauth     = require('oauth')
 var url      = exports.url       = require('url')
 
+
+var twitter  = exports.twitter   = require('twitter')
+//var twitter  = exports.twitter   = require('../../support/node-twitter')
+
 var seneca   = exports.seneca    = require('../../support/seneca')
+//var seneca   = exports.seneca    = require('seneca')
 
 var now      = exports.now   = require('now')
 //var now      = exports.now   = require('../../support/now')
@@ -59,6 +64,7 @@ var config = require('config')
 var conf = exports.conf = config('conf',{
   env: 'dev',
   hosturl:'http://localhost:8080',
+  tweetsearch:false,
   web: {
     port: 8080
   },
@@ -72,7 +78,11 @@ var conf = exports.conf = config('conf',{
     },
     twitter: {
       key:'k',
-      secret:'s'
+      secret:'s',
+      token: {
+        key: 'k',
+        secret: 's'
+      }
     },
     facebook: {
       key:'k',
