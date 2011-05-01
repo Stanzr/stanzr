@@ -75,4 +75,4 @@ Running:
     node node/main/lib/main.js
 
 - run node with a particular configuration - not needed for development
-   node node/main/lib/main.js -config ./conf/node/demo.js
+   node node/main/lib/main.js -config ./conf/node/dev.js
