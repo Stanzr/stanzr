@@ -170,6 +170,15 @@ var app = {
   },
 
 
+  history: function(cb) {
+    $.ajax({
+      url:'/api/user/'+nick+'/history',
+      dataType:'json',
+      success:function(res){
+        cb && cb(res)
+      }
+    })
+  },
 
 
   popup: {
@@ -223,11 +232,13 @@ $(function(){
     ,head_hostchat: $('#head_hostchat')
     ,head_signup: $('#head_signup')
     ,head_login: $('#head_login')
+    ,head_nick: $('#head_nick')
   }
 
 
   app.popup.box.hostchat  = new HostChatBox()
   app.popup.box.profile   = new ProfileBox()
+  app.popup.box.settings  = new SettingsBox()
 
   app.leftbar.box.detail  = new ChatDetailsBox()
 
@@ -239,6 +250,10 @@ $(function(){
   app.el.head_hostchat.click(killpopups(app.popup.box.hostchat.hostchat))
   app.el.head_signup.click(killpopups(signupbox))
   app.el.head_login.click(killpopups(loginbox))
+
+  app.el.head_nick.click(killpopups(function(){
+    app.popup.box.settings.render()
+  }))
 
 
 
@@ -1361,21 +1376,6 @@ function ProfileBox() {
   }
 
 
-  self.el.messagebtn.click(function(){
-    /* expand to show textarea
-    $.ajax({
-      url:'/api/user/'+cnick+'/msg',
-      type:'POST',
-      contentType:'application/json',
-      dataType:'json',
-      data:'{}',
-      success:function(res){
-      }
-    })
-    */
-  })
-
-
   function sendban(ban,cb) {
     $.ajax({
       url:'/api/chat/'+app.chat.chatid+'/user/'+cnick+'/status',
@@ -1413,3 +1413,47 @@ function ProfileBox() {
   })
 
 }
+
+
+function SettingsBox() {
+  var self = this
+
+  self.el = {
+    dummy: null
+
+    ,box: $('#settings_box')
+
+    ,history: $('#settings_history')
+    ,history_item_tm: $('#settings_history_item_tm')
+
+  }
+
+
+  showif(self,{
+  })
+
+
+  self.render = function() {
+    self.el.box.show()
+
+    app.history(function(list){
+      self.el.history.empty()
+
+      for(var i = 0; i < list.length; i++ ) {
+        var chatitem = list[i]
+        var histitem = self.el.history_item_tm.clone().attr('id','').css({display:'block'})
+        histitem.find('.settings_chat_title').text(chatitem.t)
+        histitem.find('.settings_chat_modname').text(chatitem.m)
+        histitem.click((function(chatid){
+          return function(){
+            window.location.href = '/api/bounce/'+chatid
+          }
+        })(chatitem.c))
+        self.el.history.append(histitem)
+      }
+    })
+
+    showif(self)
+  }
+}
+

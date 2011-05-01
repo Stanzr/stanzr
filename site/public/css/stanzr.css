@@ -350,6 +350,14 @@ div.modalbox {
 #profile_box {
   height: 100px; }
 
+#settings_box {
+  height: 400px;
+  width: 250px; }
+
+#settings_history {
+  overflow-x: hidden;
+  overflow-y: auto; }
+
 #chat_logo {
   margin-top: 10px;
   text-align: center; }

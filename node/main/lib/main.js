@@ -137,7 +137,6 @@ main.util = {
 
       var tsm = (main.util.tsm = main.util.tsm || {})
       var ts = tsm[chatid]
-      console.dir(ts)
 
       var newhashtag = (ts && ts.term != hashtag) || true
       
@@ -192,7 +191,6 @@ main.util = {
   },
 
   tweet: function(msg) {
-    console.dir(msg)
     if( msg.w ) {
       var user = main.ent.make$('sys','user')
       user.load$({nick:msg.f},LE(function(user){
@@ -208,7 +206,6 @@ main.util = {
           twit.updateStatus(
             msg.t + ' #'+msg.h,
             function (data) {
-              console.dir(data)
             }
           )
           
@@ -273,7 +270,6 @@ main.chat = {
   },
 
   addnick: function(chatid,nick,cb) {
-    console.log('************************ addnick:'+chatid+','+nick)
     main.chat.get(chatid,function(err,chat){
       if( err ) return cb(err);
 
@@ -296,12 +292,10 @@ main.chat = {
             if( err ) return cb(err);
             if( !existing ) {
               hist.data$({n:nick,c:chatid,w:new Date(),t:chat.title,m:chat.modname,h:chat.hashtag})
-              console.log(hist)
               hist.save$(cb)
             }
             else {
               existing.w= new Date()
-              console.log(existing)
               existing.save$(cb)
             }
           })
@@ -601,7 +595,6 @@ main.api = {
 
     save: function(req,res) {
       var json = req.json$
-      util.debug('savechat:'+JSON.stringify(json))
       var chat = main.ent.make$('app','chat')
 
       chat.load$({chatid:req.params.chatid},RE(res,function(chat){
@@ -797,7 +790,6 @@ main.api = {
 
         var dm = main.ent.make$('app','dm',{i:dmid,c:chatid,f:from,t:to,m:mark,b:body,w:new Date()})
         dm.save$(LE(function(dm){
-          util.debug(dm)
         }))
 
         main.util.dmnotify(chatid,from,to,dmid)
@@ -1014,7 +1006,6 @@ Seneca.init(
           });
 
           twit.showUser(ctxt.username,function(data){
-            console.dir(data)
 
             if( 'Error' != data.name ) {
               user.avimg = data.profile_image_url
