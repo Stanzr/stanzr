@@ -389,7 +389,8 @@ main.view = {
                       title:'Stanzr' 
                     },
                     val: {
-                      nick: nick
+                      nick: nick,
+                      chatid: 'member'
                     }
                   }})
               }
