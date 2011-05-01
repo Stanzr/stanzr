@@ -355,7 +355,13 @@ main.view = {
 
   chat: {
     hash: function(req, res, next ){
-      if( /\/api\//.exec(req.uri) ) {
+      if( /\/api\//.exec(req.url) ) {
+        next()
+      }
+      else if( /\/favicon.ico/.exec(req.url) ) {
+        next()
+      }
+      else if( /\/.*\.html/.exec(req.url) ) {
         next()
       }
       else {
