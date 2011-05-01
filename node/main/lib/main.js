@@ -273,6 +273,7 @@ main.chat = {
   },
 
   addnick: function(chatid,nick,cb) {
+    console.log('************************ addnick:'+chatid+','+nick)
     main.chat.get(chatid,function(err,chat){
       if( err ) return cb(err);
 
@@ -288,7 +289,23 @@ main.chat = {
           chat.bans = {}
         }
 
-        chat.save$(cb)
+        chat.save$(function(err,chat){
+          if( err ) return cb(err);
+          var hist = main.ent.make$('app','hist')
+          hist.load$({c:chatid,n:nick},function(err,existing){
+            if( err ) return cb(err);
+            if( !existing ) {
+              hist.data$({n:nick,c:chatid,w:new Date(),t:chat.title,m:chat.modname,h:chat.hashtag})
+              console.log(hist)
+              hist.save$(cb)
+            }
+            else {
+              existing.w= new Date()
+              console.log(existing)
+              existing.save$(cb)
+            }
+          })
+        })
       }
       else {
         cb()
@@ -542,7 +559,20 @@ main.api = {
           lost(res)
         }
       }))
-    }
+    },
+
+    get_history: function(req,res) {
+      var nick = req.params.nick
+      if( nick == req.user$.nick ) {
+        var hist = main.ent.make$('app','hist')
+        hist.list$({n:nick,sort$:{w:-1}},RE(res,function(list){
+          common.sendjson(res,list)
+        }))
+      }
+      else {
+        denied(res)
+      }
+    }    
   },
 
   chat: {
@@ -1042,6 +1072,7 @@ Seneca.init(
         capp.post('/api/auth/:action', main.api.auth.post)
 
         capp.get('/api/user/:nick', main.api.user.get)
+        capp.get('/api/user/:nick/history', main.api.user.get_history)
 
         capp.put('/api/chat', main.api.chat.save)
 
