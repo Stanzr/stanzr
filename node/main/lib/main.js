@@ -81,6 +81,14 @@ function LE(win){
 }
 
 
+function sendjson(res) {
+  return RE(res,function(data) {
+    data = data || {}
+    common.sendjson(res,data)
+  })
+}
+
+
 function Cache(){
   var self = this;
 
@@ -249,8 +257,14 @@ main.util = {
         )
       )
     }
-  }
+  },
 
+  statusnotify: function(chatid,from,data) {
+    var group = now.getGroup(chatid)
+    if( group.now.receiveMessage ) {
+      group.now.receiveMessage( from, JSON.stringify( _.extend({type:'status'},data) ) )
+    }
+  }
   
 }
 
@@ -324,6 +338,20 @@ main.chat = {
           cur.toArray(cb)
         })
     })
+  },
+
+
+  getmsg: function(req,res,cb){
+    var chatid = req.params.chatid
+    var msgid  = req.params.msgid
+
+    var msg = main.ent.make$('app','msg')
+    msg.load$({c:chatid,i:msgid},RE(res,function(msg){
+      if( !msg ) {
+        return lost(res)
+      }
+      cb(msg)
+    }))
   }
 
 }
@@ -739,11 +767,7 @@ main.api = {
 
       post_agree: 
         function(req,res){
-        var msgent = main.ent.make$('app','msg')
-        msgent.load$({c:req.params.chatid,i:req.params.msgid},RE(res,function(msg){
-          if( !msg ) {
-            return lost(msg)
-          }
+        main.chat.getmsg(req,res,function(msg){
           msg.an = msg.an || []
           msg.an.push(req.user$.nick)
           msg.an = _.uniq(msg.an)
@@ -760,9 +784,28 @@ main.api = {
               }
             }))
           }))
-        }))
+        })
+      },
+
+
+      post_status:
+      function(req,res){
+        main.chat.getmsg(req,res,function(msg){
+
+          var hide = req.json$.hide
+          if( 'undefined' != typeof(hide) ) {
+            msg.h = hide
+            main.util.statusnotify(req.chat$.chatid,req.user$.nick,{msgid:msg.i,visible:msg.h?'hide':'show'})
+          }
+
+          msg.save$(sendjson(res))
+        })
       }
     }, // msg
+
+
+
+
 
 
     user: {
@@ -1094,6 +1137,9 @@ Seneca.init(
         capp.post('/api/chat/:chatid/topic/:topic/active', main.api.chat.topic.post_active)
 
         capp.post('/api/chat/:chatid/user/:nick/status', main.api.chat.user.post_status)
+
+        //capp.post('/api/chat/:chatid/msg/:msgid', main.api.chat.msg.post)
+        capp.post('/api/chat/:chatid/msg/:msgid/status', main.api.chat.msg.post_status)
       })
     )
 

@@ -9,6 +9,54 @@ function enterkey(cb) {
 }
 
 
+function print() {
+  if( 'undefined' != typeof(console) ) {
+    console.log.apply(console,arguments)
+  }
+}
+
+
+function RE(win) {
+  return function(err){
+    if( err ) {
+      print('error',err)
+    }
+    else {
+      win && win.apply( this, [].slice.call(arguments,1) )
+    }
+  }
+}
+
+
+var http = {
+
+  success:function(cb){
+    return function(res){
+      cb && cb(null,res)
+    }
+  },
+
+  error:function(cb){
+    return function(jqXHR, textStatus, errorThrown){
+      cb && cb({jqXHR:jqXHR, textStatus:textStatus, errorThrown:errorThrown},null)
+    }
+  },
+
+  post: function(url,data,cb) {
+    $.ajax({
+      url:url,
+      type:'POST',
+      contentType:'application/json',
+      data:JSON.stringify(data),
+      dataType:'json',
+      success:http.success(cb),
+      error:http.error(cb)
+    })
+  }
+  
+}
+
+
 var app = {
   topic: 0,
   active_topic: 0,
@@ -181,6 +229,51 @@ var app = {
   },
 
 
+  hidemsg: function(msgid,hide,cb) {
+    http.post( '/api/chat/'+app.chat.chatid+'/msg/'+msgid+'/status',
+               {hide:hide}, 
+               RE(function(msg){
+                 app.msgcache[msgid] && (app.msgcache[msgid].h = hide)
+                 cb && cb(msg)
+               }))
+  },
+
+
+  updatemsg: function(msgid,state,cb){
+    var msg = app.msgcache[msgid]
+    if( msg ) {
+      var msginst = {
+        stanza: $('#msg_'+msgid),
+        agree: $('#agree_'+msgid),
+        reply: $('#reply_'+msgid),
+        cc: $('#cc_'+msgid)
+      }
+      
+      for( var elid in msginst ) {
+        var el = msginst[elid]
+        if( 'hide' == state ) {
+          if( app.ismod ) {
+            el.css({'background-color':'#f88','opacity':0.5})
+          }
+          else {
+            el.hide()
+          }
+        }
+        else if( 'show' == state ) {
+          if( app.ismod ) {
+            el.css({'background-color':'white','opacity':1})
+          }
+          else {
+            el.show()
+          }
+        }
+      }
+
+      cb && cb()
+    }
+  },
+
+
   popup: {
     box: {}
   },
@@ -272,12 +365,13 @@ $(function(){
     now.name = nick
     
     now.receiveMessage = function(from, jsonstr){
+      print('msgin',from,jsonstr)
       var msg = JSON.parse(jsonstr)
 
       if( 'message' == msg.type ) {
         if( !app.msgcache[msg.i] ) {
           app.msgcache[msg.i] = msg
-          display(msg)
+          displaymsg(msg)
           app.rightbar.box.reply.set(msg)
         }
       }
@@ -336,7 +430,11 @@ $(function(){
           })
         }
       }
-      
+      else if( 'status' == msg.type ) {
+        if( msg.visible ) {
+          app.updatemsg(msg.msgid,msg.visible,print)
+        }
+      }
     }
 
     
@@ -348,7 +446,7 @@ $(function(){
 
       now.distributeMessage(JSON.stringify(msg),function(msg){
         app.msgcache[msg.i] = msg
-        display(msg)
+        displaymsg(msg)
         //app.msgcache[msg.i] = msg
       })
     }
@@ -469,13 +567,14 @@ $(function(){
     app.postbottom()
   }
 
-  function display(msg) {
+  function displaymsg(msg) {
     app.nickmap[msg.f] = true
 
     msg.p = 'undefined'==typeof(msg.p) ? app.topic : msg.p
 
     var post = $('#posts_tm li.message').clone()
-    post.attr('id','topic_'+msg.p+'_post_'+msg.i)
+    //post.attr('id','topic_'+msg.p+'_post_'+msg.i)
+    post.attr('id','msg_'+msg.i)
     post.find('h4').text(msg.f)
     post.find('p').text(msg.t)
 
@@ -515,14 +614,55 @@ $(function(){
       }
     }
 
+    
+    if( app.ismod ) {
+      var hidemsg = post.find('a.sprite-hide')
+      var showmsg = post.find('a.sprite-show')
+
+      hidemsg.hide$ = showmsg.hide$ = function(){ this.css('display','none') }
+      hidemsg.show$ = showmsg.show$ = function(){ this.css('display','inline-block') }
+
+      if(msg.h) {
+        hidemsg.hide$()
+        showmsg.show$()
+      }
+      else {
+        hidemsg.show$()
+        showmsg.hide$()
+      }
+
+      hidemsg.click(function(){
+        app.updatemsg(msg.i,'hide',function(){
+          hidemsg.hide$()
+          showmsg.show$()
+          app.hidemsg(msg.i,true,print)
+        })
+      })
+
+      showmsg.click(function(){
+        app.updatemsg(msg.i,'show',function(){
+          hidemsg.show$()
+          showmsg.hide$()
+          app.hidemsg(msg.i,false,print)
+        })
+      })
+    }
+    
     post.css({opacity:0})
     
     var topicposts = $('#topic_posts_'+msg.p)
     topicposts.append(post)
 
+    if( app.ismod ) {
+      setTimeout(function(){
+        app.updatemsg(msg.i,msg.h?'hide':'show')
+      },200)
+    }
+
+
     var opacity = msg.x ? 0.5 : 1.0
 
-    if( msg.p == app.topic ) {
+    if( msg.p == app.topic && !msg.h ) {
       post.animate({opacity:opacity},500)
       app.postbottom()
     }
@@ -623,7 +763,7 @@ $(function(){
             for( var i = 0; i < res.length; i++ ) {
               var msg = res[i]
               app.msgcache[msg.i] = msg
-              display(msg)
+              displaymsg(msg)
             }
 
             app.rightbar.box.agree.load()
@@ -940,11 +1080,15 @@ function AgreeBox() {
     for( var i = 0; i < agrees.length; i++ ) {
       function displaymostagreed(msg){
         if( 1 <= msg.a ) {
-          var msgdiv = self.el.msg_tm.clone().attr('id','')
+          var msgdiv = self.el.msg_tm.clone().attr('id','agree_'+msg.i)
           msgdiv.find('h4').text(msg.f)
           msgdiv.find('.count').text('x'+msg.a)
           msgdiv.find('.post').text(msg.t)
-          self.el.msgs.append(msgdiv.fadeIn())
+
+          self.el.msgs.append(msgdiv)
+          if( !msg.h ) {
+            msgdiv.fadeIn()
+          }
 
           if( 'up' == self.drill && 100 < self.el.msgs.height() ) {
             i = agrees.length
@@ -1034,7 +1178,7 @@ function ReplyBox() {
 
     for( var i = 0; i < replies.length; i++ ) {
       function displayreply(msg){
-        var msgdiv = self.el.msg_tm.clone().attr('id','')
+        var msgdiv = self.el.msg_tm.clone().attr('id','reply_'+msg.i)
         msgdiv.find('h4').text(msg.f)
 
         if( msg.a ) {
@@ -1042,7 +1186,12 @@ function ReplyBox() {
         }
 
         msgdiv.find('.post').text(msg.t)
-        self.el.msgs.append(msgdiv.fadeIn())
+        self.el.msgs.append(msgdiv)
+
+        if( !msg.h ) {
+          msgdiv.fadeIn()
+        }
+
         if( 'up' == self.drill && 100 < self.el.msgs.height() ) {
           i = replies.length
         }

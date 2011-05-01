@@ -113,6 +113,10 @@ a {
        height: 22px;
      }
 
+     &.hide {
+       display: none;
+     }
+
      &:hover {
        text-decoration: none;
      }
