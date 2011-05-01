@@ -568,6 +568,8 @@ $(function(){
   }
 
   function displaymsg(msg) {
+    print(msg)
+
     app.nickmap[msg.f] = true
 
     msg.p = 'undefined'==typeof(msg.p) ? app.topic : msg.p
@@ -666,7 +668,7 @@ $(function(){
       post.animate({opacity:opacity},500)
       app.postbottom()
     }
-    else {
+    else if( !msg.h) {
       post.css({opacity:opacity})
     }
   }
