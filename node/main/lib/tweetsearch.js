@@ -29,7 +29,6 @@ var TweetSearch = function(term) {
 
 
   self.start = function(maxmillis,cb) {
-    console.dir('tweetsearch, start, '+term)
     self.running = true
 
     twit.stream('statuses/filter', {track:term}, function(stream) {
@@ -41,6 +40,7 @@ var TweetSearch = function(term) {
 
       stream.on('end', function() {
         self.running = false
+        setTimeout(function(){self.start(maxmillis,cb)},10000*Math.random())
       })
 
       stream.on('error', function(error) {
@@ -58,8 +58,6 @@ var TweetSearch = function(term) {
 
   self.stop = function() {
     if( self.running && self.stream ) {
-      console.log('++++++++++++++++++ STOP '+self.term)
-
       self.stream.destroy()
       self.running = false
     }

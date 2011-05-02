@@ -142,14 +142,17 @@ main.util = {
 
   tweetsearch: function(chatid,hashtag) {
     if( 2 <= hashtag.length && conf.tweetsearch ) {
+      hashtag = '#'==hashtag[0] ? hashtag : '#'+hashtag
 
       var tsm = (main.util.tsm = main.util.tsm || {})
       var ts = tsm[chatid]
 
-      var newhashtag = (ts && ts.term != hashtag) || true
+      var newhashtag = true
+      if( ts ) {
+        newhashtag = (ts.term != hashtag)
+      }
       
       if( !ts ) {
-        hashtag = '#'==hashtag[0] ? hashtag : '#'+hashtag
         ts = tsm[chatid] = new TweetSearch(hashtag)
       }
 
@@ -158,16 +161,11 @@ main.util = {
         ts = tsm[chatid] = new TweetSearch(hashtag)
       }
 
-      console.dir(ts)
-
       if( !ts.running ) {
         ts.start(60*60*1000,function(tweet){
-          console.dir(tweet)
           var nick = tweet.user.screen_name
 
           ts.showUser(nick,LE(function(data){
-            console.dir(data)
-
             var group = now.getGroup(chatid)        
             if( group.now.receiveMessage ) {
 
@@ -1047,7 +1045,7 @@ function json(req,res,next) {
 
 
 Seneca.init(
-  {logger:log,
+  {logger:null,
    entity:mongourl,
    plugins:['util','user','echo']
   },
@@ -1221,14 +1219,11 @@ Seneca.init(
     )
 
     main.everyone.now.joinchat = function(msgjson){
-      console.log('*************************** joinchat '+msgjson)
-
       var msg = JSON.parse(msgjson)
       var nick = this.now.name
       var group = now.getGroup(msg.chat)
       group.addUser(this.user.clientId);
 
-      console.log('*********************** joinchat nick:'+nick+' rm '+group.now.receiveMessage)
       if( group.now.receiveMessage ) {
         group.now.receiveMessage(nick, JSON.stringify({type:'join', nick:nick}))
       }
@@ -1238,8 +1233,6 @@ Seneca.init(
 
 
     main.everyone.now.distributeMessage = function(msgjson,cb){
-      console.log('*************************** distmsg '+msgjson)
-
       var msg = JSON.parse(msgjson)
 
       var chatid = msg.c
