@@ -1257,13 +1257,6 @@ function AvatarBox() {
             if( res.avimg ) {
               app.avimg[avnick] = res.avimg
               avatar.html('<img src="'+res.avimg+'" width="32" height="32"></img>')
-              /*
-              avatar.css({
-                'background-image':'url('+res.avimg+')',
-                'background-position':'0% 0%',
-                'background-size':'32px 32px'
-              })
-              */
             }
           }
         })
@@ -1292,6 +1285,8 @@ function AvatarBox() {
     if( avatars[msg.f] ) {
       return
     }
+
+    externals[msg.f] = msg
 
     var avatar = $('#miniavatar_tm').clone()
     avatar.attr('id','miniavatar_'+msg.f)

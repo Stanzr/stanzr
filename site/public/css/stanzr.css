@@ -278,11 +278,16 @@ div.rightcol {
       div.rightcol div.sidesection div.miniavatar.external {
         opacity: 0.75; }
       div.rightcol div.sidesection div.miniavatar div.external {
-        position: absolute;
         background-color: #88f;
         opacity: 0.5;
         width: 32px;
-        height: 32px; }
+        height: 32px;
+        z-index: 2;
+        position: relative; }
+      div.rightcol div.sidesection div.miniavatar img {
+        position: relative;
+        top: -32px;
+        z-index: 1; }
     div.rightcol div.sidesection ul.sideposts {
       list-style-type: none;
       margin: 0px;

@@ -439,12 +439,20 @@ div {
         }
 
         div.external {
-          position:absolute;
           background-color: #88f;
           opacity: 0.5;
           width:32px;
           height:32px;
+          z-index:2;
+          position:relative;
         }
+
+        img {
+          position:relative;
+          top:-32px;
+          z-index:1;
+        }
+
       }
       
 
