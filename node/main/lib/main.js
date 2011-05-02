@@ -165,9 +165,15 @@ main.util = {
         ts.start(60*60*1000,function(tweet){
           var nick = tweet.user.screen_name
 
-          ts.showUser(nick,LE(function(data){
+          ts.showUser(nick,function(err,data){
+            log('error',err)
+
             var group = now.getGroup(chatid)        
             if( group.now.receiveMessage ) {
+
+              if( err ) {
+                data = {profile_image_url:''}
+              }
 
               var msg = {
                 type:'external', 
@@ -182,7 +188,7 @@ main.util = {
               )
             }
 
-          }))
+          })
         })
       }
     }

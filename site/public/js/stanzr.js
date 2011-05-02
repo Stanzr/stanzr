@@ -1291,7 +1291,9 @@ function AvatarBox() {
     var avatar = $('#miniavatar_tm').clone()
     avatar.attr('id','miniavatar_'+msg.f)
     avatar.addClass('external')
-    avatar.append('<img class="external" src="'+msg.av+'" width="32" height="32"></img>')
+    if( msg.av ) {
+      avatar.append('<img class="external" src="'+msg.av+'" width="32" height="32"></img>')
+    }
 
     avatar.find('div.external').removeClass('hide')
 
