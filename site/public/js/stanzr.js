@@ -85,7 +85,7 @@ var app = {
       app.topichead.find('div.rally_gotoactive').hide()
     }
 
-    if( nick == app.chat.modnick ) {
+    if( app.chat.modnicks && app.chat.modnicks[nick] ) {
       if( app.active_topic + 1 == topic ) {
         app.topichead.find('div.rally_makeactive').show().click(app.makeactive)
       }
@@ -123,7 +123,8 @@ var app = {
 
 
   resize: function( chop ) {
-    chop = 'undefined'==typeof(chop)?0:chop
+    chop = 'undefined'==typeof(chop)?0:_.isNumber(chop)?chop:0;
+
 
     var winh    = $(window).height()
     var headerh = $('div.header').height()
