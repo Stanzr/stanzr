@@ -8,13 +8,17 @@
   <!--[if lt IE 8]>
     <link rel="stylesheet" href="css/blueprint/ie.css" type="text/css" media="screen, projection">
   <![endif]-->
-  <link rel="stylesheet" href="/css/stanzr.css">
+  <link rel="stylesheet" href="/css/stanzr.css?<%=Math.random()%>">
   <link rel="stylesheet" href="/img/sprites.css">
 
   <script>
-    var page = 'home'
     var chatid = '<%=val.chatid||'member'%>'
     var nick = '<%=val.nick||''%>'
+
+    var page = {
+      chat: <%-JSON.stringify(val.chat)%>,
+      user: <%-JSON.stringify(val.user)%>
+    }
   </script>
 
 <% if( val.chatid || val.nick ) { %>
@@ -25,7 +29,7 @@
   <script src="/js/backbone.js"></script>
   <script src="/js/markdown.js"></script>
   <script src="/nowjs/now.js"></script>
-  <script src="/js/stanzr.js"></script>
+  <script src="/js/stanzr.js?<%=Math.random()%>"></script>
 <% } %>
 
 </head>
@@ -34,6 +38,5 @@
   <%- body %>
 
   <img src="/img/sprites.png" style="display:none">
-
 </body>
 </html>

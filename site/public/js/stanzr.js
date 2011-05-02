@@ -122,14 +122,16 @@ var app = {
   },
 
 
-  resize: function() {
+  resize: function( chop ) {
+    chop = 'undefined'==typeof(chop)?0:chop
+
     var winh    = $(window).height()
     var headerh = $('div.header').height()
-    var colh    = Math.max( 400, winh - headerh );
+    var colh    = Math.max( 400, winh - headerh - chop)
     $('div.col').height(colh)
     var thh = app.topichead.height() || 50
     var sbh = $('div.topicsend').height() || 100
-    $('div.postsarea').height( colh-(sbh+thh+50) )
+    $('div.postsarea').height( colh-(sbh+thh+50) - chop )
   },
 
 
@@ -252,24 +254,41 @@ var app = {
       for( var elid in msginst ) {
         var el = msginst[elid]
         if( 'hide' == state ) {
+          el.css({display:'none'})
+          /*
           if( app.ismod ) {
             el.css({'background-color':'#f88','opacity':0.5})
           }
           else {
             el.hide()
           }
+          */
         }
         else if( 'show' == state ) {
+          /*
           if( app.ismod ) {
             el.css({'background-color':'white','opacity':1})
           }
           else {
             el.show()
           }
+          */
         }
       }
 
       cb && cb()
+    }
+  },
+
+
+  joinchat: function() {
+    console.log('joinchat:'+now.name)
+    if( now.joinchat ) {
+      var msg = JSON.stringify({chat:chatid})
+      now.joinchat(msg)
+    }
+    else {
+      setTimeout(joinchat,200)
     }
   },
 
@@ -326,6 +345,10 @@ $(function(){
     ,head_signup: $('#head_signup')
     ,head_login: $('#head_login')
     ,head_nick: $('#head_nick')
+    
+    ,leftcol: $('div.leftcol')
+    ,midcol: $('div.midcol')
+    ,rightcol: $('div.rightcol')
   }
 
 
@@ -339,6 +362,8 @@ $(function(){
   app.rightbar.box.agree  = new AgreeBox()
   app.rightbar.box.reply  = new ReplyBox()
   app.rightbar.box.dm     = new DirectMessageBox()
+
+  app.curate = new Curate()
 
   app.el.head_hostchat.click(killpopups(app.popup.box.hostchat.hostchat))
   app.el.head_signup.click(killpopups(signupbox))
@@ -454,17 +479,7 @@ $(function(){
     $("#post_send").click(post)
     $("#post_text").keypress(enterkey(post))
 
-    function joinchat() {
-      if( now.joinchat ) {
-        var msg = JSON.stringify({chat:chatid})
-        now.joinchat(msg)
-      }
-      else {
-        setTimeout(joinchat,200)
-      }
-    }
-    joinchat()
-
+    setTimeout(app.joinchat,1000)
   }
 
 
@@ -569,6 +584,7 @@ $(function(){
 
   function displaymsg(msg) {
     print(msg)
+    if( msg.h ) return;
 
     app.nickmap[msg.f] = true
 
@@ -617,38 +633,49 @@ $(function(){
     }
 
     
-    if( app.ismod ) {
-      var hidemsg = post.find('a.sprite-hide')
-      var showmsg = post.find('a.sprite-show')
+    //if( app.ismod ) {
+    var hidemsg = post.find('a.sprite-hide')
+    //var showmsg = post.find('a.sprite-show')
 
-      hidemsg.hide$ = showmsg.hide$ = function(){ this.css('display','none') }
-      hidemsg.show$ = showmsg.show$ = function(){ this.css('display','inline-block') }
+    //hidemsg.hide$ = showmsg.hide$ = function(){ this.css('display','none') }
+    //hidemsg.show$ = showmsg.show$ = function(){ this.css('display','inline-block') }
 
-      if(msg.h) {
-        hidemsg.hide$()
-        showmsg.show$()
-      }
-      else {
+    /*
+    if(msg.h) {
+      hidemsg.hide$()
+      showmsg.show$()
+    }
+    else {
+      hidemsg.show$()
+      showmsg.hide$()
+    }
+    */
+
+    if( app.ismod || nick == msg.f ) {
+      hidemsg.css({display:'inline-block'})
+    }
+
+    hidemsg.click(function(){
+      app.updatemsg(msg.i,'hide',function(){
+        //hidemsg.hide$()
+        //showmsg.show$()
+        app.hidemsg(msg.i,true,print)
+      })
+    })
+
+
+    /*
+    showmsg.click(function(){
+      app.updatemsg(msg.i,'show',function(){
         hidemsg.show$()
         showmsg.hide$()
-      }
-
-      hidemsg.click(function(){
-        app.updatemsg(msg.i,'hide',function(){
-          hidemsg.hide$()
-          showmsg.show$()
-          app.hidemsg(msg.i,true,print)
-        })
-      })
-
-      showmsg.click(function(){
-        app.updatemsg(msg.i,'show',function(){
-          hidemsg.show$()
-          showmsg.hide$()
           app.hidemsg(msg.i,false,print)
-        })
       })
-    }
+    })
+    */
+  
+    //}
+
     
     post.css({opacity:0})
     
@@ -826,6 +853,7 @@ function ChatDetailsBox() {
     
     if( app.chat.modnicks && app.chat.modnicks[nick] ) {
       $('#rally_editbtn').show().click(app.popup.box.hostchat.editchat)
+      $('#rally_curatebtn').show().click(app.curate.render)
     }
 
 
@@ -1087,8 +1115,8 @@ function AgreeBox() {
           msgdiv.find('.count').text('x'+msg.a)
           msgdiv.find('.post').text(msg.t)
 
-          self.el.msgs.append(msgdiv)
           if( !msg.h ) {
+            self.el.msgs.append(msgdiv)
             msgdiv.fadeIn()
           }
 
@@ -1608,3 +1636,140 @@ function SettingsBox() {
   }
 }
 
+
+
+function Curate() {
+  var self = this
+
+  var TOPIC_START = 1000000000000
+
+
+  self.el = {
+    dummy: null
+
+    ,topbar: $('#curate')
+    ,result: $('#curate_result')
+
+    ,list: $('#curate_list')
+
+    ,topic_tm: $('#curate_topic_tm')
+    ,anno_tm: $('#curate_anno_tm')
+    ,msg_tm: $('#curate_msg_tm')
+
+    ,cancelbtn: $('#curate_cancelbtn')
+    ,publishbtn: $('#curate_publishbtn')
+  }
+
+
+  self.render = function() {
+    app.resize(40)
+    self.el.topbar.animate({height:40})
+    app.el.leftcol.animate({width:1},function(){
+      app.el.leftcol.hide()
+    })
+    app.el.rightcol.animate({width:0})
+
+    app.el.midcol.css({'overflow-y':'scroll'}).animate({width:490},function(){
+      self.el.result.fadeIn()
+    })
+
+    $('div.topicsend').fadeOut()
+
+    var items = self.el.list.find('li')
+    if( 0 == items.length ) {
+      self.addtopics()
+    }
+
+    $('li.message').bind('click.curate',function(event){
+      var msgid = $(event.target).parents('li').attr('id').substring(4)
+      var msg = app.msgcache[msgid]
+      
+      var msgitem = self.el.msg_tm.clone()
+      var order = ((1+parseInt(msg.p,10))*TOPIC_START)+parseInt(msg.v,10)
+      msgitem.find('h4').text( msg.f )
+      msgitem.find('p').text( msg.t )
+      msgitem.attr( 'data-order', order )
+      msgitem.click(function(){self.remove(order)})
+
+      self.insert(msgitem)
+    })
+  }
+
+
+  self.unrender = function() {
+    
+    self.el.topbar.animate({height:0})
+
+    app.el.midcol.css({'overflow-y':'hidden'}).animate({width:450},function(){
+      self.el.result.fadeOut()
+    })
+    
+    app.el.leftcol.show().animate({width:265})
+    app.el.rightcol.animate({width:265})
+    
+    $('div.topicsend').fadeIn()
+    app.resize()
+  }
+  
+
+  self.addtopics = function() {
+    var topics = app.chat.topics
+    for( var tI = 0; tI < topics.length; tI++ ) {
+      var topic = topics[tI]
+      var topicitem = self.el.topic_tm.clone()
+      topicitem.find('h3').text( topic.title )
+      topicitem.find('p').text( topic.desc )
+      topicitem.attr( 'data-order', (1+tI)*TOPIC_START )
+      self.insert(topicitem)
+    }
+  }
+  
+
+  self.insert = function(item) {
+    var item_order = parseInt(item.attr('data-order'),10)
+    var items = self.el.list.find('li')
+
+    if( 0 == items.length ) {
+      self.el.list.append(item)
+      return
+    }
+
+    var inserted = false
+    for( var i = 0; i < items.length; i++ ) {
+      var listitem = $(items[i])
+      var order = parseInt(listitem.attr('data-order'),10)
+      
+      if( item_order == order ) {
+        inserted = true
+        break
+      }
+      else if( item_order < order) {
+        listitem.before(item)
+        inserted = true
+        break
+      }
+    }
+
+    if( !inserted ) {
+      listitem.after(item)
+    }
+  }
+
+
+  self.remove = function(order) {
+    var items = self.el.list.find('li')
+    for( var i = 0; i < items.length; i++ ) {
+      var item = $(items[i])
+      var item_order = parseInt(item.attr('data-order'),10)
+
+      if( order == item_order ) {
+        item.remove()
+      }
+    }
+  }
+
+
+  self.el.cancelbtn.click(function(){
+    self.unrender()
+  })
+}

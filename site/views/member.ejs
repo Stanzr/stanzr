@@ -4,15 +4,17 @@
     <h1>Stanzr</h1>
 
     <ul class="topnav">
-      <li class="navgroup navgroup-alone"><a id="head_hostchat" href="javascript:void(0)">Host your own</a></li>
 
+      <% if( val.hostyours ) { %>
+      <li class="navgroup navgroup-alone"><a id="head_hostchat">Host your own</a></li>
+      <% } %>
 
       <% if( val.nick ) { %>
       <li><a id="head_nick"><%=val.nick%></a></li>
       <li><a id="head_logout">Log out</a></li>
       <% } else { %>
 
-      <% var logintag = '/'+(val.chatid||'member') %>
+      <% var logintag = '/'+(val.chatid||'member')+'?'+Math.random() %>
 
       <li class="navgroup-left">
         <a id="head_linkedin" href="/api/user/oauth/linkedin/login<%=logintag%>" class="first sprite-linkedin16">&nbsp;&nbsp;&nbsp;</a>
@@ -21,16 +23,27 @@
         <a id="head_signup" class="last">Sign up</a>
       </li>
 
-      <li class="navgroup-alone"><a id="head_login" href="javascript:void(0)">Log in</a></li>
+      <li class="navgroup-alone"><a id="head_login">Log in</a></li>
       <% } %>
     </ul>
   </div>
+
   
+  <div id="curate" class="span-24 clearfix">
+    <h1 style="float:left;width:200px;margin:5px">Curate</h1>
+    <div style="float:right;width:100px;margin:10px;text-align:right">
+      <a id="curate_cancelbtn" class="txtbtn">cancel</a>
+      <a id="curate_publishbtn" class="txtbtn">publish</a>
+    </div>
+  </div>
+
+
   <div class="span-7 leftcol col">
     <div>
       <h1 id="rally_title"></h1>
       <h2>#<%=val.hashtag%></h2>
-      <a id="rally_editbtn" class="textbtn">edit</a>
+      <a id="rally_editbtn" class="textbtn hide">edit</a>
+      <a id="rally_curatebtn" class="textbtn hide">curate</a>
     </div>
 
     <div>
@@ -82,7 +95,7 @@
         <p class="right">Go &gt;</p>
       </div>
       <div class="rally_makeactive clearfix">
-        <a href="javascript:void(0)">Start this topic</a>
+        <a>Start this topic</a>
       </div>
     </div>
 
@@ -95,11 +108,12 @@
       <p><a href="javascript:$('#head_signup').click()">Sign up</a> to create your own chat</p>
     </div>
 
+    <% if( val.hostyours ) { %>
     <div id="hostyourown">
       <h2>Host Your Own Chat!</h2>
       <p><a href="javascript:$('#head_hostchat').click()">create your chat now</a></p>
     </div>
-
+    <% } %>
 
 
     <div class="postsarea" class="clearfix">
@@ -122,19 +136,21 @@
                 <a class="imgbtn sprite-approve">&nbsp;</a>
                 <span class="agrees count"></span>
 
-                <a class="imgbtn sprite-hide hide">[H]</a>
-                <a class="imgbtn sprite-show hide">[S]</a>
+
+                <a class="imgbtn sprite-hide hide">&times;</a>
+                <!--<a class="imgbtn sprite-show hide">[S]</a>-->
               </div>            
             </div>
 
             <p class="post"></p>
           </div>
         </li>
+
         <li class="infomsg clearfix">
           <p></p>
         </li>
-
-     <ul>   
+      </ul>
+   
     </div>
 
     <div class="topicsend">
@@ -145,6 +161,46 @@
       </div>
     </div>
 
+  </div>
+
+
+  <div id="curate_result" class="span-10 midcol clearfix col hide">
+
+    <h2>Click on chat items to move them in and out of the summary.</h2>
+
+    <ul id="curate_list" class="curate_list">
+    </ul>
+
+    <ul id="curate_list_tm" class="hide">
+      <li id="curate_topic_tm" class="curate_topic">
+        <h3></h3>
+        <p></p>
+      </li>
+
+      <li id="curate_anno_tm" class="curate_anno">
+        <p></p>
+      </li>
+
+      <li id="curate_msg_tm" class="curate_msg clearfix">
+        <div class="post_avatar sprite-silhouette32"></div>
+        <div class="post_content">
+
+          <div class="clearfix">
+            <h4></h4>
+            <div class="post_actions">
+              
+              <a class="imgbtn sprite-at-reply">&nbsp;</a>
+              <span class="replies count"></span>
+
+              <a class="imgbtn sprite-approve">&nbsp;</a>
+              <span class="agrees count"></span>
+            </div>            
+          </div>
+          
+          <p class="post"></p>
+        </div>
+      </li>
+    </ul>
 
   </div>
 

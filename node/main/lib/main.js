@@ -164,21 +164,23 @@ main.util = {
           var msgid = uuid().toLowerCase()
           var group = now.getGroup(chatid)        
           if( group.now.receiveMessage ) {
+
+            var msg = {
+              type:'message', 
+              c:chatid,
+              t:tweet.text, 
+              r:[],
+              i:msgid,
+              f:nick,
+              a:0,
+              an:[],
+              x:1
+            }
+            main.util.timeorder(msg)
+
             group.now.receiveMessage(
               nick, 
-              JSON.stringify(
-                {
-                  type:'message', 
-                  c:chatid,
-                  t:tweet.text, 
-                  r:[],
-                  i:msgid,
-                  f:nick,
-                  a:0,
-                  an:[],
-                  x:1
-                }
-              )
+              JSON.stringify(msg)
             )
           }
         })
@@ -235,6 +237,8 @@ main.util = {
             r:msg.r,
             f:msg.f,
             i:msg.i,
+            v:msg.v,
+            w:msg.w,
             a:0,
             an:[]
           }
@@ -264,8 +268,18 @@ main.util = {
     if( group.now.receiveMessage ) {
       group.now.receiveMessage( from, JSON.stringify( _.extend({type:'status'},data) ) )
     }
+  },
+
+
+  timeorder: function(msg) {
+    var time = new Date()
+    var order = (time.getTime() % 10000000000) * 100
+
+    msg.s = time
+    msg.v = order
+
+    return msg;
   }
-  
 }
 
 
@@ -316,7 +330,7 @@ main.chat = {
         })
       }
       else {
-        cb()
+        cb && cb()
       }
     })
   },
@@ -360,20 +374,23 @@ main.msg = {
   map: {},
   save: function(msg,cb) {
     var msgent = main.ent.make$('app','msg')
+
     msgent.i = msg.i
-    msgent.s = new Date()
     msgent.f = msg.f
     msgent.c = msg.c
     msgent.t = msg.t
     msgent.p = msg.p
     msgent.r = msg.r
+
+    main.util.timeorder(msgent)
+
     msgent.save$(cb)
     return msgent
   },
 
   list: function(chatid,cb) {
     var msgent = main.ent.make$('app','msg')
-    msgent.list$({c:chatid},cb)
+    msgent.list$({c:chatid,sort$:{v:1}},cb)
   }
 }
 
@@ -394,14 +411,22 @@ main.view = {
       }
       else {
         main.util.authuser(req,res,RE(res,function(user,login){
+          var userdesc = {}
+          var chatdesc = {}
+
           if( user ) {
             var nick = user.nick
+            userdesc.nick = user.nick
+            userdesc.service = user.social?user.social.service:'system'
           }
 
           if( req.params.chatid ) {
             var chatent = main.ent.make$('app','chat')
             chatent.load$({chatid:req.params.chatid},RE(res,function(chat){
               if( chat ) {
+                chatdesc.chatid  = chat.chatid
+                chatdesc.hashtag = chat.hashtag
+
                 res.render(
                   'member', 
                   {locals: {
@@ -411,7 +436,10 @@ main.view = {
                     val: {
                       chatid: chat.chatid,
                       hashtag: chat.hashtag,
-                      nick: nick
+                      nick: nick,
+                      hostyours: !!(/QJAAMZDU$/.exec(req.url)),
+                      user:userdesc,
+                      chat:chatdesc
                     }
                   }})
               }
@@ -424,7 +452,10 @@ main.view = {
                     },
                     val: {
                       nick: nick,
-                      chatid: 'member'
+                      chatid: 'member',
+                      hostyours: !!(/QJAAMZDU$/.exec(req.url)),
+                      user:userdesc,
+                      chat:chatdesc
                     }
                   }})
               }
@@ -656,7 +687,7 @@ main.api = {
         else {
           chat = main.ent.make$('app','chat')
 
-          chat.topics  = json.topics || [{title:'General',desc:'Open discussion'}]
+          chat.topics  = (json.topics && _.isArray(json.topics)) || [{title:'General',desc:'Open discussion'}]
           chat.topics[0].active = true
           chat.topic = 0
           
@@ -792,13 +823,20 @@ main.api = {
       function(req,res){
         main.chat.getmsg(req,res,function(msg){
 
-          var hide = req.json$.hide
-          if( 'undefined' != typeof(hide) ) {
-            msg.h = hide
-            main.util.statusnotify(req.chat$.chatid,req.user$.nick,{msgid:msg.i,visible:msg.h?'hide':'show'})
-          }
+          var ismod = req.chat$.modnicks[req.user$.nick]
 
-          msg.save$(sendjson(res))
+          if( ismod || req.user$.nick == msg.f ) {
+            var hide = req.json$.hide
+            if( 'undefined' != typeof(hide) ) {
+              msg.h = hide
+              main.util.statusnotify(req.chat$.chatid,req.user$.nick,{msgid:msg.i,visible:msg.h?'hide':'show'})
+            }
+
+            msg.save$(sendjson(res))
+          }
+          else {
+            denied(res)
+          }
         })
       }
     }, // msg
@@ -1014,6 +1052,9 @@ Seneca.init(
     app.get('/', main.view.chat.hash)
     app.get('/:chatid', main.view.chat.hash)
 
+    // http://localhost:8080/jdu12icf/QJAAMZDU
+    app.get('/:chatid/QJAAMZDU', main.view.chat.hash)
+
     app.listen(conf.web.port);
     log("port", app.address().port)
 
@@ -1123,6 +1164,8 @@ Seneca.init(
         capp.get('/api/chat/:chatid/user/:nick/dm', main.api.chat.dm.get_conv)
         capp.get('/api/chat/:chatid/dm/:dmid?', main.api.chat.dm.get)
         capp.get('/api/chat/:chatid/dm', main.api.chat.dm.get)
+
+        capp.post('/api/chat/:chatid/msg/:msgid/status', main.api.chat.msg.post_status)
       })
     )
 
@@ -1139,7 +1182,6 @@ Seneca.init(
         capp.post('/api/chat/:chatid/user/:nick/status', main.api.chat.user.post_status)
 
         //capp.post('/api/chat/:chatid/msg/:msgid', main.api.chat.msg.post)
-        capp.post('/api/chat/:chatid/msg/:msgid/status', main.api.chat.msg.post_status)
       })
     )
 
@@ -1150,11 +1192,14 @@ Seneca.init(
     main.everyone = now.initialize(app)
 
     main.everyone.now.joinchat = function(msgjson){
+      console.log('*************************** joinchat '+msgjson)
+
       var msg = JSON.parse(msgjson)
       var nick = this.now.name
       var group = now.getGroup(msg.chat)
       group.addUser(this.user.clientId);
 
+      console.log('*********************** joinchat nick:'+nick+' rm '+group.now.receiveMessage)
       if( group.now.receiveMessage ) {
         group.now.receiveMessage(nick, JSON.stringify({type:'join', nick:nick}))
       }
@@ -1164,6 +1209,8 @@ Seneca.init(
 
 
     main.everyone.now.distributeMessage = function(msgjson,cb){
+      console.log('*************************** distmsg '+msgjson)
+
       var msg = JSON.parse(msgjson)
 
       var chatid = msg.c
@@ -1180,10 +1227,12 @@ Seneca.init(
 
         if( !(bans && bans[nick]) ) {
           var unsavedmsgent = main.msg.save(msgdata)
-          cb(unsavedmsgent.data$())
+          var msgdata = unsavedmsgent.data$()
+          delete msgdata.$
+          cb(msgdata)
 
-          main.util.tweet(msg)
-          main.util.sendtogroup(group,'message',msg)
+          main.util.tweet(msgdata)
+          main.util.sendtogroup(group,'message',msgdata)
         }
         else {
           cb(msgdata)

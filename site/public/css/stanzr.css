@@ -17,6 +17,12 @@ a {
       height: 22px; }
     a.imgbtn.hide {
       display: none; }
+    a.imgbtn.sprite-hide {
+      font-size: 30px;
+      padding: 1px 2px;
+      line-height: 0;
+      text-decoration: none;
+      color: #999999; }
     a.imgbtn:hover {
       text-decoration: none; }
 
@@ -56,6 +62,22 @@ p {
 input {
   font-size: 13px;
   padding: 2px; }
+
+div.post_avatar {
+  width: 32px;
+  float: left; }
+
+div.post_content {
+  width: 340px;
+  float: left;
+  margin-left: 10px; }
+  div.post_content h4 {
+    float: left; }
+  div.post_content .post_actions {
+    float: right; }
+
+span.count {
+  color: #999999; }
 
 .content, .container {
   width: 980px;
@@ -140,7 +162,7 @@ div.leftcol {
   background-color: white;
   margin-right: 0px;
   width: 265px;
-  float: left;
+  xfloat: left;
   overflow-y: auto;
   overflow-x: hidden; }
   div.leftcol h1, div.leftcol h2, div.leftcol h3 {
@@ -154,7 +176,7 @@ div.midcol {
   background-color: #f7efe1;
   margin-right: 0px;
   width: 450px;
-  float: left; }
+  xfloat: left; }
   div.midcol > div {
     padding: 10px; }
   div.midcol div.topichead {
@@ -212,19 +234,6 @@ div.midcol {
         margin: 0 0 3px 0;
         padding: 5px;
         background-color: #fff; }
-        div.midcol div.postsarea ul.topicposts li.message div.post_avatar {
-          width: 32px;
-          float: left; }
-        div.midcol div.postsarea ul.topicposts li.message div.post_content {
-          width: 340px;
-          float: left;
-          margin-left: 10px; }
-          div.midcol div.postsarea ul.topicposts li.message div.post_content h4 {
-            float: left; }
-          div.midcol div.postsarea ul.topicposts li.message div.post_content .post_actions {
-            float: right; }
-        div.midcol div.postsarea ul.topicposts li.message span.count {
-          color: #999999; }
       div.midcol div.postsarea ul.topicposts li.infomsg {
         margin: 10px 0px; }
         div.midcol div.postsarea ul.topicposts li.infomsg p {
@@ -245,7 +254,7 @@ div.midcol {
 div.rightcol {
   background-color: white;
   width: 265px;
-  float: left;
+  xfloat: left;
   overflow: auto; }
   div.rightcol div.sidesection {
     padding: 10px 15px;
@@ -429,6 +438,34 @@ div.modalbox {
 
 #head_facebook {
   background-position: 7px -255px; }
+
+#curate {
+  overflow: hidden;
+  height: 0px;
+  width: 970px;
+  background-color: #ccc;
+  color: #fff; }
+
+#curate_result {
+  width: 490px;
+  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: scroll; }
+  #curate_result h2 {
+    color: #999;
+    padding: 10px; }
+
+#curate_list {
+  list-style-type: none;
+  margin: 0px;
+  padding: 0px; }
+  #curate_list li {
+    margin: 2px 10px;
+    border: 1px solid #ccc;
+    background-color: white;
+    padding: 5px; }
+  #curate_list li.curate_topic {
+    background-color: #d1cabf; }
 
 /* LANDING PAGE */
 * html .landing {

@@ -117,6 +117,14 @@ a {
        display: none;
      }
 
+     &.sprite-hide {
+         font-size: 30px;
+         padding: 1px 2px;
+         line-height: 0;
+         text-decoration: none; 
+         color: $fontmetaC;
+     }
+
      &:hover {
        text-decoration: none;
      }
@@ -169,6 +177,26 @@ input {
   font-size: 13px;
   padding: 2px;
 }
+
+
+div.post_avatar {
+  width: 32px;
+  float: left;
+}
+
+div.post_content {
+  width: 340px;
+  float: left;
+  margin-left: 10px;
+  
+  h4 {float: left;}
+  
+  .post_actions {float: right;}
+}
+
+span.count {
+  color: $fontmetaC;
+}    
 
 
 .content, .container {
@@ -257,7 +285,7 @@ div {
     background-color: $locolC;
     margin-right: 0px;
     width: 265px;
-    float: left;
+    xfloat: left;
     overflow-y: auto;
     overflow-x: hidden;
 
@@ -278,7 +306,7 @@ div {
     background-color: $hicolC;
     margin-right: 0px;
     width: 450px;
-    float: left;
+    xfloat: left;
 
     &>div {
       padding: 10px
@@ -346,25 +374,6 @@ div {
           padding: 5px;
           background-color: #fff;
           
-          div.post_avatar {
-            width: 32px;
-            float: left;
-          }
-
-          div.post_content {
-            width: 340px;
-            float: left;
-            margin-left: 10px;
-            
-            h4 {float: left;}
-            
-            .post_actions {float: right;}
-          }
-
-          span.count {
-            color: $fontmetaC;
-          }    
-
         }
 
         li.infomsg {
@@ -401,7 +410,7 @@ div {
   &.rightcol {
     background-color: $locolC;
     width: 265px;
-    float: left;
+    xfloat: left;
     overflow: auto;
 
     div.sidesection {
@@ -643,6 +652,46 @@ div.modalbox {
 #head_facebook {
   background-position: 7px -255px;
 }
+
+
+
+#curate {
+  overflow: hidden;
+  height: 0px;
+  width: 970px;
+  background-color: #ccc;
+  color: #fff;
+}
+
+#curate_result {
+  width: 490px;
+  overflow:hidden;
+  overflow-x: hidden;
+  overflow-y: scroll;
+
+  h2 {
+    color: #999;
+    padding: 10px;
+  }
+}
+
+#curate_list {
+  list-style-type: none;
+  margin: 0px;
+  padding: 0px;
+
+  li {
+    margin: 2px 10px;
+    border: 1px solid #ccc;
+    background-color: white;
+    padding: 5px;
+  }
+
+  li.curate_topic {
+    background-color: $topicheadbgC;
+  }
+}
+
 
 
 /* LANDING PAGE */
