@@ -13,12 +13,13 @@ var uuid     = common.uuid
 var twitter  = common.twitter
 
 
-var TweetSearch = function(term) {
+var TweetSearch = function(term,maxresults) {
   var self = this
 
   self.term = term
   self.running = false
-
+  self.maxresults = maxresults || 18
+  self.resultcount++
 
   var twit = new twitter({
     consumer_key: common.conf.keys.twitter.key,
@@ -29,6 +30,10 @@ var TweetSearch = function(term) {
 
 
   self.start = function(maxmillis,cb) {
+    if( self.resultcount < self.maxresults ) {
+      return
+    }
+
     self.running = true
 
     twit.stream('statuses/filter', {track:term}, function(stream) {
@@ -36,6 +41,10 @@ var TweetSearch = function(term) {
 
       stream.on('data', function(tweet) {
         cb(tweet)
+        self.resultcount++
+        if( self.maxresults < self.resultcount ) {
+          self.stop()
+        }
       })
 
       stream.on('end', function() {
