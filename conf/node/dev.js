@@ -3,6 +3,7 @@ module.exports = {
   conf: {
     env:'dev',
     hosturl:'http://stanzr.test',
+    tweetsearch:true,
     mongo: {
       main: {
         server:'localhost',

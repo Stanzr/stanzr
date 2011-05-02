@@ -158,31 +158,33 @@ main.util = {
         ts = tsm[chatid] = new TweetSearch(hashtag)
       }
 
+      console.dir(ts)
+
       if( !ts.running ) {
         ts.start(60*60*1000,function(tweet){
+          console.dir(tweet)
           var nick = tweet.user.screen_name
-          var msgid = uuid().toLowerCase()
-          var group = now.getGroup(chatid)        
-          if( group.now.receiveMessage ) {
 
-            var msg = {
-              type:'message', 
-              c:chatid,
-              t:tweet.text, 
-              r:[],
-              i:msgid,
-              f:nick,
-              a:0,
-              an:[],
-              x:1
+          ts.showUser(nick,LE(function(data){
+            console.dir(data)
+
+            var group = now.getGroup(chatid)        
+            if( group.now.receiveMessage ) {
+
+              var msg = {
+                type:'external', 
+                c:chatid,
+                f:nick,
+                av:data.profile_image_url
+              }
+
+              group.now.receiveMessage(
+                nick, 
+                JSON.stringify(msg)
+              )
             }
-            main.util.timeorder(msg)
 
-            group.now.receiveMessage(
-              nick, 
-              JSON.stringify(msg)
-            )
-          }
+          }))
         })
       }
     }
@@ -1203,7 +1205,20 @@ Seneca.init(
 
 
 
-    main.everyone = now.initialize(app)
+    main.everyone = now.initialize(
+      app, 
+      {
+        socketio: {
+          transports: ['flashsocket', 'websocket', 'htmlfile', 'xhr-multipart', 'xhr-polling', 'jsonp-polling'],
+          rememberTransport:false,
+          connectTimeout:300,
+          tryTransportsOnConnectTimeout:true,
+          reconnect:true,
+          reconnectionDelay:300,
+          maxReconnectionAttempts:21
+        }
+      }
+    )
 
     main.everyone.now.joinchat = function(msgjson){
       console.log('*************************** joinchat '+msgjson)

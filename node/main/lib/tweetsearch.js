@@ -64,6 +64,20 @@ var TweetSearch = function(term) {
       self.running = false
     }
   }
+
+
+
+  self.showUser = function(username,cb) {
+    twit.showUser(username,function(data){
+      if( 'Error' != data.name ) {
+        cb(null,data)
+      }
+      else {
+        cb({err:data,social:'twitter',kind:'showUser',user:user})
+      }
+    })
+  }
+
 }
 
 

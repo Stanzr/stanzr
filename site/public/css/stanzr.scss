@@ -421,7 +421,8 @@ div {
       h2 {float: left;}
       .sidenav {float: right;}
 
-      &#rally_miniavatars {
+      #rally_miniavatars {
+        margin-top:10px;
         border: none;
       }
 
@@ -432,6 +433,18 @@ div {
         margin: 0px 8px 8px 0px !important;
         padding: 0px;
         border: none;
+
+        &.external {
+          opacity:0.75;
+        }
+
+        div.external {
+          position:absolute;
+          background-color: #88f;
+          opacity: 0.5;
+          width:32px;
+          height:32px;
+        }
       }
       
 

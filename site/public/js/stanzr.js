@@ -63,7 +63,7 @@ var app = {
   chat: {},
   msgcache: {},
   nickmap: {},
-
+  avimg: {},
 
   text: {
     dummy: null
@@ -283,13 +283,8 @@ var app = {
 
 
   joinchat: function() {
-    if( now.joinchat ) {
-      var msg = JSON.stringify({chat:chatid})
-      now.joinchat(msg)
-    }
-    else {
-      setTimeout(app.joinchat,200)
-    }
+    var msg = JSON.stringify({chat:chatid})
+    now.joinchat(msg)
   },
 
 
@@ -331,7 +326,7 @@ function killpopups(next) {
 
 
 $(function(){
-  $.cookie('socketio',null)
+  //$.cookie('socketio','flashsocket')
 
   app.changetopic(0)
   
@@ -387,8 +382,10 @@ $(function(){
 
 
   function inituser(){    
-    now.name = nick
-    
+    if( !now.name ) {
+      now.name = nick
+    }
+
     now.receiveMessage = function(from, jsonstr){
       print('msgin',from,jsonstr)
       var msg = JSON.parse(jsonstr)
@@ -460,6 +457,9 @@ $(function(){
           app.updatemsg(msg.msgid,msg.visible,print)
         }
       }
+      else if( 'external' == msg.type ) {
+        app.rightbar.box.avatar.external(msg)
+      }
     }
 
     
@@ -480,6 +480,8 @@ $(function(){
     $("#post_text").keypress(enterkey(post))
 
     setTimeout(app.joinchat,1000)
+    //print('calling joinchat')
+    //app.joinchat()
   }
 
 
@@ -566,7 +568,10 @@ $(function(){
 
 
   if( nick ) {
-    inituser()
+    now.ready(function(){
+      print('inituser:'+nick)
+      inituser()
+    })
   }
   else {
     $('#welcome').show()
@@ -633,23 +638,7 @@ $(function(){
     }
 
     
-    //if( app.ismod ) {
     var hidemsg = post.find('a.sprite-hide')
-    //var showmsg = post.find('a.sprite-show')
-
-    //hidemsg.hide$ = showmsg.hide$ = function(){ this.css('display','none') }
-    //hidemsg.show$ = showmsg.show$ = function(){ this.css('display','inline-block') }
-
-    /*
-    if(msg.h) {
-      hidemsg.hide$()
-      showmsg.show$()
-    }
-    else {
-      hidemsg.show$()
-      showmsg.hide$()
-    }
-    */
 
     if( app.ismod || nick == msg.f ) {
       hidemsg.css({display:'inline-block'})
@@ -657,26 +646,10 @@ $(function(){
 
     hidemsg.click(function(){
       app.updatemsg(msg.i,'hide',function(){
-        //hidemsg.hide$()
-        //showmsg.show$()
         app.hidemsg(msg.i,true,print)
       })
     })
 
-
-    /*
-    showmsg.click(function(){
-      app.updatemsg(msg.i,'show',function(){
-        hidemsg.show$()
-        showmsg.hide$()
-          app.hidemsg(msg.i,false,print)
-      })
-    })
-    */
-  
-    //}
-
-    
     post.css({opacity:0})
     
     var topicposts = $('#topic_posts_'+msg.p)
@@ -823,12 +796,14 @@ function showif(obj,spec) {
   else if( obj.__showif ) {
     for( var en in obj.__showif ) {
       var elem = obj.el[en]
-      var show = (obj.__showif[en])()
-      if( show ) {
-        elem.show()
-      }
-      else {
-        elem.hide()
+      if( elem ) {
+        var show = (obj.__showif[en])()
+        if( show ) {
+          elem.show()
+        }
+        else {
+          elem.hide()
+        }
       }
     }
   }
@@ -1261,7 +1236,7 @@ function AvatarBox() {
 
   var avatars = {}
 
-  self.add = function(avnick,banned) {
+  self.add = function(avnick) {
     if( avnick ) {
       if( !avatars[avnick] ) {
 
@@ -1280,11 +1255,15 @@ function AvatarBox() {
           dataType:'json',
           success:function(res){
             if( res.avimg ) {
+              app.avimg[avnick] = res.avimg
+              avatar.html('<img src="'+res.avimg+'" width="32" height="32"></img>')
+              /*
               avatar.css({
                 'background-image':'url('+res.avimg+')',
                 'background-position':'0% 0%',
                 'background-size':'32px 32px'
               })
+              */
             }
           }
         })
@@ -1302,7 +1281,33 @@ function AvatarBox() {
     }
   }
 
+
+  var externals = {}
+
+  self.external = function(msg) {
+    if( externals[msg.f] ){
+      return
+    }
+
+    if( avatars[msg.f] ) {
+      return
+    }
+
+    var avatar = $('#miniavatar_tm').clone()
+    avatar.attr('id','miniavatar_'+msg.f)
+    avatar.addClass('external')
+    avatar.append('<img src="'+msg.av+'" width="32" height="32"></img>')
+
+    avatar.find('div.external').removeClass('hide')
+
+    avatar.click(function(){
+      app.popup.box.profile.render(msg.f,msg.av,true)
+    })
+    $('#rally_miniavatars').append(avatar)
+    avatar.show()
+  }
   
+
   self.ban = function(ban,bnick) {
     if( avatars[bnick] ) {
       avatars[bnick].css({opacity:ban?0.5:1.0})
@@ -1523,33 +1528,46 @@ function ProfileBox() {
 
     ,you: $('#profile_you')
 
+    ,avimg: $('#profile_avimg')
+    ,invite: $('#profile_invitebtn')
+
   }
   self.el.nick = self.el.box.find('h2')
 
   var cnick
-
+  var avimg
+  var external
 
   showif(self,{
-    messagebtn: function(){
-      return nick != cnick
+    messagebtn: function() {
+      return nick != cnick && !external
     },
-    banbtn: function(){
-      return app.ismod && nick != cnick && !app.chat.bans[cnick]
+    banbtn: function() {
+      return app.ismod && nick != cnick && !app.chat.bans[cnick] && !external
     },
-    unbanbtn: function(){
-      return app.ismod && nick != cnick && app.chat.bans[cnick]
+    unbanbtn: function() {
+      return app.ismod && nick != cnick && app.chat.bans[cnick] && !external
     },
-    you: function(){
+    you: function() {
       return nick == cnick
+    },
+    invite: function() {
+      return external
     }
   })
 
 
-  self.render = function(pnick) {
+  self.render = function(pnick,pavimg,pext) {
     cnick = pnick
-    
+    avimg = pavimg || app.avimg[cnick]
+    external = pext
+
     self.el.box.show()
     self.el.nick.text(cnick)
+
+    if( avimg ) {
+      self.el.avimg.html('<img src="'+avimg+'" width="32" height="32"></img>')
+    }
 
     showif(self)
   }
