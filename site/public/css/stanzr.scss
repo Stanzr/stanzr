@@ -711,7 +711,22 @@ div.modalbox {
   li.curate_topic {
     background-color: $topicheadbgC;
   }
+
+  li.curate_anno {
+    border: none;
+    background-color: $hicolC;
+  }
+
+  a.curate_killanno {
+    font-size: 30px;
+    padding: 1px 2px;
+    line-height: 0;
+    text-decoration: none; 
+    color: $fontmetaC;
+  }
+
 }
+
 
 
 

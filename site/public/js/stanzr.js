@@ -1704,9 +1704,12 @@ function Curate() {
     ,topic_tm: $('#curate_topic_tm')
     ,anno_tm: $('#curate_anno_tm')
     ,msg_tm: $('#curate_msg_tm')
+    ,suggest: $('#curate_suggest')
 
     ,cancelbtn: $('#curate_cancelbtn')
     ,publishbtn: $('#curate_publishbtn')
+
+    
   }
 
 
@@ -1729,18 +1732,48 @@ function Curate() {
       self.addtopics()
     }
 
-    $('li.message').bind('click.curate',function(event){
-      var msgid = $(event.target).parents('li').attr('id').substring(4)
-      var msg = app.msgcache[msgid]
-      
-      var msgitem = self.el.msg_tm.clone()
-      var order = ((1+parseInt(msg.p,10))*TOPIC_START)+parseInt(msg.v,10)
-      msgitem.find('h4').text( msg.f )
-      msgitem.find('p').text( msg.t )
-      msgitem.attr( 'data-order', order )
-      msgitem.click(function(){self.remove(order)})
+    $('a.topic_copyall').removeClass('hide')
 
+    $('li.message').bind('click.curate',function(event){
+      var msgitem = self.makeitem( $(event.target).parents('li') )
       self.insert(msgitem)
+    })
+
+    $('a.topic_copyall').bind('click.curate',function(){
+      var topic = $(event.target).parents('div.topichead').attr('id').substring(11)
+      print('topic',topic)
+
+      var posts = $('#topic_posts_'+topic).find('li.message')
+      for( var i = 0; i < posts.length; i++) {
+        var item = self.makeitem(posts[i])
+        self.insert(item)
+      }
+    })
+
+
+    function createanno(){
+      var anno = self.el.anno_tm.clone()
+      var order = parseInt(self.el.suggest.attr('data-order'),10)
+      self.el.suggest.attr('data-order','0')
+
+      anno.attr('data-order',order)
+
+      anno.find('a').click(function(){
+        console.log(order)
+        self.remove(order)
+        self.el.suggest.unbind('click',createanno)
+        self.el.suggest.bind('click',createanno)
+      })
+      self.el.suggest.after(anno)
+
+      self.el.suggest.hide()
+    }
+
+
+    self.el.suggest.click(createanno)
+
+    self.el.suggest.mouseleave(function(){
+      self.el.suggest.hide()
     })
   }
 
@@ -1756,7 +1789,12 @@ function Curate() {
     app.el.leftcol.show().animate({width:265})
     app.el.rightcol.animate({width:265})
     
+    $('a.topic_copyall').addClass('hide')
+
     $('div.topicsend').fadeIn()
+
+    $('li.message').unbind('click.curate').css({'background-color':'white'})
+
     app.resize()
   }
   
@@ -1772,6 +1810,26 @@ function Curate() {
       self.insert(topicitem)
     }
   }
+
+
+  self.makeitem = function(msgelem){
+    msgelem = $(msgelem)
+    msgelem.css({'background-color':'#ccc'})
+
+    var msgid = msgelem.attr('id').substring(4)
+    var msg = app.msgcache[msgid]
+    
+    var msgitem = self.el.msg_tm.clone()
+    var order = ((1+parseInt(msg.p,10))*TOPIC_START)+parseInt(msg.v,10)
+    msgitem.find('h4').text( msg.f )
+    msgitem.find('p').text( msg.t )
+    msgitem.attr( 'data-order', order )
+    msgitem.attr( 'data-original', msgid )
+    msgitem.click(function(){self.remove(order)})
+
+    return msgitem
+  }
+
   
 
   self.insert = function(item) {
@@ -1780,42 +1838,60 @@ function Curate() {
 
     if( 0 == items.length ) {
       self.el.list.append(item)
-      return
     }
-
-    var inserted = false
-    for( var i = 0; i < items.length; i++ ) {
-      var listitem = $(items[i])
-      var order = parseInt(listitem.attr('data-order'),10)
+    else {
+      var inserted = false
+      for( var i = 0; i < items.length; i++ ) {
+        var listitem = $(items[i])
+        var order = parseInt(listitem.attr('data-order'),10)
       
-      if( item_order == order ) {
-        inserted = true
-        break
+        if( item_order == order ) {
+          inserted = true
+          break
+        }
+        else if( item_order < order) {
+          listitem.before(item)
+          inserted = true
+          break
+        }
       }
-      else if( item_order < order) {
-        listitem.before(item)
-        inserted = true
-        break
+
+      if( !inserted ) {
+        listitem.after(item)
       }
     }
 
-    if( !inserted ) {
-      listitem.after(item)
+    if( !item.hasClass('curate_suggest') ) {
+      item.mouseenter(function(event){
+        var nextitem = item.next()
+        if( !nextitem.hasClass('curate_anno') ) {
+          self.el.suggest.show()
+          item.after(self.el.suggest)
+          var order = item.attr('data-order')
+          self.el.suggest.attr('data-order',parseInt(order,10)+1)
+        }
+      })
     }
   }
 
 
   self.remove = function(order) {
+    console.log('remove:'+order)
+
     var items = self.el.list.find('li')
     for( var i = 0; i < items.length; i++ ) {
       var item = $(items[i])
       var item_order = parseInt(item.attr('data-order'),10)
 
       if( order == item_order ) {
+        var msgid = item.attr('data-original')
+        $('#msg_'+msgid).css({'background-color':'white'})
+        console.log('remove',item)
         item.remove()
       }
     }
   }
+
 
 
   self.el.cancelbtn.click(function(){

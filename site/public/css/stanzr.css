@@ -480,6 +480,15 @@ div.modalbox {
     padding: 5px; }
   #curate_list li.curate_topic {
     background-color: #d1cabf; }
+  #curate_list li.curate_anno {
+    border: none;
+    background-color: #f7efe1; }
+  #curate_list a.curate_killanno {
+    font-size: 30px;
+    padding: 1px 2px;
+    line-height: 0;
+    text-decoration: none;
+    color: #999999; }
 
 /* LANDING PAGE */
 * html .landing {
