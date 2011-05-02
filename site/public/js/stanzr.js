@@ -64,6 +64,8 @@ var app = {
   msgcache: {},
   nickmap: {},
   avimg: {},
+  invitesused: 0,
+
 
   text: {
     dummy: null
@@ -285,6 +287,20 @@ var app = {
   joinchat: function() {
     var msg = JSON.stringify({chat:chatid})
     now.joinchat(msg)
+  },
+
+
+  sendinvite: function(tnick,body,cb) {
+    if( app.ismod && app.invitesused < 3 ) {
+      app.invitesused++
+      
+      http.post( '/api/chat/'+app.chat.chatid+'/invite',
+                 {nick:tnick,body:body}, 
+                 RE(function(msg){
+                   cb && cb(msg)
+                 }))
+      
+    }
   },
 
 
@@ -1526,7 +1542,9 @@ function ProfileBox() {
     ,you: $('#profile_you')
 
     ,avimg: $('#profile_avimg')
-    ,invite: $('#profile_invitebtn')
+    ,invitebtn: $('#profile_invitebtn')
+    ,sendbtn: $('#profile_sendbtn')
+    ,body: $('#profile_body')
 
   }
   self.el.nick = self.el.box.find('h2')
@@ -1548,8 +1566,14 @@ function ProfileBox() {
     you: function() {
       return nick == cnick
     },
-    invite: function() {
-      return external
+    invitebtn: function() {
+      return external && app.ismod && app.invitesused < 3
+    },
+    sendbtn: function() {
+      return false
+    },
+    body: function() {
+      return false
     }
   })
 
@@ -1604,6 +1628,16 @@ function ProfileBox() {
     app.rightbar.box.avatar.ban(false,cnick)
     sendban(false,function(){
     })    
+  })
+
+  self.el.invitebtn.click(function(){
+    self.el.box.css({height:300})
+    self.el.body.val('@'+cnick+' Come join the chat at: http://www.stanzr.com/'+app.chat.chatid).show()
+    self.el.sendbtn.show().click(function(){
+      var body = self.el.body.val()
+      app.sendinvite(cnick,body)
+      self.el.box.hide()
+    })
   })
 
 }

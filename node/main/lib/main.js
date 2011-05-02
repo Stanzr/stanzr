@@ -109,6 +109,8 @@ main.cache = new Cache()
 
 
 main.util = {
+  twitter: new TweetSearch(),
+
   authuser: function(req,res,cb) {
     cookies = new Cookies( req, res )  
     var token = cookies.get('stanzr')
@@ -725,6 +727,16 @@ main.api = {
       })) // load
     },
 
+
+    invite: function(req,res) {
+      if( !req.chat$.invites || req.chat$.invites < 3 ) {
+        main.util.twitter.updateStatus(req.json$.body)
+        req.chat$.invites++
+        req.chat$.save$()
+      }
+    },
+
+
     topic: {
       get: function(req,res) {
         main.chat.get( req.params.chatid, RE(res,function(chat){
@@ -1200,6 +1212,7 @@ Seneca.init(
         capp.post('/api/chat/:chatid/topic/:topic/active', main.api.chat.topic.post_active)
 
         capp.post('/api/chat/:chatid/user/:nick/status', main.api.chat.user.post_status)
+        capp.post('/api/chat/:chatid/invite', main.api.chat.invite)
 
         //capp.post('/api/chat/:chatid/msg/:msgid', main.api.chat.msg.post)
       })

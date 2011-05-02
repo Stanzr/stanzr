@@ -77,6 +77,17 @@ var TweetSearch = function(term) {
     })
   }
 
+
+  self.updateStatus = function(body) {
+    console.log('tweeting: '+body)
+    twit.updateStatus(
+      body,
+      function (data) {
+        console.log(data)
+      }
+    )
+  }
+
 }
 
 
