@@ -282,13 +282,12 @@ var app = {
 
 
   joinchat: function() {
-    console.log('joinchat:'+now.name)
     if( now.joinchat ) {
       var msg = JSON.stringify({chat:chatid})
       now.joinchat(msg)
     }
     else {
-      setTimeout(joinchat,200)
+      setTimeout(app.joinchat,200)
     }
   },
 
