@@ -284,7 +284,7 @@ div.rightcol {
         height: 32px;
         z-index: 2;
         position: relative; }
-      div.rightcol div.sidesection div.miniavatar img {
+      div.rightcol div.sidesection div.miniavatar img.external {
         position: relative;
         top: -32px;
         z-index: 1; }
