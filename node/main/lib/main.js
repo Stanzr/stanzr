@@ -687,7 +687,21 @@ main.api = {
         else {
           chat = main.ent.make$('app','chat')
 
-          chat.topics  = (json.topics && _.isArray(json.topics)) || [{title:'General',desc:'Open discussion'}]
+          var topicdef = [{title:'General',desc:'Open discussion'}]
+
+          if( !json.topics ) {
+            json.topics = topicdef
+          }
+
+          if( !_.isArray(json.topics) ) {
+            json.topics = topicdef
+          }
+          else if( 0 == json.topics.length ) {
+            json.topics = topicdef
+          } 
+
+          chat.topics  = json.topics
+
           chat.topics[0].active = true
           chat.topic = 0
           
