@@ -1264,7 +1264,7 @@ function AvatarBox() {
               target: false,
               event: 'mouseleave',
               effect: true,
-              delay: 500,
+              delay: 250,
               fixed: true,
               inactive: false,
               leave: 'window',
