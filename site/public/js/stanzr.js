@@ -443,7 +443,14 @@ $(function(){
     
     function post(){
       var tweet = $('#send_tweet').attr('checked')
-      var msg = {c:chatid,t:$("#post_text").val(),type:'message',p:app.topic,w:tweet,h:app.chat.hashtag}
+      var text = $("#post_text").val();
+      
+      // Make sure we have text before sending, minimum text length
+      // should be set here, and include logic for commands with no text,
+      // such as '@someone' and '#hashtag' with nothing after
+      if (!text) return false;
+      
+      var msg = {c:chatid,t:text,type:'message',p:app.topic,w:tweet,h:app.chat.hashtag}
       $("#post_text").val("");
       $("#post_text").focus();
 
