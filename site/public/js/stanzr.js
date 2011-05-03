@@ -116,10 +116,10 @@ var app = {
 
   sendbox: function() {
     // show or hide on topix
-    $('#post_text').removeAttr("disabled").focus();
-    $('#post_send').removeAttr("disabled");
-    $('.topicsend .join-in').hide();
-    $('.topicsend .tweetout').fadeIn();
+    $('#post_text').removeAttr("disabled").removeClass('logged-out').focus();
+    $('#post_send').removeAttr("disabled").removeClass('logged-out');
+    $('.topicsend .join-in').removeClass('logged-out').hide();
+    $('.topicsend .tweetout').removeClass('logged-out').fadeIn();
   },
 
 

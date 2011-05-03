@@ -466,8 +466,8 @@ html, body {
 .coming_soon input[type="submit"] {
   font-size: 17px; }
   
-div.midcol div.topicsend #post_text[disabled],
-div.midcol div.topicsend #post_text:disabled,
+div.midcol div.topicsend #post_text.logged-out,
+input.disabled,
 input[disabled],
 input:disabled {
     background-color: #dfdfdf;

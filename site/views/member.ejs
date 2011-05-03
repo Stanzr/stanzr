@@ -90,7 +90,7 @@
     </div>
 
 
-    <div id="welcome">
+    <div id="welcome" class="logged-out">
       <h2>Welcome!</h2>
       <p><a href="javascript:$('#head_signup').click()">Sign up</a> to create your own chat</p>
     </div>
@@ -138,12 +138,12 @@
     </div>
 
     <div class="topicsend">
-      <input type="text" id="post_text" disabled="disabled">
-      <input type="button" value="Send" id="post_send" disabled="disabled">
-      <div class="join-in">
+      <input type="text" id="post_text" disabled="disabled" class="logged-out">
+      <input type="button" value="Send" id="post_send" disabled="disabled" class="logged-out">
+      <div class="join-in logged-out">
         <a class="topic_signup">Sign up to join in</a> - we'd love to hear from you...
       </div>
-      <div class="tweetout">
+      <div class="tweetout logged-out">
         <input id="send_tweet" type="checkbox" checked="yes"> Also post on Twitter - appends <span id="rally_hash">#<%=val.hashtag%></span> 
       </div>
     </div>
