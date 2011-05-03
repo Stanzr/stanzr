@@ -1249,9 +1249,30 @@ function AvatarBox() {
 
         var avatar = $('#miniavatar_tm').clone()
         avatar.attr('id','miniavatar_'+avnick)
-        avatar.click(function(){
-          app.popup.box.profile.render(avnick)
-        })
+        
+        app.popup.box.profile.render(avnick);
+        
+        avatar
+          .attr('title', $('#profile_box').html())
+          .hover(function(){
+            // This is slightly cheating... 
+            app.popup.box.profile.render(avnick);
+            avatar.attr('title', $('#profile_box').html());
+          })
+          .qtip({
+            hide: {
+              target: false,
+              event: 'mouseleave',
+              effect: true,
+              delay: 500,
+              fixed: true,
+              inactive: false,
+              leave: 'window',
+              distance: false
+            }
+          });
+        
+        
         $('#rally_miniavatars').append(avatar)
         avatar.show()
         avatars[avnick] = avatar
@@ -1530,7 +1551,7 @@ function ProfileBox() {
   self.render = function(pnick) {
     cnick = pnick
     
-    self.el.box.show()
+    //self.el.box.show()
     self.el.nick.text(cnick)
 
     showif(self)

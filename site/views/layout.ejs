@@ -3,13 +3,13 @@
 <head>
   <title><%= txt.title %></title>
 
-  <link rel="stylesheet" href="/css/blueprint/screen.css" type="text/css" media="screen, projection">
-  <link rel="stylesheet" href="/css/blueprint/print.css" type="text/css" media="print">
+  <link rel="stylesheet" href="/css/blueprint/screen.css" type="text/css" media="screen, projection" />
+  <link rel="stylesheet" href="/css/blueprint/print.css" type="text/css" media="print" />
   <!--[if lt IE 8]>
-    <link rel="stylesheet" href="css/blueprint/ie.css" type="text/css" media="screen, projection">
+    <link rel="stylesheet" href="css/blueprint/ie.css" type="text/css" media="screen, projection" />
   <![endif]-->
-  <link rel="stylesheet" href="/css/stanzr.css">
-  <link rel="stylesheet" href="/img/sprites.css">
+  <link rel="stylesheet" href="/css/stanzr.css" />
+  <link rel="stylesheet" href="/img/sprites.css" />
 
   <script>
     var page = 'home'
@@ -18,7 +18,12 @@
   </script>
 
 <% if( val.chatid || val.nick ) { %>
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script> 
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script> 
+  <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.12/jquery-ui.min.js"></script> 
+  
+  <script src="/js/qtip2/jquery.qtip.min.js"></script>
+  <link rel="stylesheet" href="/js/qtip2/jquery.qtip.min.css" />
+  
   <script src="/js/jquery.cookie.js"></script>
   <script src="/js/json2.js"></script>
   <script src="/js/underscore.js"></script>
@@ -33,7 +38,7 @@
 <body>
   <%- body %>
 
-  <img src="/img/sprites.png" style="display:none">
+  <img src="/img/sprites.png" style="display:none" />
 
 </body>
 </html>
