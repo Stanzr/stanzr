@@ -242,6 +242,7 @@ div.midcol {
       width: 370px;
       padding: 2px; }
     div.midcol div.topicsend div.tweetout {
+      display: none;
       color: #999999; }
 div.rightcol {
   background-color: white;
@@ -464,3 +465,10 @@ html, body {
 
 .coming_soon input[type="submit"] {
   font-size: 17px; }
+  
+div.midcol div.topicsend #post_text[disabled],
+div.midcol div.topicsend #post_text:disabled,
+input[disabled],
+input:disabled {
+    background-color: #dfdfdf;
+}

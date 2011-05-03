@@ -118,6 +118,8 @@ var app = {
     // show or hide on topix
     $('#post_text').removeAttr("disabled").focus();
     $('#post_send').removeAttr("disabled");
+    $('.topicsend .join-in').hide();
+    $('.topicsend .tweetout').fadeIn();
   },
 
 
@@ -323,6 +325,7 @@ $(function(){
     dummy: null
     ,head_hostchat: $('#head_hostchat')
     ,head_signup: $('#head_signup')
+    ,topic_signup: $('#topic_signup')
     ,head_login: $('#head_login')
     ,head_nick: $('#head_nick')
   }
@@ -341,6 +344,7 @@ $(function(){
 
   app.el.head_hostchat.click(killpopups(app.popup.box.hostchat.hostchat))
   app.el.head_signup.click(killpopups(signupbox))
+  app.el.topic_signup.click(killpopups(signupbox))
   app.el.head_login.click(killpopups(loginbox))
 
   app.el.head_nick.click(killpopups(function(){
@@ -553,7 +557,7 @@ $(function(){
     inituser()
   }
   else {
-    $('#welcome').show()
+    //$('#welcome').show()
   }
 
 

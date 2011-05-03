@@ -393,6 +393,7 @@ div {
       }
 
       div.tweetout {
+        display: none;
         color: $fontmetaC;
       }
     }
@@ -657,8 +658,12 @@ html, body {height: 100%; }
 .coming_soon input[type="submit"] {font-size: 17px;}
 
 
-
-
+div.midcol div.topicsend #post_text[disabled],
+div.midcol div.topicsend #post_text:disabled,
+input[disabled],
+input:disabled {
+  background-color: #dfdfdf;
+}
 
 
 
