@@ -116,9 +116,8 @@ var app = {
 
   sendbox: function() {
     // show or hide on topix
-    $('div.topicsend').fadeIn(function(){
-      $("#post_text").focus()
-    })
+    $('#post_text').removeAttr("disabled").focus();
+    $('#post_send').removeAttr("disabled");
   },
 
 

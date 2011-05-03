@@ -232,8 +232,9 @@ div.midcol {
           margin: 0px;
           padding: 0px; }
   div.midcol div.topicsend {
-    display: none;
-    padding: 0px 5px 5px 10px; }
+    padding: 0px 5px 5px 10px;
+    position: absolute;
+    bottom: 0; }
     div.midcol div.topicsend #post_text {
       border: 1px solid #999;
       font-size: 13px;
