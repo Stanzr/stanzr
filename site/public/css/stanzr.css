@@ -241,7 +241,8 @@ div.midcol {
           margin: 0px;
           padding: 0px; }
   div.midcol div.topicsend {
-    display: none;
+    position: absolute;
+    bottom: 0;
     padding: 0px 5px 5px 10px; }
     div.midcol div.topicsend #post_text {
       border: 1px solid #999;
@@ -250,6 +251,7 @@ div.midcol {
       width: 370px;
       padding: 2px; }
     div.midcol div.topicsend div.tweetout {
+      display: none;
       color: #999999; }
 div.rightcol {
   background-color: white;
@@ -523,3 +525,9 @@ html, body {
 
 .coming_soon input[type="submit"] {
   font-size: 17px; }
+
+div.midcol div.topicsend #post_text.logged-out,
+input.disabled,
+input[disabled],
+input:disabled {
+  background-color: #dfdfdf; }

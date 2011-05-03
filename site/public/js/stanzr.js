@@ -134,9 +134,10 @@ var app = {
 
   sendbox: function() {
     // show or hide on topix
-    $('div.topicsend').fadeIn(function(){
-      $("#post_text").focus()
-    })
+    $('#post_text').removeAttr("disabled").removeClass('logged-out').focus();
+    $('#post_send').removeAttr("disabled").removeClass('logged-out');
+    $('.topicsend .join-in').removeClass('logged-out').hide();
+    $('.topicsend .tweetout').removeClass('logged-out').fadeIn();
   },
 
 
@@ -378,6 +379,7 @@ $(function(){
     dummy: null
     ,head_hostchat: $('#head_hostchat')
     ,head_signup: $('#head_signup')
+    ,topic_signup: $('#topic_signup')
     ,head_login: $('#head_login')
     ,head_nick: $('#head_nick')
     ,head_history: $('#head_history')
@@ -405,6 +407,7 @@ $(function(){
 
   app.el.head_hostchat.click(killpopups(app.popup.box.hostchat.hostchat))
   app.el.head_signup.click(killpopups(signupbox))
+  app.el.topic_signup.click(killpopups(signupbox))
   app.el.head_login.click(killpopups(loginbox))
 
   app.el.head_nick.click(killpopups(function(){
@@ -516,7 +519,14 @@ $(function(){
     
     function post(){
       var tweet = $('#send_tweet').attr('checked')
-      var msg = {c:chatid,t:$("#post_text").val(),type:'message',p:app.topic,w:tweet,h:app.chat.hashtag}
+      var text = $("#post_text").val();
+      
+      // Make sure we have text before sending, minimum text length
+      // should be set here, and include logic for commands with no text,
+      // such as '@someone' and '#hashtag' with nothing after
+      if (!text) return false;
+      
+      var msg = {c:chatid,t:text,type:'message',p:app.topic,w:tweet,h:app.chat.hashtag}
       $("#post_text").val("");
       $("#post_text").focus();
 
@@ -1312,9 +1322,30 @@ function AvatarBox() {
 
         var avatar = $('#miniavatar_tm').clone()
         avatar.attr('id','miniavatar_'+avnick)
-        avatar.click(function(){
-          app.popup.box.profile.render(avnick)
-        })
+        
+        app.popup.box.profile.render(avnick);
+        
+        avatar
+          .attr('title', $('#profile_box').html())
+          .hover(function(){
+            // This is slightly cheating... 
+            app.popup.box.profile.render(avnick);
+            avatar.attr('title', $('#profile_box').html());
+          })
+          .qtip({
+            hide: {
+              target: false,
+              event: 'mouseleave',
+              effect: true,
+              delay: 250,
+              fixed: true,
+              inactive: false,
+              leave: 'window',
+              distance: false
+            }
+          });
+        
+        
         $('#rally_miniavatars').append(avatar)
         avatar.show()
         avatars[avnick] = avatar
@@ -1637,7 +1668,7 @@ function ProfileBox() {
     avimg = pavimg || app.avimg[cnick]
     external = pext
 
-    self.el.box.show()
+    //self.el.box.show()
     self.el.nick.text(cnick)
 
     if( avimg ) {

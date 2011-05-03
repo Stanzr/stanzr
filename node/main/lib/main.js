@@ -426,7 +426,15 @@ main.view = {
       else {
         main.util.authuser(req,res,RE(res,function(user,login){
           var userdesc = {}
-          var chatdesc = {}
+          var chatdesc = {
+            chatid  :'',
+            hashtag :'',
+            state   :'',
+            title   :'',
+            modname :'',
+            whenstr :'',
+            desc    :''
+          }
 
           if( user ) {
             var nick = user.nick
@@ -438,13 +446,13 @@ main.view = {
             var chatent = main.ent.make$('app','chat')
             chatent.load$({chatid:req.params.chatid},RE(res,function(chat){
               if( chat ) {
-                chatdesc.chatid  = chat.chatid
-                chatdesc.hashtag = chat.hashtag
-                chatdesc.state   = chat.state
-                chatdesc.title   = chat.title
-                chatdesc.modname = chat.modname
-                chatdesc.whenstr = chat.whenstr
-                chatdesc.desc    = chat.desc
+                chatdesc.chatid  = chat.chatid || ''
+                chatdesc.hashtag = chat.hashtag || ''
+                chatdesc.state   = chat.state || ''
+                chatdesc.title   = chat.title || ''
+                chatdesc.modname = chat.modname || ''
+                chatdesc.whenstr = chat.whenstr || ''
+                chatdesc.desc    = chat.desc || ''
 
                 var locals = {
                   txt: {

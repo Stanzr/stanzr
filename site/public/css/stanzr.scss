@@ -389,7 +389,8 @@ div {
     }
 
     div.topicsend {
-      display: none;
+      position: absolute;
+      bottom: 0;
       padding: 0px 5px 5px 10px;
 
       #post_text {
@@ -401,6 +402,7 @@ div {
       }
 
       div.tweetout {
+        display: none;
         color: $fontmetaC;
       }
     }
@@ -741,8 +743,12 @@ html, body {height: 100%; }
 .coming_soon input[type="submit"] {font-size: 17px;}
 
 
-
-
+div.midcol div.topicsend #post_text.logged-out,
+input.disabled,
+input[disabled],
+input:disabled {
+  background-color: #dfdfdf;
+}
 
 
 
