@@ -374,6 +374,12 @@ main.chat = {
       }
       cb(msg)
     }))
+  },
+
+
+  getpublished: function(chatid,cb) {
+    var pub = main.ent.make$('app','pub')
+    pub.list$({c:chatid,sort$:{o:1}},cb)
   }
 
 }
@@ -434,22 +440,36 @@ main.view = {
               if( chat ) {
                 chatdesc.chatid  = chat.chatid
                 chatdesc.hashtag = chat.hashtag
+                chatdesc.state   = chat.state
+                chatdesc.title   = chat.title
+                chatdesc.modname = chat.modname
+                chatdesc.whenstr = chat.whenstr
+                chatdesc.desc    = chat.desc
 
-                res.render(
-                  'member', 
-                  {locals: {
-                    txt: {
-                      title: chat.chatid
-                    },
-                    val: {
-                      chatid: chat.chatid,
-                      hashtag: chat.hashtag,
-                      nick: nick,
-                      hostyours: !!(/QJAAMZDU$/.exec(req.url)),
-                      user:userdesc,
-                      chat:chatdesc
-                    }
-                  }})
+                var locals = {
+                  txt: {
+                    title: chat.chatid
+                  },
+                  val: {
+                    chatid: chat.chatid,
+                    hashtag: chat.hashtag,
+                    nick: nick,
+                    hostyours: !!(/QJAAMZDU$/.exec(req.url)),
+                    user:userdesc,
+                    chat:chatdesc
+                  }
+                }
+
+                if( 'done' == chat.state ) {
+                  var pub = main.ent.make$('app','pub')
+                  main.chat.getpublished(chat.chatid,RE(res,function(entries){
+                    locals.val.entries = entries
+                    res.render('member', {locals:locals})
+                  }))
+                }
+                else {
+                  res.render('member', {locals:locals})
+                }
               }
               else {
                 res.render(
@@ -793,6 +813,27 @@ main.api = {
       }
     },
 
+    publish: function(req,res) {
+      var chatid = req.chat$.chatid
+      var pub = main.ent.make$('app','pub')
+      var entries = req.json$.entries
+
+      for(var i = 0; i < entries.length; i++ ){
+        var entry = entries[i]
+        var p = pub.make$({t:entry.t,o:entry.o,b:entry.b,c:chatid,a:entry.a})
+        p.save$()
+      }
+
+      req.chat$.state = 'done'
+      
+      util.debug(''+req.chat$)
+
+      req.chat$.save$(RE(res,function(out){
+        common.sendjson(res,{ok:true})
+      }))
+    },
+
+
     // api.chat
     msg: {
       get: 
@@ -1063,7 +1104,7 @@ function json(req,res,next) {
 
 
 Seneca.init(
-  {logger:null,
+  {logger:log,
    entity:mongourl,
    plugins:['util','user','echo']
   },
@@ -1214,7 +1255,7 @@ Seneca.init(
         capp.post('/api/chat/:chatid/user/:nick/status', main.api.chat.user.post_status)
         capp.post('/api/chat/:chatid/invite', main.api.chat.invite)
 
-        //capp.post('/api/chat/:chatid/msg/:msgid', main.api.chat.msg.post)
+        capp.post('/api/chat/:chatid/publish', main.api.chat.publish)
       })
     )
 

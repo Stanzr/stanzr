@@ -10,7 +10,13 @@
       <% } %>
 
       <% if( val.nick ) { %>
-      <li><a id="head_nick"><%=val.nick%></a></li>
+
+      <li class="navgroup-left">
+      <a id="head_history">History</a>
+      <a id="head_settings">Settings</a>
+      <a id="head_nick" class="last"><%=val.nick%></a>
+      </li>
+
       <li><a id="head_logout">Log out</a></li>
       <% } else { %>
 
@@ -40,21 +46,21 @@
 
   <div class="span-7 leftcol col">
     <div>
-      <h1 id="rally_title"></h1>
+      <h1 id="rally_title"><%=val.chat.title%></h1>
       <h2>#<%=val.hashtag%></h2>
       <a id="rally_editbtn" class="textbtn hide">edit</a>
       <a id="rally_curatebtn" class="textbtn hide">curate</a>
     </div>
 
     <div>
-      <h2>Moderated by <a id="rally_modname"></a></h2>
+      <h2>Moderated by <a id="rally_modname"><%=val.chat.modname%></a></h2>
       <h3 id="rally_modtitle"></h3>
-      <a id="rally_modmsgB" class="textbtn">send a message</a>
+      <a id="rally_modmsgbtn" class="textbtn">send a message</a>
     </div>
 
     <div>
       <h2>Scheduled for <span id="rally_date"></span></h2>
-      <h3 id="rally_whenstr"></h3>
+      <h3 id="rally_whenstr"><%=val.chat.whenstr%></h3>
       <br />
 
 <!-- AddThis Button BEGIN -->
@@ -70,6 +76,7 @@
 
     <div class="chat_description">
       <div id="rally_desc">
+<%=val.chat.desc%>
       </div>
       <div id="chat_logo">
         <img>
@@ -121,6 +128,59 @@
 
       <ul id="topicposts_tm" class="topicposts">
       </ul>
+
+<% 
+if( 'done' == val.chat.state ) {
+%>
+      <ul class="topicposts" style="display:block">
+<%
+  for( var i = 0; i < val.entries.length; i++ ) {
+    var entry = val.entries[i]
+    var type = entry.t
+    var body = entry.b
+
+    if( 'm' == type ) {
+%>
+        <li class="message clearfix" style="display:block">
+          <div class="post_avatar sprite-silhouette32"></div>
+          <div class="post_content">
+
+            <div class="clearfix">
+              <h4><%=body.f%></h4>
+              <div class="post_actions">
+
+                <a class="imgbtn sprite-approve">&nbsp;</a>
+                <span class="agrees count"><%=(body.a||'')%></span>
+
+                <a class="imgbtn sprite-hide hide">&times;</a>
+              </div>            
+            </div>
+
+            <p class="post"><%=body.t%></p>
+          </div>
+        </li>
+<%
+    } else if( 'a' == type ) { 
+%>
+        <li class="infomsg clearfix" style="display:block">
+          <p><%=body.b%></p>
+        </li>
+<%
+    } else if( 't' == type ) { 
+%>
+        <li class="topicmsg clearfix" style="display:block">
+          <h4><%=body.h%></h4>
+          <p><%=body.d%></p>
+        </li>
+<%                      
+    }
+  }
+%>
+      </ul>
+<%
+} 
+%>
+
 
       <ul id="posts_tm">
         <li class="message clearfix">
@@ -448,41 +508,46 @@
 
 
 
-<div id="settings_box" class="modalbox hide">
-  <div class="modal_close"><a onclick="$('#settings_box').hide()" class="textbtn">&times;</a></div>
-
-  <!--
-  <h2>Your Details:</h2>
-  
-  <label for="register_username">Username</label>
-  <input id="register_username">
-
-  <label for="register_email">Email</label>
-  <input id="register_email">
-  
-  <label for="register_password">Password</label>
-  <input type="password" id="register_password">
-
-  <label for="register_repeat">Repeat Password</label>
-  <input type="password" id="register_repeat"><br />
-  
-  <a id="register_registerbtn" class="textbtn">Register</a>
-  
-  <p id="register_msg"></p>
-  -->
+<div id="history_box" class="modalbox hide">
+  <div class="modal_close"><a onclick="$('#history_box').hide()" class="textbtn">&times;</a></div>
 
   <h2>Your Previous Chat Events:</h2>
 
-  <ul id="settings_history">
+  <ul id="history_history">
   </ul>
 
-  <li id="settings_history_item_tm" class="hide">
+  <li id="history_history_item_tm" class="hide">
     <a>
-    <span class="settings_chat_title"></span>
+    <span class="history_chat_title"></span>
     moderated by
-    <span class="settings_chat_modname"></span>
+    <span class="history_chat_modname"></span>
     </a>
   </li>
+
+</div>
+
+
+
+<div id="settings_box" class="modalbox hide">
+  <div class="modal_close"><a onclick="$('#settings_box').hide()" class="textbtn">&times;</a></div>
+
+  <h2>Your Details:</h2>
+  
+  <label for="settings_username">Username</label>
+  <p id="settings_username"></p>
+
+  <label for="settings_email">Email</label>
+  <input id="settings_email">
+  
+  <label for="settings_password">Password</label>
+  <input type="password" id="settings_password">
+
+  <label for="settings_repeat">Repeat Password</label>
+  <input type="password" id="settings_repeat"><br />
+  
+  <a id="settings_savebtn" class="textbtn">save</a>
+  
+  <p id="settings_msg"></p>
 
 </div>
 

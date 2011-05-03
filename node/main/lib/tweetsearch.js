@@ -49,7 +49,7 @@ var TweetSearch = function(term,maxresults) {
 
       stream.on('end', function() {
         self.running = false
-        setTimeout(function(){self.start(maxmillis,cb)},60000*Math.random())
+        setTimeout(function(){self.start(maxmillis,cb)},10*60000*Math.random())
       })
 
       stream.on('error', function(error) {

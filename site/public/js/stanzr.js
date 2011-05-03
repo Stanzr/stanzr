@@ -52,6 +52,18 @@ var http = {
       success:http.success(cb),
       error:http.error(cb)
     })
+  },
+
+
+
+  get: function(url,cb) {
+    $.ajax({
+      url:url,
+      dataType:'json',
+      success:function(res){
+        cb && cb(res)
+      }
+    })
   }
   
 }
@@ -75,6 +87,10 @@ var app = {
 
 
   changetopic: function(topic) {
+    if( 'done' == page.chat.state ) {
+      return
+    }
+
     app.topic = topic
 
     $('div.topichead').hide()
@@ -234,6 +250,14 @@ var app = {
   },
 
 
+  getuser: function(cb) {
+    http.get('/api/user/'+page.user.nick,function(res){
+      cb && cb(res)
+    })
+  },
+
+
+
   hidemsg: function(msgid,hide,cb) {
     http.post( '/api/chat/'+app.chat.chatid+'/msg/'+msgid+'/status',
                {hide:hide}, 
@@ -356,6 +380,8 @@ $(function(){
     ,head_signup: $('#head_signup')
     ,head_login: $('#head_login')
     ,head_nick: $('#head_nick')
+    ,head_history: $('#head_history')
+    ,head_settings: $('#head_settings')
     
     ,leftcol: $('div.leftcol')
     ,midcol: $('div.midcol')
@@ -366,6 +392,7 @@ $(function(){
   app.popup.box.hostchat  = new HostChatBox()
   app.popup.box.profile   = new ProfileBox()
   app.popup.box.settings  = new SettingsBox()
+  app.popup.box.history   = new HistoryBox()
 
   app.leftbar.box.detail  = new ChatDetailsBox()
 
@@ -382,6 +409,14 @@ $(function(){
 
   app.el.head_nick.click(killpopups(function(){
     app.popup.box.settings.render()
+  }))
+
+  app.el.head_settings.click(killpopups(function(){
+    app.popup.box.settings.render()
+  }))
+
+  app.el.head_history.click(killpopups(function(){
+    app.popup.box.history.render()
   }))
 
 
@@ -583,14 +618,17 @@ $(function(){
   $('div.modalbox').css({left:($(window).width()-200)/2})
 
 
-  if( nick ) {
-    now.ready(function(){
-      print('inituser:'+nick)
-      inituser()
-    })
+  if( 'done' == page.chat.state ) {
   }
   else {
-    $('#welcome').show()
+    if( nick ) {
+      now.ready(function(){
+        inituser()
+      })
+    }
+    else {
+      $('#welcome').show()
+    }
   }
 
 
@@ -718,77 +756,84 @@ $(function(){
         app.topic  = res.topic || 0
         var topics = res.topics || ['General']
 
-        for( var i = 0; i < topics.length; i++ ) {
-          var topic = topics[i]
+        if( 'done'!=page.chat.state ) {
 
-          if( topic.active ) {
-            app.active_topic = i
-          }
+          for( var i = 0; i < topics.length; i++ ) {
+            var topic = topics[i]
 
-          var topichead = topichead_tm.clone()
-          topichead.attr('id','topic_head_'+i)
-          topichead.find('h4').text(topic.title)
-          topichead.find('p.rally_topicdesc').text(topic.desc)
-
-          var backward_fill = topichead.find('div a.sprite-page-backward-fill')
-          var backward      = topichead.find('div a.sprite-page-backward')
-          var forward       = topichead.find('div a.sprite-page-forward')
-
-          if( 0 == i ) {
-            backward.hide()
-            backward_fill.show()
-          }
-          else {
-            backward_fill.hide()
-          }
-
-          if( topics.length-1 == i ) {
-            forward.hide()
-          }
-
-          function movetopic(dir){
-            return function() {
-              app.changetopic(app.topic + dir)            
+            if( topic.active ) {
+              app.active_topic = i
             }
+
+            var topichead = topichead_tm.clone()
+            topichead.attr('id','topic_head_'+i)
+            topichead.find('h4').text(topic.title)
+            topichead.find('p.rally_topicdesc').text(topic.desc)
+
+            var backward_fill = topichead.find('div a.sprite-page-backward-fill')
+            var backward      = topichead.find('div a.sprite-page-backward')
+            var forward       = topichead.find('div a.sprite-page-forward')
+
+            if( 0 == i ) {
+              backward.hide()
+              backward_fill.show()
+            }
+            else {
+              backward_fill.hide()
+            }
+
+            if( topics.length-1 == i ) {
+              forward.hide()
+            }
+
+            function movetopic(dir){
+              return function() {
+                app.changetopic(app.topic + dir)            
+              }
+            }
+
+
+            backward.click(movetopic(-1))
+            forward.click(movetopic(1))
+
+            topicheads.append(topichead)
+            topichead.css({display:'none'})
+
+
+            var topicposts = topicposts_tm.clone()
+            topicposts.attr('id','topic_posts_'+i)
+
+            postsarea.append(topicposts)
+            topicposts.css({display:'none'})
           }
+          app.changetopic(app.active_topic)            
+
+          app.leftbar.box.detail.init(res)
 
 
-          backward.click(movetopic(-1))
-          forward.click(movetopic(1))
+          $.ajax({
+            url:'/api/chat/'+chatid+'/msgs',
+            type:'GET',
+            dataType:'json',
+            success:function(res){
+              for( var i = 0; i < res.length; i++ ) {
+                var msg = res[i]
+                app.msgcache[msg.i] = msg
+                displaymsg(msg)
+              }
 
-          topicheads.append(topichead)
-          topichead.css({display:'none'})
-
-
-          var topicposts = topicposts_tm.clone()
-          topicposts.attr('id','topic_posts_'+i)
-
-          postsarea.append(topicposts)
-          topicposts.css({display:'none'})
+              app.rightbar.box.agree.load()
+              app.rightbar.box.reply.set(res)
+              app.rightbar.box.dm.load()
+            }
+          })
         }
-        app.changetopic(app.active_topic)            
 
-
-
-        app.leftbar.box.detail.init(res)
-        
-
-        $.ajax({
-          url:'/api/chat/'+chatid+'/msgs',
-          type:'GET',
-          dataType:'json',
-          success:function(res){
-            for( var i = 0; i < res.length; i++ ) {
-              var msg = res[i]
-              app.msgcache[msg.i] = msg
-              displaymsg(msg)
-            }
-
-            app.rightbar.box.agree.load()
-            app.rightbar.box.reply.set(res)
-            app.rightbar.box.dm.load()
-          }
-        })
+        // chat done
+        else {
+          app.rightbar.box.agree.load()
+          app.rightbar.box.reply.set(res)
+        }
       }
     })
   }
@@ -832,7 +877,10 @@ function ChatDetailsBox() {
   self.el = {
     dummy: null
     ,img: $('#chat_logo img')  
+
+    ,modmsgbtn: $('#rally_modmsgbtn')
   }
+
 
   self.init = function(chat) {
 
@@ -857,6 +905,12 @@ function ChatDetailsBox() {
         self.el.img.css({width:width}).attr('src',imgurl).show()
       }
     }
+
+    self.el.modmsgbtn.click(function(){
+      for( var modnick in app.chat.modnicks ) break;
+      app.rightbar.box.dm.other = modnick
+      app.rightbar.box.dm.drilldown()
+    })
   }
 }
 
@@ -1643,16 +1697,16 @@ function ProfileBox() {
 }
 
 
-function SettingsBox() {
+function HistoryBox() {
   var self = this
 
   self.el = {
     dummy: null
 
-    ,box: $('#settings_box')
+    ,box: $('#history_box')
 
-    ,history: $('#settings_history')
-    ,history_item_tm: $('#settings_history_item_tm')
+    ,history: $('#history_history')
+    ,history_item_tm: $('#history_history_item_tm')
 
   }
 
@@ -1670,8 +1724,8 @@ function SettingsBox() {
       for(var i = 0; i < list.length; i++ ) {
         var chatitem = list[i]
         var histitem = self.el.history_item_tm.clone().attr('id','').css({display:'block'})
-        histitem.find('.settings_chat_title').text(chatitem.t)
-        histitem.find('.settings_chat_modname').text(chatitem.m)
+        histitem.find('.history_chat_title').text(chatitem.t)
+        histitem.find('.history_chat_modname').text(chatitem.m)
         histitem.click((function(chatid){
           return function(){
             window.location.href = '/api/bounce/'+chatid
@@ -1682,6 +1736,59 @@ function SettingsBox() {
     })
 
     showif(self)
+  }
+}
+
+
+var ui = {
+  text: function(el,map) {
+    el = $(el)
+    for( var sel in map ) {
+      el.find(sel).text(map[sel])
+    }
+  },
+  val: function(el,map) {
+    el = $(el)
+    for( var sel in map ) {
+      el.find(sel).val(map[sel])
+    }
+  }
+
+}
+
+function SettingsBox() {
+  var self = this
+
+  self.el = {
+    dummy: null
+
+    ,box: $('#settings_box')
+
+    ,savebtn: $('#curate_savebtn')
+  }
+
+  
+  showif(self,{
+  })
+
+
+  self.render = function() {
+    self.el.box.show()
+
+    app.getuser(function(user){
+      ui.text(self.el.box,{
+        '#settings_username':user.nick,
+      })
+      ui.val(self.el.box,{
+        '#settings_email':user.email
+      })
+    })
+
+    showif(self)
+
+    self.el.savebtn.click(function(){
+      print('save')
+    })
   }
 }
 
@@ -1759,7 +1866,6 @@ function Curate() {
       anno.attr('data-order',order)
 
       anno.find('a').click(function(){
-        console.log(order)
         self.remove(order)
         self.el.suggest.unbind('click',createanno)
         self.el.suggest.bind('click',createanno)
@@ -1816,6 +1922,7 @@ function Curate() {
     msgelem = $(msgelem)
     msgelem.css({'background-color':'#ccc'})
 
+    print(msgelem.html())
     var msgid = msgelem.attr('id').substring(4)
     var msg = app.msgcache[msgid]
     
@@ -1876,8 +1983,6 @@ function Curate() {
 
 
   self.remove = function(order) {
-    console.log('remove:'+order)
-
     var items = self.el.list.find('li')
     for( var i = 0; i < items.length; i++ ) {
       var item = $(items[i])
@@ -1886,7 +1991,6 @@ function Curate() {
       if( order == item_order ) {
         var msgid = item.attr('data-original')
         $('#msg_'+msgid).css({'background-color':'white'})
-        console.log('remove',item)
         item.remove()
       }
     }
@@ -1896,5 +2000,55 @@ function Curate() {
 
   self.el.cancelbtn.click(function(){
     self.unrender()
+  })
+
+
+  self.el.publishbtn.click(function(){
+    var entries = []
+
+    var items = self.el.list.find('li')
+    for( var i = 0; i < items.length; i++ ) {
+      var item = $(items[i])
+
+      if( 'curate_suggest' == item.attr('id') ) continue 
+
+      var item_order = parseInt(item.attr('data-order'),10)
+      var isTopic = item.hasClass('curate_topic')
+      var isMsg   = item.hasClass('curate_msg')
+      var isAnno  = item.hasClass('curate_anno')
+
+      var type = isTopic ? 't' : isMsg ? 'm' : isAnno ? 'a' : null
+
+      var msgid = item.attr('data-original')
+
+      var body = isTopic ? {h:item.find('h3').text(),d:item.find('p').text()} :
+                 isMsg ? {
+                   f:item.find('h4').text(),
+                   t:item.find('p.post').text(),
+                   i:item.attr('data-original'),
+                   a:(app.msgcache[msgid].a||0)
+                 } :
+                 isAnno ? {b:item.find('textarea').val()} : null
+
+      if( isMsg ) {
+        body.a = app.msgcache[body.i].a
+      }
+
+      if( type ) {
+        var entry = {
+          t:type,
+          o:item_order,
+          b:body
+        }
+
+        entries.push(entry)
+      }
+    }
+    
+    if( 0 < entries.length ) {
+      http.post('/api/chat/'+app.chat.chatid+'/publish',{entries:entries},function(){
+        window.location.href = '/api/bounce/'+app.chat.chatid   
+      })
+    }
   })
 }
