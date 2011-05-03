@@ -133,6 +133,8 @@ var app = {
 
 
   sendbox: function() {
+    print('sendbox')
+
     // show or hide on topix
     $('#post_text').removeAttr("disabled").removeClass('logged-out').focus();
     $('#post_send').removeAttr("disabled").removeClass('logged-out');
@@ -283,24 +285,6 @@ var app = {
         var el = msginst[elid]
         if( 'hide' == state ) {
           el.css({display:'none'})
-          /*
-          if( app.ismod ) {
-            el.css({'background-color':'#f88','opacity':0.5})
-          }
-          else {
-            el.hide()
-          }
-          */
-        }
-        else if( 'show' == state ) {
-          /*
-          if( app.ismod ) {
-            el.css({'background-color':'white','opacity':1})
-          }
-          else {
-            el.show()
-          }
-          */
         }
       }
 
@@ -311,6 +295,7 @@ var app = {
 
   joinchat: function() {
     var msg = JSON.stringify({chat:chatid})
+    print(msg)
     now.joinchat(msg)
   },
 
@@ -519,6 +504,8 @@ $(function(){
     
     function post(){
       var tweet = $('#send_tweet').attr('checked')
+      print(tweet)
+
       var text = $("#post_text").val();
       
       // Make sure we have text before sending, minimum text length
@@ -526,23 +513,24 @@ $(function(){
       // such as '@someone' and '#hashtag' with nothing after
       if (!text) return false;
       
-      var msg = {c:chatid,t:text,type:'message',p:app.topic,w:tweet,h:app.chat.hashtag}
+      var msg = {c:chatid,t:text,type:'message',p:app.topic,w:tweet,g:app.chat.hashtag}
+      print(msg)
+
       $("#post_text").val("");
       $("#post_text").focus();
 
       now.distributeMessage(JSON.stringify(msg),function(msg){
         app.msgcache[msg.i] = msg
         displaymsg(msg)
-        //app.msgcache[msg.i] = msg
+        app.msgcache[msg.i] = msg
       })
     }
     
     $("#post_send").click(post)
     $("#post_text").keypress(enterkey(post))
 
+    print('joinchat')
     setTimeout(app.joinchat,1000)
-    //print('calling joinchat')
-    //app.joinchat()
   }
 
 
@@ -631,8 +619,11 @@ $(function(){
   if( 'done' == page.chat.state ) {
   }
   else {
+    print('aaa')
     if( nick ) {
+      print('bbb')
       now.ready(function(){
+        print('ccc')
         inituser()
       })
     }
@@ -826,6 +817,7 @@ $(function(){
             type:'GET',
             dataType:'json',
             success:function(res){
+              print(res)
               for( var i = 0; i < res.length; i++ ) {
                 var msg = res[i]
                 app.msgcache[msg.i] = msg

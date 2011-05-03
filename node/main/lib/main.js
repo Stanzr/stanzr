@@ -208,7 +208,7 @@ main.util = {
     return r
   },
 
-  tweet: function(msg) {
+  tweet: function(msg,hashtag) {
     if( msg.w ) {
       var user = main.ent.make$('sys','user')
       user.load$({nick:msg.f},LE(function(user){
@@ -222,7 +222,7 @@ main.util = {
           });
           
           twit.updateStatus(
-            msg.t + ' #'+msg.h,
+            msg.t + ' #'+hashtag,
             function (data) {
             }
           )
@@ -395,6 +395,8 @@ main.msg = {
     msgent.t = msg.t
     msgent.p = msg.p
     msgent.r = msg.r
+    msgent.w = msg.w
+    msgent.h = msg.h
 
     main.util.timeorder(msgent)
 
@@ -1287,6 +1289,8 @@ Seneca.init(
     )
 
     main.everyone.now.joinchat = function(msgjson){
+      console.log(msgjson)
+
       var msg = JSON.parse(msgjson)
       var nick = this.now.name
       var group = now.getGroup(msg.chat)
@@ -1301,8 +1305,10 @@ Seneca.init(
 
 
     main.everyone.now.distributeMessage = function(msgjson,cb){
-      var msg = JSON.parse(msgjson)
+      console.log(msgjson)
 
+      var msg = JSON.parse(msgjson)
+      var hashtag = msg.g
       var chatid = msg.c
       var nick = this.now.name
       msg.f = nick
@@ -1313,7 +1319,8 @@ Seneca.init(
         msg.r = main.util.parsereply(msg.t)
         
         msg.i = uuid().toLowerCase()
-        var msgdata = {i:msg.i,f:nick,c:chatid,p:msg.p,t:msg.t,r:msg.r}
+        var msgdata = {i:msg.i,f:nick,c:chatid,p:msg.p,t:msg.t,r:msg.r,w:msg.w}
+        console.dir(msgdata)
 
         if( !(bans && bans[nick]) ) {
           var unsavedmsgent = main.msg.save(msgdata)
@@ -1321,7 +1328,8 @@ Seneca.init(
           delete msgdata.$
           cb(msgdata)
 
-          main.util.tweet(msgdata)
+          console.dir(msgdata)
+          main.util.tweet(msgdata,hashtag)
           main.util.sendtogroup(group,'message',msgdata)
         }
         else {

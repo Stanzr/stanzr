@@ -4,6 +4,9 @@ module.exports = {
     env:'dev',
     hosturl:'http://stanzr.test',
     tweetsearch:true,
+    web:{
+      port:8080
+    },
     mongo: {
       main: {
         server:'localhost',
