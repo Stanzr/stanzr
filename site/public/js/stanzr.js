@@ -1254,11 +1254,6 @@ function AvatarBox() {
         
         avatar
           .attr('title', $('#profile_box').html())
-          .hover(function(){
-            // This is slightly cheating... 
-            app.popup.box.profile.render(avnick);
-            avatar.attr('title', $('#profile_box').html());
-          })
           .qtip({
             hide: {
               target: false,
@@ -1572,8 +1567,9 @@ function ProfileBox() {
   }
 
 
-  self.el.messagebtn.click(function(){
-    self.el.box.hide()
+  self.el.messagebtn.live('click', function(){
+    //self.el.box.hide()
+    $('body .qtip').hide();
     app.rightbar.box.dm.other = cnick
     app.rightbar.box.dm.drilldown()
   })
