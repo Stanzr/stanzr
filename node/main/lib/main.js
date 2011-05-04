@@ -42,14 +42,13 @@ function sendcode(code,res) {
 function lost(res) { sendcode(404,res) } 
 function bad(res,err) { sendcode(400,res); log('bad',err) } 
 function denied(res) { sendcode(401,res) } 
-function failed(res,err) { sendcode(500,res); log('error',err) } 
+function failed(res,err) { sendcode(500,res); log('error','failed',err) } 
 function found(res,obj,cb) { if(obj){cb(obj)} else {lost(res)} }
 
 
 function RE(res,win){
   return function(err){
     if( err ) {
-      log('error',err)
       failed(res,err)
     }
     else {
@@ -74,7 +73,7 @@ function LE(win){
         win && win.apply( this, [].slice.call(arguments,1) )
       }
       catch( ex ) {
-        log('ex',ex)
+        log('error','ex',ex)
       }
     }
   }
@@ -168,7 +167,7 @@ main.util = {
           var nick = tweet.user.screen_name
 
           ts.showUser(nick,function(err,data){
-            log('error',err)
+            log('error','showUser',err)
 
             var group = now.getGroup(chatid)        
             if( group.now.receiveMessage ) {
@@ -1222,32 +1221,66 @@ Seneca.init(
       else {
         var user = ctxt.user
 
-        if( user.social && 'twitter' == user.social.service ) {
+        if( user.social ) {
 
-          var twit = new twitter({
-            consumer_key: conf.keys.twitter.key,
-            consumer_secret: conf.keys.twitter.secret,
-            access_token_key: user.social.key,
-            access_token_secret: user.social.secret
-          });
+          function saveavimg(user,avimg,service){
+            user.avimg = avimg
+            user.save$(function(err,user){
+              if( err ) {
+                log('error','saveavimg',{error:err,social:service,kind:'avatar',user:user})
+              }
+            })
+          }
 
-          twit.showUser(ctxt.username,function(data){
+          if( 'twitter' == user.social.service ) {
 
-            if( 'Error' != data.name ) {
-              user.avimg = data.profile_image_url
-              user.save$(function(err,user){
+            var twit = new twitter({
+              consumer_key: conf.keys.twitter.key,
+              consumer_secret: conf.keys.twitter.secret,
+              access_token_key: user.social.key,
+              access_token_secret: user.social.secret
+            });
+
+            twit.showUser(ctxt.username,function(data){
+
+              if( 'Error' != data.name ) {
+                saveavimg(user,data.profile_image_url,'twitter')
+              }
+              else {
                 if( err ) {
-                  log('error',{social:'twitter',kind:'avatar',user:user})
+                  log('error','avimg',{error:data,social:'twitter',kind:'showUser',user:user})
+                }
+              }
+            })
+
+          }
+          else {
+            try {
+              var facebook = new oauth.OAuth2(
+                conf.keys.facebo0k.key,
+                conf.keys.facebook.secret,
+                'https://graph.facebook.com'
+              )
+            
+              var geturl = 'https://graph.facebook.com/me/picture'
+              facebook.getProtectedResource( geturl, user.social.key, function (error, data, response) {
+                console.dir(error)
+                console.dir(data)
+                console.dir(response)
+                console.dir(response.headers)
+
+                if( error ) {
+                  log('error','avimg',{error:error,social:'facebook',kind:'showUser',user:user})
+                }
+                else {
+                  saveavimg(user,response.headers['location'],'facebook')
                 }
               })
             }
-            else {
-              if( err ) {
-                log('error',{social:'twitter',kind:'showUser',user:user})
-              }
+            catch( ex ) {
+              log('error',ex)
             }
-          })
-
+          }
         }
 
         var res = ctxt.res
