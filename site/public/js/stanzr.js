@@ -1635,3 +1635,32 @@ function SettingsBox() {
   }
 }
 
+/**
+    Icon selector reference
+
+    #avatar_drilldown
+    #agree_drilldown
+    #reply_drilldown
+    #dm_drilldown
+    
+    .sprite-approve
+    .agrees.count
+    .sprite-at-reply
+    .replies.count
+**/
+
+$('.imgbtn[title]:visible, .agrees.count, .replies.count').livequery(function() {
+  $(this)
+    .qtip({
+        hide: {
+          target: false,
+          event: 'mouseleave',
+          effect: true,
+          delay: 100,
+          fixed: true,
+          inactive: false,
+          leave: 'window',
+          distance: false
+        }
+      });
+});
