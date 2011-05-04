@@ -336,6 +336,16 @@ div.modalbox {
     clear: both;
     margin: 10px 0 0 0;
     font-weight: bold; }
+  div.modalbox input, div.modalbox textarea {
+    display: block;
+    clear: both;
+    width: 95%; }
+  div.modalbox p.descr {
+    color: #999999;
+    margin-bottom: 10px; }
+  div.modalbox h2 {
+    font-size: 18px;
+    margin-bottom: 15px; }
 
 #login_box {
   /*   height: 250px; */ }

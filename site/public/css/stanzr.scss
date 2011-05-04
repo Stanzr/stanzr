@@ -514,6 +514,12 @@ div.modalbox {
   }
   
   label {display: block; clear: both; margin: 10px 0 0 0; font-weight: bold;}
+  
+  input, textarea {display: block; clear: both; width: 95%;}
+  
+  p.descr {color: $fontmetaC; margin-bottom: 10px;}
+  
+  h2 {font-size: 18px; margin-bottom: 15px;}
 
 }
 
