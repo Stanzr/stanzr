@@ -17,3 +17,9 @@
  - npm updates:
  sudo npm install twitter
 
+2011-05-04:
+  - seneca update
+  cd node/support/seneca
+  git pull
+
+

@@ -4,15 +4,23 @@
     <h1>Stanzr</h1>
 
     <ul class="topnav">
-      <li class="navgroup navgroup-alone"><a id="head_hostchat" href="javascript:void(0)">Host your own</a></li>
 
+      <% if( val.hostyours ) { %>
+      <li class="navgroup navgroup-alone"><a id="head_hostchat">Host your own</a></li>
+      <% } %>
 
       <% if( val.nick ) { %>
-      <li><a id="head_nick"><%=val.nick%></a></li>
+
+      <li class="navgroup-left">
+      <a id="head_history">History</a>
+      <a id="head_settings">Settings</a>
+      <a id="head_nick" class="last"><%=val.nick%></a>
+      </li>
+
       <li><a id="head_logout">Log out</a></li>
       <% } else { %>
 
-      <% var logintag = '/'+(val.chatid||'member') %>
+      <% var logintag = '/'+(val.chatid||'member')+'?'+Math.random() %>
 
       <li class="navgroup-left">
         <a id="head_linkedin" href="/api/user/oauth/linkedin/login<%=logintag%>" class="first sprite-linkedin16">&nbsp;&nbsp;&nbsp;</a>
@@ -21,27 +29,38 @@
         <a id="head_signup" class="last">Sign up</a>
       </li>
 
-      <li class="navgroup-alone"><a id="head_login" href="javascript:void(0)">Log in</a></li>
+      <li class="navgroup-alone"><a id="head_login">Log in</a></li>
       <% } %>
     </ul>
   </div>
+
   
+  <div id="curate" class="span-24 clearfix">
+    <h1 style="float:left;width:200px;margin:5px">Curate</h1>
+    <div style="float:right;width:100px;margin:10px;text-align:right">
+      <a id="curate_cancelbtn" class="txtbtn">cancel</a>
+      <a id="curate_publishbtn" class="txtbtn">publish</a>
+    </div>
+  </div>
+
+
   <div class="span-7 leftcol col">
     <div>
-      <h1 id="rally_title"></h1>
+      <h1 id="rally_title"><%=val.chat.title%></h1>
       <h2>#<%=val.hashtag%></h2>
-      <a id="rally_editbtn" class="textbtn">edit</a>
+      <a id="rally_editbtn" class="textbtn hide">edit</a>
+      <a id="rally_curatebtn" class="textbtn hide">curate</a>
     </div>
 
     <div>
-      <h2>Moderated by <a id="rally_modname"></a></h2>
+      <h2>Moderated by <a id="rally_modname"><%=val.chat.modname%></a></h2>
       <h3 id="rally_modtitle"></h3>
-      <a id="rally_modmsgB" class="textbtn">send a message</a>
+      <a id="rally_modmsgbtn" class="textbtn">send a message</a>
     </div>
 
     <div>
       <h2>Scheduled for <span id="rally_date"></span></h2>
-      <h3 id="rally_whenstr"></h3>
+      <h3 id="rally_whenstr"><%=val.chat.whenstr%></h3>
       <br />
 
 <!-- AddThis Button BEGIN -->
@@ -57,6 +76,7 @@
 
     <div class="chat_description">
       <div id="rally_desc">
+<%=val.chat.desc%>
       </div>
       <div id="chat_logo">
         <img>
@@ -82,8 +102,9 @@
         <p class="right">Go &gt;</p>
       </div>
       <div class="rally_makeactive clearfix">
-        <a href="javascript:void(0)">Start this topic</a>
+        <a>Start this topic</a>
       </div>
+      <a class="topic_copyall hide">copy all</a>
     </div>
 
     <div id="topicheads">
@@ -95,17 +116,71 @@
       <p><a href="javascript:$('#head_signup').click()">Sign up</a> to create your own chat</p>
     </div>
 
+    <% if( val.hostyours ) { %>
     <div id="hostyourown">
       <h2>Host Your Own Chat!</h2>
       <p><a href="javascript:$('#head_hostchat').click()">create your chat now</a></p>
     </div>
-
+    <% } %>
 
 
     <div class="postsarea" class="clearfix">
 
       <ul id="topicposts_tm" class="topicposts">
       </ul>
+
+<% 
+if( 'done' == val.chat.state ) {
+%>
+      <ul class="topicposts" style="display:block">
+<%
+  for( var i = 0; i < val.entries.length; i++ ) {
+    var entry = val.entries[i]
+    var type = entry.t
+    var body = entry.b
+
+    if( 'm' == type ) {
+%>
+        <li class="message clearfix" style="display:block">
+          <div class="post_avatar sprite-silhouette32"></div>
+          <div class="post_content">
+
+            <div class="clearfix">
+              <h4><%=body.f%></h4>
+              <div class="post_actions">
+
+                <a class="imgbtn sprite-approve">&nbsp;</a>
+                <span class="agrees count"><%=(body.a||'')%></span>
+
+                <a class="imgbtn sprite-hide hide">&times;</a>
+              </div>            
+            </div>
+
+            <p class="post"><%=body.t%></p>
+          </div>
+        </li>
+<%
+    } else if( 'a' == type ) { 
+%>
+        <li class="infomsg clearfix" style="display:block">
+          <p><%=body.b%></p>
+        </li>
+<%
+    } else if( 't' == type ) { 
+%>
+        <li class="topicmsg clearfix" style="display:block">
+          <h4><%=body.h%></h4>
+          <p><%=body.d%></p>
+        </li>
+<%                      
+    }
+  }
+%>
+      </ul>
+<%
+} 
+%>
+
 
       <ul id="posts_tm">
         <li class="message clearfix">
@@ -122,19 +197,21 @@
                 <a class="imgbtn sprite-approve" title="Like or +1 this Stanza">&nbsp;</a>
                 <span class="agrees count" title="Number of Likes"></span>
 
-                <a class="imgbtn sprite-hide hide">[H]</a>
-                <a class="imgbtn sprite-show hide">[S]</a>
+
+                <a class="imgbtn sprite-hide hide">&times;</a>
+                <!--<a class="imgbtn sprite-show hide">[S]</a>-->
               </div>            
             </div>
 
             <p class="post"></p>
           </div>
         </li>
+
         <li class="infomsg clearfix">
           <p></p>
         </li>
-
-     <ul>   
+      </ul>
+   
     </div>
 
     <div class="topicsend">
@@ -148,6 +225,51 @@
       </div>
     </div>
 
+  </div>
+
+
+  <div id="curate_result" class="span-10 midcol clearfix col hide">
+
+    <h2>Click on chat items to move them in and out of the summary.</h2>
+
+    <ul id="curate_list" class="curate_list">
+    </ul>
+
+    <ul id="curate_list_tm" class="hide">
+      <li id="curate_topic_tm" class="curate_topic">
+        <h3></h3>
+        <p></p>
+      </li>
+
+      <li id="curate_suggest" class="curate_anno">
+        <p style="color:#ccc;text-align:center">Click to annotate</p>
+      </li>
+
+      <li id="curate_anno_tm" class="curate_anno">
+        <a class="textbtn curate_killanno" style="float:right">&times;</a>
+        <textarea style="width:400px;height:50px"></textarea>
+      </li>
+
+      <li id="curate_msg_tm" class="curate_msg clearfix">
+        <div class="post_avatar sprite-silhouette32"></div>
+        <div class="post_content">
+
+          <div class="clearfix">
+            <h4></h4>
+            <div class="post_actions">
+              
+              <a class="imgbtn sprite-at-reply">&nbsp;</a>
+              <span class="replies count"></span>
+
+              <a class="imgbtn sprite-approve">&nbsp;</a>
+              <span class="agrees count"></span>
+            </div>            
+          </div>
+          
+          <p class="post"></p>
+        </div>
+      </li>
+    </ul>
 
   </div>
 
@@ -164,12 +286,12 @@
       </div>
       
       <div id="rally_miniavatars" class="clearfix"></div>
-      <div id="miniavatar_tm" class="miniavatar sprite-silhouette32"></div>
+      <div id="miniavatar_tm" class="miniavatar sprite-silhouette32"><div class="external hide"></div></div>
     </div>
 
     <div class="sidesection clearfix rightbarbox" id="agree_box">
       <div class="sideheader clearfix">
-        <h2><a class="imgbtn sprite-approve">&nbsp;</a>Most Likes</h2>
+        <h2><a class="imgbtn sprite-approve">&nbsp;</a>Most likes</h2>
         <div class="sidenav">
           <a id="agree_drilldown" class="imgbtn sprite-drilldown" title="View More">&nbsp;</a>
           <a id="agree_drillup" class="imgbtn sprite-drillup">&nbsp;</a>
@@ -190,7 +312,7 @@
 
     <div class="sidesection clearfix rightbarbox" id="reply_box">
       <div class="sideheader clearfix">
-        <h2>Replies</h2>
+        <h2>Most replies</h2>
         <div class="sidenav">
           <a id="reply_drilldown" class="imgbtn sprite-drilldown" title="View More">&nbsp;</a>
           <a id="reply_drillup" class="imgbtn sprite-drillup">&nbsp;</a>
@@ -321,17 +443,18 @@
   <input id="hostchat_title">
 
   <label for="hostchat_modname">Moderated by</label>
-  <input id="hostchat_modname"><br />
+  <input id="hostchat_modname">
 
   <label for="hostchat_whenstr">Scheduled for</label>
-  <input id="hostchat_whenstr"><br />
+  <input id="hostchat_whenstr">
+  <p class="descr">Include a timezone, like PDT</p>
 
   <label for="hostchat_hashtag">Twitter hashtag</label>
-  <input id="hostchat_hashtag"><br />
+  <input id="hostchat_hashtag">
+  <p class="descr">People chatting can easily post to Twitter</p>
 
   <label for="hostchat_desc">Description</label>
   <textarea id="hostchat_desc"></textarea>
-  <br />
 
   <a id="hostchat_createbtn" class="textbtn">Next</a>
   </div>
@@ -369,15 +492,41 @@
   <div class="modal_close"><a onclick="$('#profile_box').hide()" class="textbtn">&times;</a></div>
 
   <h2></h2>
-  <div class="miniavatar sprite-silhouette32"></div>  
+  <div id="profile_avimg" class="miniavatar sprite-silhouette32"></div>  
   <p id="profile_you" class="hide">(you)</p>
   <br /><br />
   
   <a id="profile_messagebtn" class="textbtn">message</a>
 
-  &nbsp;&nbsp;&nbsp;
-  <a id="profile_banbtn" class="textbtn hide">ban</a>
-  <a id="profile_unbanbtn" class="textbtn hide">unban</a>
+  
+  <a id="profile_banbtn" class="textbtn hide">&nbsp;&nbsp;&nbsp;ban</a>
+  <a id="profile_unbanbtn" class="textbtn hide">&nbsp;&nbsp;&nbsp;unban</a>
+
+
+  <a id="profile_invitebtn" class="textbtn">invite</a>
+  <textarea id="profile_body" style="width:180px;height:100px"></textarea><br />
+
+  <a id="profile_sendbtn" class="textbtn">send</a>
+
+</div>
+
+
+
+<div id="history_box" class="modalbox hide">
+  <div class="modal_close"><a onclick="$('#history_box').hide()" class="textbtn">&times;</a></div>
+
+  <h2>Your Previous Chat Events:</h2>
+
+  <ul id="history_history">
+  </ul>
+
+  <li id="history_history_item_tm" class="hide">
+    <a>
+    <span class="history_chat_title"></span>
+    moderated by
+    <span class="history_chat_modname"></span>
+    </a>
+  </li>
 
 </div>
 
@@ -386,38 +535,23 @@
 <div id="settings_box" class="modalbox hide">
   <div class="modal_close"><a onclick="$('#settings_box').hide()" class="textbtn">&times;</a></div>
 
-  <!--
   <h2>Your Details:</h2>
   
-  <label for="register_username">Username</label>
-  <input id="register_username">
+  <label for="settings_username">Username</label>
+  <p id="settings_username"></p>
 
-  <label for="register_email">Email</label>
-  <input id="register_email">
+  <label for="settings_email">Email</label>
+  <input id="settings_email">
   
-  <label for="register_password">Password</label>
-  <input type="password" id="register_password">
+  <label for="settings_password">Password</label>
+  <input type="password" id="settings_password">
 
-  <label for="register_repeat">Repeat Password</label>
-  <input type="password" id="register_repeat"><br />
+  <label for="settings_repeat">Repeat Password</label>
+  <input type="password" id="settings_repeat"><br />
   
-  <a id="register_registerbtn" class="textbtn">Register</a>
+  <a id="settings_savebtn" class="textbtn">save</a>
   
-  <p id="register_msg"></p>
-  -->
-
-  <h2>Your Previous Chat Events:</h2>
-
-  <ul id="settings_history">
-  </ul>
-
-  <li id="settings_history_item_tm" class="hide">
-    <a>
-    <span class="settings_chat_title"></span>
-    moderated by
-    <span class="settings_chat_modname"></span>
-    </a>
-  </li>
+  <p id="settings_msg"></p>
 
 </div>
 
