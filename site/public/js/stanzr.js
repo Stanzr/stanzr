@@ -325,7 +325,7 @@ $(function(){
     dummy: null
     ,head_hostchat: $('#head_hostchat')
     ,head_signup: $('#head_signup')
-    ,topic_signup: $('#topic_signup')
+    ,topic_signup: $('.topic_signup')
     ,head_login: $('#head_login')
     ,head_nick: $('#head_nick')
   }
