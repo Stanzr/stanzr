@@ -53,8 +53,8 @@ var url      = exports.url       = require('url')
 var twitter  = exports.twitter   = require('twitter')
 //var twitter  = exports.twitter   = require('../../support/node-twitter')
 
-//var seneca   = exports.seneca    = require('../../support/seneca')
-var seneca   = exports.seneca    = require('seneca')
+var seneca   = exports.seneca    = require('../../support/seneca')
+//var seneca   = exports.seneca    = require('seneca')
 
 var now      = exports.now   = require('now')
 //var now      = exports.now   = require('../../support/now')

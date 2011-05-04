@@ -9,8 +9,8 @@ function enterkey(cb) {
 }
 
 
-function print() {
-  if( 'undefined' != typeof(console) ) {
+function debug() {
+  if( app && app.debug && 'undefined' != typeof(console) ) {
     console.log.apply(console,arguments)
   }
 }
@@ -19,7 +19,7 @@ function print() {
 function RE(win) {
   return function(err){
     if( err ) {
-      print('error',err)
+      debug('error',err)
     }
     else {
       win && win.apply( this, [].slice.call(arguments,1) )
@@ -27,6 +27,28 @@ function RE(win) {
   }
 }
 
+
+function ct(cb) {
+  return function(event){
+    debug(event)
+    var id = event.target.id
+    if( id && app.chartaca ) {
+      var ce = 'click:'+id+':'+app.chat.chatid
+      debug(ce)
+      app.chartaca.fire(ce)
+    }
+    cb(event)
+  }
+}
+var $fnclick = $.fn.click
+$.fn.click = function(a,c){
+  if(c) {
+    $fnclick.call(this,a,ct(c))
+  }
+  else {
+    $fnclick.call(this,ct(a))
+  }
+}
 
 var http = {
 
@@ -70,6 +92,8 @@ var http = {
 
 
 var app = {
+  debug:window.location.hash=='#debug',
+
   topic: 0,
   active_topic: 0,
   chat: {},
@@ -133,13 +157,18 @@ var app = {
 
 
   sendbox: function() {
-    print('sendbox')
+    debug('sendbox')
 
-    // show or hide on topix
-    $('#post_text').removeAttr("disabled").removeClass('logged-out').focus();
-    $('#post_send').removeAttr("disabled").removeClass('logged-out');
-    $('.topicsend .join-in').removeClass('logged-out').hide();
-    $('.topicsend .tweetout').removeClass('logged-out').fadeIn();
+    if( 'done'==page.chat.state ) {
+      $('div.topicsend').hide()
+    }
+    else {
+      // show or hide on topix
+      $('#post_text').removeAttr("disabled").removeClass('logged-out').focus();
+      $('#post_send').removeAttr("disabled").removeClass('logged-out');
+      $('.topicsend .join-in').removeClass('logged-out').hide();
+      $('.topicsend .tweetout').removeClass('logged-out').fadeIn();
+    }
   },
 
 
@@ -151,9 +180,12 @@ var app = {
     var headerh = $('div.header').height()
     var colh    = Math.max( 400, winh - headerh - chop)
     $('div.col').height(colh)
-    var thh = app.topichead.height() || 50
-    var sbh = $('div.topicsend').height() || 100
-    $('div.postsarea').height( colh-(sbh+thh+50) - chop )
+
+    if( app.topichead ) {
+      var thh = app.topichead.height() || 50
+      var sbh = $('div.topicsend').height() || 100
+      $('div.postsarea').height( colh-(sbh+thh+50) - chop )
+    }
   },
 
 
@@ -260,6 +292,17 @@ var app = {
   },
 
 
+  getavatar: function(avnick,cb) {
+    if( app.avimg[avnick] ) {
+      cb && cb(app.avimg[avnick])
+    }
+    else {
+      http.get('/api/user/'+avnick+'/avatar',function(res){
+        cb && cb(res.avimg)
+      })
+    }
+  },
+
 
   hidemsg: function(msgid,hide,cb) {
     http.post( '/api/chat/'+app.chat.chatid+'/msg/'+msgid+'/status',
@@ -295,7 +338,7 @@ var app = {
 
   joinchat: function() {
     var msg = JSON.stringify({chat:chatid})
-    print(msg)
+    debug(msg)
     now.joinchat(msg)
   },
 
@@ -340,6 +383,10 @@ var app = {
   
   leftbar: {
     box: {}
+  },
+
+  midbar: {
+    box: {}
   }
   
 }
@@ -352,6 +399,8 @@ function killpopups(next) {
 
 
 $(function(){
+  app.chartaca = Chartaca.init({key:'2910f2ee-3737-48ec-980f-001574c2d2de',target:'stanzr.com'})
+  app.chartaca.fire('view:'+page.chat.chatid)
   //$.cookie('socketio','flashsocket')
 
   app.changetopic(0)
@@ -382,6 +431,8 @@ $(function(){
   app.popup.box.history   = new HistoryBox()
 
   app.leftbar.box.detail  = new ChatDetailsBox()
+
+  app.midbar.box.send  = new SendBox()
 
   app.rightbar.box.avatar = new AvatarBox()
   app.rightbar.box.agree  = new AgreeBox()
@@ -426,7 +477,7 @@ $(function(){
     }
 
     now.receiveMessage = function(from, jsonstr){
-      print('msgin',from,jsonstr)
+      debug('msgin',from,jsonstr)
       var msg = JSON.parse(jsonstr)
 
       if( 'message' == msg.type ) {
@@ -493,7 +544,7 @@ $(function(){
       }
       else if( 'status' == msg.type ) {
         if( msg.visible ) {
-          app.updatemsg(msg.msgid,msg.visible,print)
+          app.updatemsg(msg.msgid,msg.visible,debug)
         }
       }
       else if( 'external' == msg.type ) {
@@ -502,34 +553,6 @@ $(function(){
     }
 
     
-    function post(){
-      var tweet = $('#send_tweet').attr('checked')
-      print(tweet)
-
-      var text = $("#post_text").val();
-      
-      // Make sure we have text before sending, minimum text length
-      // should be set here, and include logic for commands with no text,
-      // such as '@someone' and '#hashtag' with nothing after
-      if (!text) return false;
-      
-      var msg = {c:chatid,t:text,type:'message',p:app.topic,w:tweet,g:app.chat.hashtag}
-      print(msg)
-
-      $("#post_text").val("");
-      $("#post_text").focus();
-
-      now.distributeMessage(JSON.stringify(msg),function(msg){
-        app.msgcache[msg.i] = msg
-        displaymsg(msg)
-        app.msgcache[msg.i] = msg
-      })
-    }
-    
-    $("#post_send").click(post)
-    $("#post_text").keypress(enterkey(post))
-
-    print('joinchat')
     setTimeout(app.joinchat,1000)
   }
 
@@ -617,13 +640,14 @@ $(function(){
 
 
   if( 'done' == page.chat.state ) {
+    $('div.topicsend').hide()
   }
   else {
-    print('aaa')
+    debug('aaa')
     if( nick ) {
-      print('bbb')
+      debug('bbb')
       now.ready(function(){
-        print('ccc')
+        debug('ccc')
         inituser()
       })
     }
@@ -643,7 +667,7 @@ $(function(){
   }
 
   function displaymsg(msg) {
-    print(msg)
+    debug(msg)
     if( msg.h ) return;
 
     app.nickmap[msg.f] = true
@@ -656,6 +680,12 @@ $(function(){
     post.find('h4').text(msg.f)
     post.find('p').text(msg.t)
 
+    app.getavatar(msg.f,function(avimg){
+      if( avimg ) {
+        debug('avimg',msg.f,avimg)
+        post.find('div.post_avatar').html('<img src="'+avimg+'" width="32" height="32"></img>')
+      }
+    })
 
     if( !msg.x ) {
       if( 0 < msg.a ) {
@@ -701,7 +731,7 @@ $(function(){
 
     hidemsg.click(function(){
       app.updatemsg(msg.i,'hide',function(){
-        app.hidemsg(msg.i,true,print)
+        app.hidemsg(msg.i,true,debug)
       })
     })
 
@@ -817,7 +847,7 @@ $(function(){
             type:'GET',
             dataType:'json',
             success:function(res){
-              print(res)
+              debug(res)
               for( var i = 0; i < res.length; i++ ) {
                 var msg = res[i]
                 app.msgcache[msg.i] = msg
@@ -871,6 +901,49 @@ function showif(obj,spec) {
     }
   }
 }
+
+
+
+function SendBox() {
+  var self = this
+
+  self.el = {
+    dummy: null
+
+    ,sendbtn: $("#post_send")
+    ,text: $("#post_text")
+    ,tweet: $('#send_tweet')
+  }
+
+  self.post = function() {
+    var tweet = self.el.tweet.attr('checked')
+    var text  = self.el.text.val()
+    
+    // Make sure we have text before sending, minimum text length
+    // should be set here, and include logic for commands with no text,
+    // such as '@someone' and '#hashtag' with nothing after
+    if (!text) return false;
+    
+    var msg = {c:chatid,t:text,type:'message',p:app.topic,w:tweet,g:app.chat.hashtag}
+    debug(msg)
+    
+    self.el.text.val("");
+    self.el.text.focus();
+    
+    now.distributeMessage(JSON.stringify(msg),function(msg){
+      app.msgcache[msg.i] = msg
+      displaymsg(msg)
+      app.msgcache[msg.i] = msg
+    })
+    
+    app.chartaca.fire('msg:'+page.chat.chatid)
+  }
+    
+  self.el.sendbtn.click(self.post)
+  self.el.text.keypress(enterkey(self.post))
+}
+
+
 
 
 function ChatDetailsBox() {
@@ -1342,6 +1415,7 @@ function AvatarBox() {
         avatar.show()
         avatars[avnick] = avatar
 
+        /*
         $.ajax({
           url:'/api/user/'+avnick,
           type:'GET',
@@ -1353,7 +1427,13 @@ function AvatarBox() {
             }
           }
         })
-        
+        */
+
+        app.getavatar(avnick,function(avimg){
+          if( avimg ) {
+            avatar.html('<img src="'+avimg+'" width="32" height="32"></img>')
+          }
+        })
 
         var pcount = $('#rally_pcount').text()
         pcount = '' == pcount ? 0 : parseInt(pcount,10)
@@ -1810,7 +1890,7 @@ function SettingsBox() {
     showif(self)
 
     self.el.savebtn.click(function(){
-      print('save')
+      debug('save')
     })
   }
 }
@@ -1871,7 +1951,7 @@ function Curate() {
 
     $('a.topic_copyall').bind('click.curate',function(){
       var topic = $(event.target).parents('div.topichead').attr('id').substring(11)
-      print('topic',topic)
+      debug('topic',topic)
 
       var posts = $('#topic_posts_'+topic).find('li.message')
       for( var i = 0; i < posts.length; i++) {
@@ -1945,7 +2025,6 @@ function Curate() {
     msgelem = $(msgelem)
     msgelem.css({'background-color':'#ccc'})
 
-    print(msgelem.html())
     var msgid = msgelem.attr('id').substring(4)
     var msg = app.msgcache[msgid]
     

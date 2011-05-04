@@ -1,0 +1,47 @@
+
+
+<style>
+
+#main {
+  margin: 20px auto;
+  width: 1000px
+}
+
+</style>
+
+<div id="main">
+<h1>Moderator Dashboard</h1>
+
+<script src="http://embed.chartaca.test/embed.js">
+{"width":600,"height":200,"title":"Chat Views",
+"account":"2910f2ee-3737-48ec-980f-001574c2d2de","target":"stanzr.com","event":"view:<%=val.chat.chatid%>"}
+</script>
+
+<script src="http://embed.chartaca.test/embed.js">
+{"width":200,"height":200,"title":"Total Chat Views","kind":"number","period":"year","ctrlsize":-1,
+"account":"2910f2ee-3737-48ec-980f-001574c2d2de","target":"stanzr.com","event":"view:<%=val.chat.chatid%>"}
+</script>
+
+
+<script src="http://embed.chartaca.test/embed.js">
+{"width":600,"height":200,"title":"Chat Messages",
+"account":"2910f2ee-3737-48ec-980f-001574c2d2de","target":"stanzr.com","event":"msg:<%=val.chat.chatid%>"}
+</script>
+
+<script src="http://embed.chartaca.test/embed.js">
+{"width":200,"height":200,"title":"Total Chat Messages","kind":"number","period":"year","ctrlsize":-1,
+"account":"2910f2ee-3737-48ec-980f-001574c2d2de","target":"stanzr.com","event":"msg:<%=val.chat.chatid%>"}
+</script>
+
+
+<script src="http://embed.chartaca.test/embed.js">
+{"width":600,"height":200,"title":"Participants",
+"account":"2910f2ee-3737-48ec-980f-001574c2d2de","target":"stanzr.com","event":"join:<%=val.chat.chatid%>"}
+</script>
+
+<script src="http://embed.chartaca.test/embed.js">
+{"width":200,"height":200,"title":"Total Participants","kind":"number","period":"year","ctrlsize":-1,
+"account":"2910f2ee-3737-48ec-980f-001574c2d2de","target":"stanzr.com","event":"join:<%=val.chat.chatid%>"}
+</script>
+
+</div>

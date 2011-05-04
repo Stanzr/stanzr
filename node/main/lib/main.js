@@ -287,6 +287,14 @@ main.util = {
     msg.v = order
 
     return msg;
+  },
+
+
+  fire: function(event,chatid) {
+    common.request.get(
+      {'url':'http://count.chartaca.com/2910f2ee-3737-48ec-980f-001574c2d2de/stanzr.com/'+event+(chatid?':'+chatid:'')+'/s.gif'},
+      function(error,response,body){}
+    )
   }
 }
 
@@ -311,11 +319,20 @@ main.chat = {
 
       if( chat ) {
         var nicks = chat.nicks || []
+        var numbefore = nicks.length
+
         nicks.push(nick)
         nicks = _.select(nicks,function(nick){
           return null != nick
         })
+
+
         chat.nicks = _.uniq(nicks)
+        var numafter = chat.nicks.length
+
+        if( numbefore < numafter ) {
+          main.util.fire('join',chatid)
+        }
 
         if( !chat.bans || _.isArray(chat.bans) ) {
           chat.bans = {}
@@ -513,8 +530,29 @@ main.view = {
           }
         }))
       }
+    },
+
+    moderator: function(req, res, next ) {
+      if( req.params.chatid ) {
+        var chatent = main.ent.make$('app','chat')
+        chatent.load$({chatid:req.params.chatid},RE(res,function(chat){
+          res.render(
+            'moderator', 
+            { locals: {
+              txt: {
+                title:'Stanzr' 
+              },
+              val: {
+                chat:chat,
+                user:{}
+              }
+            }})
+        }))
+      }
     }
+
   }
+
 }
 
 
@@ -652,6 +690,19 @@ main.api = {
       user.load$({nick:nick},RE(res,function(user){
         if( user ) {
           common.sendjson(res,{nick:user.nick,email:user.email,avimg:user.avimg})
+        }
+        else {
+          lost(res)
+        }
+      }))
+    },
+
+    get_avatar: function(req,res) {
+      var nick = req.params.nick
+      var user = main.ent.make$('sys','user')
+      user.load$({nick:nick},RE(res,function(user){
+        if( user ) {
+          common.sendjson(res,{nick:user.nick,avimg:user.avimg})
         }
         else {
           lost(res)
@@ -1134,6 +1185,7 @@ Seneca.init(
 
     app.get('/', main.view.chat.hash)
     app.get('/:chatid', main.view.chat.hash)
+    app.get('/:chatid/moderator', main.view.chat.moderator)
 
     // http://localhost:8080/jdu12icf/QJAAMZDU
     app.get('/:chatid/QJAAMZDU', main.view.chat.hash)
@@ -1226,6 +1278,7 @@ Seneca.init(
         capp.get('/api/chat/:chatid/msg/:msgid', main.api.chat.msg.get)
 
         capp.get('/api/chat/:chatid/topic/:topic', main.api.chat.topic.get)
+        capp.get('/api/user/:nick/avatar', main.api.user.get_avatar)
       })
     )
 
@@ -1289,10 +1342,11 @@ Seneca.init(
     )
 
     main.everyone.now.joinchat = function(msgjson){
-      console.log(msgjson)
-
       var msg = JSON.parse(msgjson)
       var nick = this.now.name
+
+      log('joinchat',nick,msg.chat)
+
       var group = now.getGroup(msg.chat)
       group.addUser(this.user.clientId);
 
