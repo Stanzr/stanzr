@@ -357,6 +357,102 @@ var app = {
   },
 
 
+  displaymsg: function(msg) {
+    debug(msg)
+    if( msg.h ) return;
+
+    app.nickmap[msg.f] = true
+
+    msg.p = 'undefined'==typeof(msg.p) ? app.topic : msg.p
+
+    var post = $('#posts_tm li.message').clone()
+    //post.attr('id','topic_'+msg.p+'_post_'+msg.i)
+    post.attr('id','msg_'+msg.i)
+    post.find('h4').text(msg.f)
+    post.find('p').text(msg.t)
+
+    app.getavatar(msg.f,function(avimg){
+      if( avimg ) {
+        debug('avimg',msg.f,avimg)
+        post.find('div.post_avatar').html('<img src="'+avimg+'" width="32" height="32"></img>')
+      }
+    })
+
+    if( !msg.x ) {
+      if( 0 < msg.a ) {
+        post.find('.agrees').text('x'+msg.a)
+      }
+
+      post.find('a.sprite-at-reply').click(function(){
+        var txt = $('#post_text').val()
+        if( -1 == txt.indexOf( msg.f ) ) {
+          $('#post_text').val( '@'+msg.f+' '+txt ) 
+        }
+        $('#post_text').focus()
+      })
+
+      var approve = post.find('a.sprite-approve')
+      if( (msg.an && _.include(msg.an,nick)) || nick == msg.f ) {
+        approve.css({background:'transparent'})
+      }
+      else {
+        approve.click(function(){
+          approve.animate({opacity:0.01},function(){
+            approve.css({background:'transparent'})
+          })
+
+          msg.an = msg.an || []
+          msg.an.push(nick)
+          msg.an = _.uniq(msg.an)
+          msg.a = msg.an.length
+
+          post.find('.agrees').text('x'+msg.a)
+
+          app.agree(msg.i)
+        })
+      }
+    }
+
+    
+    var hidemsg = post.find('a.sprite-hide')
+
+    if( app.ismod || nick == msg.f ) {
+      hidemsg.css({display:'inline-block'})
+    }
+
+    hidemsg.click(function(){
+      app.updatemsg(msg.i,'hide',function(){
+        app.hidemsg(msg.i,true,debug)
+      })
+    })
+
+    post.css({opacity:0})
+    
+    var topicposts = $('#topic_posts_'+msg.p)
+    topicposts.append(post)
+
+    if( app.ismod ) {
+      setTimeout(function(){
+        app.updatemsg(msg.i,msg.h?'hide':'show')
+      },200)
+    }
+
+
+    var opacity = msg.x ? 0.5 : 1.0
+
+    if( msg.p == app.topic && !msg.h ) {
+      post.animate({opacity:opacity},500)
+      app.postbottom()
+    }
+    else if( !msg.h) {
+      post.css({opacity:opacity})
+    }
+  },
+
+
+
+
+
   popup: {
     box: {}
   },
@@ -425,49 +521,6 @@ $(function(){
   }
 
 
-  app.popup.box.hostchat  = new HostChatBox()
-  app.popup.box.profile   = new ProfileBox()
-  app.popup.box.settings  = new SettingsBox()
-  app.popup.box.history   = new HistoryBox()
-
-  app.leftbar.box.detail  = new ChatDetailsBox()
-
-  app.midbar.box.send  = new SendBox()
-
-  app.rightbar.box.avatar = new AvatarBox()
-  app.rightbar.box.agree  = new AgreeBox()
-  app.rightbar.box.reply  = new ReplyBox()
-  app.rightbar.box.dm     = new DirectMessageBox()
-
-  app.curate = new Curate()
-
-  app.el.head_hostchat.click(killpopups(app.popup.box.hostchat.hostchat))
-  app.el.head_signup.click(killpopups(signupbox))
-  app.el.topic_signup.click(killpopups(signupbox))
-  app.el.head_login.click(killpopups(loginbox))
-
-  app.el.head_nick.click(killpopups(function(){
-    app.popup.box.settings.render()
-  }))
-
-  app.el.head_settings.click(killpopups(function(){
-    app.popup.box.settings.render()
-  }))
-
-  app.el.head_history.click(killpopups(function(){
-    app.popup.box.history.render()
-  }))
-
-
-
-
-  $('h4').live('click',function(event){
-    var n = $(event.target).text()
-    if( app.nickmap[n] ) {
-      app.popup.box.profile.render(n)
-    }
-  })
-
 
 
 
@@ -483,7 +536,7 @@ $(function(){
       if( 'message' == msg.type ) {
         if( !app.msgcache[msg.i] ) {
           app.msgcache[msg.i] = msg
-          displaymsg(msg)
+          app.displaymsg(msg)
           app.rightbar.box.reply.set(msg)
         }
       }
@@ -666,99 +719,53 @@ $(function(){
     app.postbottom()
   }
 
-  function displaymsg(msg) {
-    debug(msg)
-    if( msg.h ) return;
-
-    app.nickmap[msg.f] = true
-
-    msg.p = 'undefined'==typeof(msg.p) ? app.topic : msg.p
-
-    var post = $('#posts_tm li.message').clone()
-    //post.attr('id','topic_'+msg.p+'_post_'+msg.i)
-    post.attr('id','msg_'+msg.i)
-    post.find('h4').text(msg.f)
-    post.find('p').text(msg.t)
-
-    app.getavatar(msg.f,function(avimg){
-      if( avimg ) {
-        debug('avimg',msg.f,avimg)
-        post.find('div.post_avatar').html('<img src="'+avimg+'" width="32" height="32"></img>')
-      }
-    })
-
-    if( !msg.x ) {
-      if( 0 < msg.a ) {
-        post.find('.agrees').text('x'+msg.a)
-      }
-
-      post.find('a.sprite-at-reply').click(function(){
-        var txt = $('#post_text').val()
-        if( -1 == txt.indexOf( msg.f ) ) {
-          $('#post_text').val( '@'+msg.f+' '+txt ) 
-        }
-        $('#post_text').focus()
-      })
-
-      var approve = post.find('a.sprite-approve')
-      if( (msg.an && _.include(msg.an,nick)) || nick == msg.f ) {
-        approve.css({background:'transparent'})
-      }
-      else {
-        approve.click(function(){
-          approve.animate({opacity:0.01},function(){
-            approve.css({background:'transparent'})
-          })
-
-          msg.an = msg.an || []
-          msg.an.push(nick)
-          msg.an = _.uniq(msg.an)
-          msg.a = msg.an.length
-
-          post.find('.agrees').text('x'+msg.a)
-
-          app.agree(msg.i)
-        })
-      }
-    }
-
-    
-    var hidemsg = post.find('a.sprite-hide')
-
-    if( app.ismod || nick == msg.f ) {
-      hidemsg.css({display:'inline-block'})
-    }
-
-    hidemsg.click(function(){
-      app.updatemsg(msg.i,'hide',function(){
-        app.hidemsg(msg.i,true,debug)
-      })
-    })
-
-    post.css({opacity:0})
-    
-    var topicposts = $('#topic_posts_'+msg.p)
-    topicposts.append(post)
-
-    if( app.ismod ) {
-      setTimeout(function(){
-        app.updatemsg(msg.i,msg.h?'hide':'show')
-      },200)
-    }
-
-
-    var opacity = msg.x ? 0.5 : 1.0
-
-    if( msg.p == app.topic && !msg.h ) {
-      post.animate({opacity:opacity},500)
-      app.postbottom()
-    }
-    else if( !msg.h) {
-      post.css({opacity:opacity})
-    }
-  }
 
   
+
+  app.popup.box.hostchat  = new HostChatBox()
+  app.popup.box.profile   = new ProfileBox()
+  app.popup.box.settings  = new SettingsBox()
+  app.popup.box.history   = new HistoryBox()
+
+  app.leftbar.box.detail  = new ChatDetailsBox()
+
+  app.midbar.box.send  = new SendBox()
+
+  app.rightbar.box.avatar = new AvatarBox()
+  app.rightbar.box.agree  = new AgreeBox()
+  app.rightbar.box.reply  = new ReplyBox()
+  app.rightbar.box.dm     = new DirectMessageBox()
+
+  app.curate = new Curate()
+
+  app.el.head_hostchat.click(killpopups(app.popup.box.hostchat.hostchat))
+  app.el.head_signup.click(killpopups(signupbox))
+  app.el.topic_signup.click(killpopups(signupbox))
+  app.el.head_login.click(killpopups(loginbox))
+
+  app.el.head_nick.click(killpopups(function(){
+    app.popup.box.settings.render()
+  }))
+
+  app.el.head_settings.click(killpopups(function(){
+    app.popup.box.settings.render()
+  }))
+
+  app.el.head_history.click(killpopups(function(){
+    app.popup.box.history.render()
+  }))
+
+
+
+
+  $('h4').live('click',function(event){
+    var n = $(event.target).text()
+    if( app.nickmap[n] ) {
+      app.popup.box.profile.render(n)
+    }
+  })
+
+
 
 
 
@@ -851,7 +858,7 @@ $(function(){
               for( var i = 0; i < res.length; i++ ) {
                 var msg = res[i]
                 app.msgcache[msg.i] = msg
-                displaymsg(msg)
+                app.displaymsg(msg)
               }
 
               app.rightbar.box.agree.load()
@@ -932,7 +939,7 @@ function SendBox() {
     
     now.distributeMessage(JSON.stringify(msg),function(msg){
       app.msgcache[msg.i] = msg
-      displaymsg(msg)
+      app.displaymsg(msg)
       app.msgcache[msg.i] = msg
     })
     
