@@ -484,7 +484,8 @@ $(function(){
     $('#signup_box').show()
     app.signupbox_next = next
   }
-  $('#register_registerbtn').click(function(){
+  
+  var registrationProcess = function() {
     $.ajax({
       url:'/api/auth/register',
       type:'POST',
@@ -512,14 +513,28 @@ $(function(){
         }
       }
     })
-  })
+  };
+  
+  var registrationOnEnter = function(e){ 
+    if (e.keyCode == 13) 
+    registrationProcess() 
+  };
+  
+  
+  $('#register_username').live('keydown', registrationOnEnter);
+  $('#register_email').live('keydown', registrationOnEnter);
+  $('#register_password').live('keydown', registrationOnEnter);
+  $('#register_repeat').live('keydown', registrationOnEnter);
+  $('#register_registerbtn').click(registrationProcess);
+  
   app.signupbox = signupbox
 
 
   function loginbox() {
     $('#login_box').show()
   }
-  $('#login_loginbtn').click(function(){
+
+  var loginProcess = function(){
     $.ajax({
       url:'/api/auth/login',
       type:'POST',
@@ -535,8 +550,16 @@ $(function(){
         }
       }
     })
-  })
-
+  }
+  
+  var loginOnEnter = function(e){ 
+    if (e.keyCode == 13) 
+    loginProcess() 
+  };
+  
+  $('#login_username').live('keydown', loginOnEnter);
+  $('#login_password').live('keydown', loginOnEnter);
+  $('#login_loginbtn').click(loginProcess)
 
 
 
@@ -1491,6 +1514,20 @@ function HostChatBox() {
     self.el.topics.hide()
   })
 
+  $('.hostchat_topic input').live('keydown', function(e){ if (e.keyCode == 13) savechat() });
+  
+  var nextOnEnter = function(e) {
+    self.el.details.hide(); 
+    self.el.topics.show(); 
+    $('.hostchat_topic:first-child input').focus();
+  };
+  
+  self.el.title.keydown(nextOnEnter);
+  self.el.modname.keydown(nextOnEnter);
+  self.el.whenstr.keydown(nextOnEnter);
+  self.el.hashtag.keydown(nextOnEnter);
+  self.el.desc.keydown(nextOnEnter);
+  
   self.el.donebtn.click(function(){
     savechat()
   })
