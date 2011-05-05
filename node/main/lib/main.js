@@ -14,6 +14,7 @@ var _       = common._
 var uuid    = common.uuid
 var conf    = common.conf
 var twitter = common.twitter
+var oauth   = common.oauth
 
 var log     = common.log
 
@@ -1257,7 +1258,7 @@ Seneca.init(
           else {
             try {
               var facebook = new oauth.OAuth2(
-                conf.keys.facebo0k.key,
+                conf.keys.facebook.key,
                 conf.keys.facebook.secret,
                 'https://graph.facebook.com'
               )
