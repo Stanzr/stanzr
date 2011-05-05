@@ -22,4 +22,11 @@
   cd node/support/seneca
   git pull
 
+2011-05-05:
+  - custom nowjs version that auto restarts
+  cd node/support
+  git clone git@github.com:rjrodger/now.git
+
+
+
 
