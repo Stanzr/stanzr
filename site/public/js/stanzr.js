@@ -1696,9 +1696,11 @@ function HostChatBox() {
   $('.hostchat_topic input').live('keydown', function(e){ if (e.keyCode == 13) savechat() });
   
   var nextOnEnter = function(e) {
-    self.el.details.hide(); 
-    self.el.topics.show(); 
-    $('.hostchat_topic:first-child input').focus();
+    if (e.keyCode == 13) {
+      self.el.details.hide(); 
+      self.el.topics.show(); 
+      $('.hostchat_topic:first-child input').focus();
+    }
   };
   
   self.el.title.keydown(nextOnEnter);
