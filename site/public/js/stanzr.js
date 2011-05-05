@@ -1693,6 +1693,8 @@ function HostChatBox() {
     self.el.topics.hide()
   })
 
+
+  /*
   $('.hostchat_topic input').live('keydown', function(e){ if (e.keyCode == 13) savechat() });
   
   var nextOnEnter = function(e) {
@@ -1706,7 +1708,9 @@ function HostChatBox() {
   self.el.whenstr.keydown(nextOnEnter);
   self.el.hashtag.keydown(nextOnEnter);
   self.el.desc.keydown(nextOnEnter);
-  
+  */
+
+
   self.el.donebtn.click(function(){
     savechat()
   })
