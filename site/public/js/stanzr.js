@@ -168,6 +168,7 @@ var app = {
       $('#post_send').removeAttr("disabled").removeClass('logged-out');
       $('.topicsend .join-in').removeClass('logged-out').hide();
       $('.topicsend .tweetout').removeClass('logged-out').fadeIn();
+      app.midbar.box.send.render()
     }
   },
 
@@ -943,6 +944,21 @@ function SendBox() {
     ,sendbtn: $("#post_send")
     ,text: $("#post_text")
     ,tweet: $('#send_tweet')
+
+    ,tweetout: $('div.tweetout')
+  }
+
+
+  
+  showif(self,{
+    tweetout: function(){
+      return page && page.user && 'twitter' == page.user.service
+    }
+  })
+
+
+  self.render = function() {
+    showif(self)
   }
 
   self.post = function() {
