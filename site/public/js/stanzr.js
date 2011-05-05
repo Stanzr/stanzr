@@ -728,7 +728,7 @@ $(function(){
       })
     }
     else {
-      $('#welcome').show()
+      //$('#welcome').show()
     }
   }
 
