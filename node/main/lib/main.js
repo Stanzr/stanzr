@@ -208,7 +208,9 @@ main.util = {
   },
 
   tweet: function(msg,hashtag) {
-    if( msg.w ) {
+    var sendtweet = msg.w && hashtag && 2 < hashtag.length
+    log('tweet',{hashtag:hashtag,msg:msg,sendtweet:sendtweet})
+    if( sendtweet ) {
       var user = main.ent.make$('sys','user')
       user.load$({nick:msg.f},LE(function(user){
         if( user.social && 'twitter' == user.social.service ) {
