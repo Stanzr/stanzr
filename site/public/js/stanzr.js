@@ -2223,3 +2223,8 @@ function Curate() {
     }
   })
 }
+
+window.restartchat = function() {
+  now.name = nick
+  setTimeout(app.joinchat,1000)
+}

@@ -1257,7 +1257,7 @@ Seneca.init(
           else {
             try {
               var facebook = new oauth.OAuth2(
-                conf.keys.facebo0k.key,
+                conf.keys.facebook.key,
                 conf.keys.facebook.secret,
                 'https://graph.facebook.com'
               )
