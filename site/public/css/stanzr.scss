@@ -192,6 +192,11 @@ div.post_content {
   h4 {float: left;}
   
   .post_actions {float: right;}
+
+  div.moderator {
+    color: #ccc;
+    float: left;
+  }
 }
 
 span.count {
@@ -754,6 +759,10 @@ input:disabled {
   background-color: #dfdfdf;
 }
 
+.addthis_button_facebook_like {
+    width: 50px;
+    overflow: hidden;
+}
 
 
 

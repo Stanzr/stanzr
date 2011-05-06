@@ -92,8 +92,8 @@
         <h4 class="rally_topictitle"></h4>
         <div class="navbox">
           <a class="imgbtn sprite-page-backward-fill">&nbsp;</a>
-          <a class="imgbtn sprite-page-backward">&nbsp;</a>
-          <a class="imgbtn sprite-page-forward">&nbsp;</a>
+          <a class="imgbtn sprite-page-backward" title="Previous Topic">&nbsp;</a>
+          <a class="imgbtn sprite-page-forward" title="Next Topic">&nbsp;</a>
         </div>      
       </div>
       <p  class="rally_topicdesc"></p>
@@ -188,14 +188,14 @@ if( 'done' == val.chat.state ) {
           <div class="post_content">
 
             <div class="clearfix">
-              <h4></h4>
+              <h4></h4><div class="moderator hide">&nbsp;&nbsp;&nbsp;moderator</div>
               <div class="post_actions">
 
-                <a class="imgbtn sprite-at-reply">&nbsp;</a>
+                <a class="imgbtn sprite-at-reply" title="Mention or send a Reply">&nbsp;</a>
                 <span class="replies count"></span>
 
-                <a class="imgbtn sprite-approve">&nbsp;</a>
-                <span class="agrees count"></span>
+                <a class="imgbtn sprite-approve" title="Like or +1 this Stanza">&nbsp;</a>
+                <span class="agrees count" title="Number of Likes"></span>
 
 
                 <a class="imgbtn sprite-hide hide">&times;</a>
@@ -280,7 +280,7 @@ if( 'done' == val.chat.state ) {
       <div class="sideheader clearfix">
         <h2><span id="rally_pcount">0</span> people in this chat </h2>
         <div class="sidenav">
-          <a id="avatar_drilldown" class="imgbtn sprite-drilldown">&nbsp;</a>
+          <a id="avatar_drilldown" class="imgbtn sprite-drilldown" title="View More">&nbsp;</a>
           <a id="avatar_drillup" class="imgbtn sprite-drillup">&nbsp;</a>
         </div>      
       </div>
@@ -291,9 +291,9 @@ if( 'done' == val.chat.state ) {
 
     <div class="sidesection clearfix rightbarbox" id="agree_box">
       <div class="sideheader clearfix">
-        <h2><a class="imgbtn sprite-approve">&nbsp;</a>Most agreed upon</h2>
+        <h2><a class="imgbtn sprite-approve">&nbsp;</a>Most likes</h2>
         <div class="sidenav">
-          <a id="agree_drilldown" class="imgbtn sprite-drilldown">&nbsp;</a>
+          <a id="agree_drilldown" class="imgbtn sprite-drilldown" title="View More">&nbsp;</a>
           <a id="agree_drillup" class="imgbtn sprite-drillup">&nbsp;</a>
         </div>
       </div>
@@ -303,7 +303,7 @@ if( 'done' == val.chat.state ) {
 
       <li id="agree_msg_tm" class="agree_msg">
         <h4></h4>
-        <span class="count"></span>
+        <span class="count" title="Number of Likes"></span>
         <p class="post"></p>
       </li>
 
@@ -312,9 +312,9 @@ if( 'done' == val.chat.state ) {
 
     <div class="sidesection clearfix rightbarbox" id="reply_box">
       <div class="sideheader clearfix">
-        <h2>Replies</h2>
+        <h2>Most replies</h2>
         <div class="sidenav">
-          <a id="reply_drilldown" class="imgbtn sprite-drilldown">&nbsp;</a>
+          <a id="reply_drilldown" class="imgbtn sprite-drilldown" title="View More">&nbsp;</a>
           <a id="reply_drillup" class="imgbtn sprite-drillup">&nbsp;</a>
         </div>
       </div>
@@ -334,7 +334,7 @@ if( 'done' == val.chat.state ) {
       <div class="sideheader clearfix">
         <h2>Direct Messages</h2>
         <div class="sidenav">
-          <a id="dm_drilldown" class="imgbtn sprite-drilldown">&nbsp;</a>
+          <a id="dm_drilldown" class="imgbtn sprite-drilldown" title="View More">&nbsp;</a>
           <a id="dm_drillup" class="imgbtn sprite-drillup">&nbsp;</a>
         </div>
       </div>

@@ -38,7 +38,6 @@ var url      = exports.url      = require('url')
 
 var connect  = exports.connect   = require('connect')
 var uuid     = exports.uuid      = require('node-uuid')
-var oauth    = exports.oauth     = require('oauth')
 var request  = exports.request   = require('request')
 var express  = exports.express   = require('express')
 var now      = exports.now       = require('now')
@@ -46,8 +45,10 @@ var assert   = exports.assert    = require('assert')
 var eyes     = exports.eyes      = require('eyes')
 var cookies  = exports.cookies   = require('cookies')
 var _        = exports._         = require('underscore')
-var oauth    = exports.oauth     = require('oauth')
 var url      = exports.url       = require('url')
+
+
+var oauth    = exports.oauth     = require('../../support/node-oauth')
 
 
 var twitter  = exports.twitter   = require('twitter')
@@ -56,8 +57,8 @@ var twitter  = exports.twitter   = require('twitter')
 var seneca   = exports.seneca    = require('../../support/seneca')
 //var seneca   = exports.seneca    = require('seneca')
 
-var now      = exports.now   = require('now')
-//var now      = exports.now   = require('../../support/now')
+//var now      = exports.now   = require('now')
+var now      = exports.now   = require('../../support/now')
 
 
 var config = require('config')

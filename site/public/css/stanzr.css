@@ -75,6 +75,9 @@ div.post_content {
     float: left; }
   div.post_content .post_actions {
     float: right; }
+  div.post_content div.moderator {
+    color: #ccc;
+    float: left; }
 
 span.count {
   color: #999999; }
@@ -549,3 +552,7 @@ input.disabled,
 input[disabled],
 input:disabled {
   background-color: #dfdfdf; }
+
+.addthis_button_facebook_like {
+  width: 50px;
+  overflow: hidden; }

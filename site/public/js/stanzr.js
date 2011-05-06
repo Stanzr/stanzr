@@ -127,7 +127,7 @@ var app = {
       app.topichead.find('div.rally_gotoactive').hide()
     }
 
-    if( app.chat.modnicks && app.chat.modnicks[nick] ) {
+    if( app.ismod ) {
       if( app.active_topic + 1 == topic ) {
         app.topichead.find('div.rally_makeactive').show().click(app.makeactive)
       }
@@ -168,6 +168,7 @@ var app = {
       $('#post_send').removeAttr("disabled").removeClass('logged-out');
       $('.topicsend .join-in').removeClass('logged-out').hide();
       $('.topicsend .tweetout').removeClass('logged-out').fadeIn();
+      app.midbar.box.send.render()
     }
   },
 
@@ -366,10 +367,12 @@ var app = {
     msg.p = 'undefined'==typeof(msg.p) ? app.topic : msg.p
 
     var post = $('#posts_tm li.message').clone()
-    //post.attr('id','topic_'+msg.p+'_post_'+msg.i)
     post.attr('id','msg_'+msg.i)
     post.find('h4').text(msg.f)
     post.find('p').text(msg.t)
+    if( app.chat.modnicks[msg.f] ) {
+      post.find('div.moderator').removeClass('hide')
+    }
 
     app.getavatar(msg.f,function(avimg){
       if( avimg ) {
@@ -509,7 +512,7 @@ $(function(){
     dummy: null
     ,head_hostchat: $('#head_hostchat')
     ,head_signup: $('#head_signup')
-    ,topic_signup: $('#topic_signup')
+    ,topic_signup: $('.topic_signup')
     ,head_login: $('#head_login')
     ,head_nick: $('#head_nick')
     ,head_history: $('#head_history')
@@ -616,7 +619,8 @@ $(function(){
     $('#signup_box').show()
     app.signupbox_next = next
   }
-  $('#register_registerbtn').click(function(){
+  
+  var registrationProcess = function() {
     $.ajax({
       url:'/api/auth/register',
       type:'POST',
@@ -644,14 +648,28 @@ $(function(){
         }
       }
     })
-  })
+  };
+  
+  var registrationOnEnter = function(e){ 
+    if (e.keyCode == 13) 
+    registrationProcess() 
+  };
+  
+  
+  $('#register_username').live('keydown', registrationOnEnter);
+  $('#register_email').live('keydown', registrationOnEnter);
+  $('#register_password').live('keydown', registrationOnEnter);
+  $('#register_repeat').live('keydown', registrationOnEnter);
+  $('#register_registerbtn').click(registrationProcess);
+  
   app.signupbox = signupbox
 
 
   function loginbox() {
     $('#login_box').show()
   }
-  $('#login_loginbtn').click(function(){
+
+  var loginProcess = function(){
     $.ajax({
       url:'/api/auth/login',
       type:'POST',
@@ -667,8 +685,16 @@ $(function(){
         }
       }
     })
-  })
-
+  }
+  
+  var loginOnEnter = function(e){ 
+    if (e.keyCode == 13) 
+    loginProcess() 
+  };
+  
+  $('#login_username').live('keydown', loginOnEnter);
+  $('#login_password').live('keydown', loginOnEnter);
+  $('#login_loginbtn').click(loginProcess)
 
 
 
@@ -705,7 +731,7 @@ $(function(){
       })
     }
     else {
-      $('#welcome').show()
+      //$('#welcome').show()
     }
   }
 
@@ -920,6 +946,21 @@ function SendBox() {
     ,sendbtn: $("#post_send")
     ,text: $("#post_text")
     ,tweet: $('#send_tweet')
+
+    ,tweetout: $('div.tweetout')
+  }
+
+
+  
+  showif(self,{
+    tweetout: function(){
+      return page && page.user && 'twitter' == page.user.service
+    }
+  })
+
+
+  self.render = function() {
+    showif(self)
   }
 
   self.post = function() {
@@ -972,7 +1013,7 @@ function ChatDetailsBox() {
     
     $('#rally_desc').html( markdown.toHTML(chat.desc) )
     
-    if( app.chat.modnicks && app.chat.modnicks[nick] ) {
+    if( app.ismod ) {
       $('#rally_editbtn').show().click(app.popup.box.hostchat.editchat)
       $('#rally_curatebtn').show().click(app.curate.render)
     }
@@ -1399,11 +1440,6 @@ function AvatarBox() {
         
         avatar
           .attr('title', $('#profile_box').html())
-          .hover(function(){
-            // This is slightly cheating... 
-            app.popup.box.profile.render(avnick);
-            avatar.attr('title', $('#profile_box').html());
-          })
           .qtip({
             hide: {
               target: false,
@@ -1675,6 +1711,26 @@ function HostChatBox() {
     self.el.topics.hide()
   })
 
+
+  /*
+  $('.hostchat_topic input').live('keydown', function(e){ if (e.keyCode == 13) savechat() });
+  
+  var nextOnEnter = function(e) {
+    if (e.keyCode == 13) {
+      self.el.details.hide(); 
+      self.el.topics.show(); 
+      $('.hostchat_topic:first-child input').focus();
+    }
+  };
+  
+  self.el.title.keydown(nextOnEnter);
+  self.el.modname.keydown(nextOnEnter);
+  self.el.whenstr.keydown(nextOnEnter);
+  self.el.hashtag.keydown(nextOnEnter);
+  self.el.desc.keydown(nextOnEnter);
+  */
+
+
   self.el.donebtn.click(function(){
     savechat()
   })
@@ -1772,8 +1828,9 @@ function ProfileBox() {
   }
 
 
-  self.el.messagebtn.click(function(){
-    self.el.box.hide()
+  self.el.messagebtn.live('click', function(){
+    //self.el.box.hide()
+    $('body .qtip').hide();
     app.rightbar.box.dm.other = cnick
     app.rightbar.box.dm.drilldown()
   })
@@ -1849,6 +1906,35 @@ function HistoryBox() {
   }
 }
 
+/**
+    Icon selector reference
+
+    #avatar_drilldown
+    #agree_drilldown
+    #reply_drilldown
+    #dm_drilldown
+    
+    .sprite-approve
+    .agrees.count
+    .sprite-at-reply
+    .replies.count
+**/
+
+$('.imgbtn[title]:visible, .agrees.count, .replies.count').livequery(function() {
+  $(this)
+    .qtip({
+        hide: {
+          target: false,
+          event: 'mouseleave',
+          effect: true,
+          delay: 100,
+          fixed: true,
+          inactive: false,
+          leave: 'window',
+          distance: false
+        }
+      });
+});
 
 var ui = {
   text: function(el,map) {
@@ -2160,4 +2246,9 @@ function Curate() {
       })
     }
   })
+}
+
+window.restartchat = function() {
+  now.name = nick
+  setTimeout(app.joinchat,1000)
 }
