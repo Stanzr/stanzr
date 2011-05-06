@@ -5,6 +5,8 @@ make
 cd ..
 
 git clone git@github.com:rjrodger/now.git
+git clone git@github.com:rjrodger/node-oauth.git
+
 
 git clone git://github.com/rjrodger/seneca.git
 npm link seneca/

@@ -127,7 +127,7 @@ var app = {
       app.topichead.find('div.rally_gotoactive').hide()
     }
 
-    if( app.chat.modnicks && app.chat.modnicks[nick] ) {
+    if( app.ismod ) {
       if( app.active_topic + 1 == topic ) {
         app.topichead.find('div.rally_makeactive').show().click(app.makeactive)
       }
@@ -367,10 +367,12 @@ var app = {
     msg.p = 'undefined'==typeof(msg.p) ? app.topic : msg.p
 
     var post = $('#posts_tm li.message').clone()
-    //post.attr('id','topic_'+msg.p+'_post_'+msg.i)
     post.attr('id','msg_'+msg.i)
     post.find('h4').text(msg.f)
     post.find('p').text(msg.t)
+    if( app.chat.modnicks[msg.f] ) {
+      post.find('div.moderator').removeClass('hide')
+    }
 
     app.getavatar(msg.f,function(avimg){
       if( avimg ) {
@@ -1011,7 +1013,7 @@ function ChatDetailsBox() {
     
     $('#rally_desc').html( markdown.toHTML(chat.desc) )
     
-    if( app.chat.modnicks && app.chat.modnicks[nick] ) {
+    if( app.ismod ) {
       $('#rally_editbtn').show().click(app.popup.box.hostchat.editchat)
       $('#rally_curatebtn').show().click(app.curate.render)
     }

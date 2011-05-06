@@ -75,6 +75,9 @@ div.post_content {
     float: left; }
   div.post_content .post_actions {
     float: right; }
+  div.post_content div.moderator {
+    color: #ccc;
+    float: left; }
 
 span.count {
   color: #999999; }
