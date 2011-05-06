@@ -1268,15 +1268,14 @@ Seneca.init(
               var geturl = 'https://graph.facebook.com/me/picture'
               facebook.getProtectedResource( geturl, user.social.key, function (error, data, response) {
                 console.dir(error)
-                console.dir(data)
-                console.dir(response)
-                console.dir(response.headers)
 
                 if( error ) {
-                  log('error','avimg',{error:error,social:'facebook',kind:'showUser',user:user})
-                }
-                else {
-                  saveavimg(user,response.headers['location'],'facebook')
+	          if( 302 != error.statusCode ) {
+                    log('error','avimg',{error:error,social:'facebook',kind:'showUser',user:user})
+                  }
+                  else {
+                    saveavimg(user,error.headers['location'],'facebook')
+                  }
                 }
               })
             }
