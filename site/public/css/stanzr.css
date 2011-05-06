@@ -364,10 +364,7 @@ div.modalbox {
 #hostchat_box {
   /*   height: 500px; */
   width: 250px; }
-  #hostchat_box input {
-    width: 200px; }
   #hostchat_box textarea {
-    width: 195px;
     height: 30px; }
   #hostchat_box #hostchat_topiclist {
     overflow: auto;
