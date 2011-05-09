@@ -369,7 +369,8 @@ var app = {
     var post = $('#posts_tm li.message').clone()
     post.attr('id','msg_'+msg.i)
     post.find('h4').text(msg.f)
-    post.find('p').text(msg.t)
+    //post.find('p').text(msg.t)
+    post.find('p').html( linkify( document.createTextNode(msg.t).textContent ) )
     if( app.chat.modnicks[msg.f] ) {
       post.find('div.moderator').removeClass('hide')
     }

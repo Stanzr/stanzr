@@ -425,7 +425,7 @@ main.msg = {
 
   list: function(chatid,cb) {
     var msgent = main.ent.make$('app','msg')
-    msgent.list$({c:chatid,sort$:{v:1}},cb)
+    msgent.list$({c:chatid,sort$:{s:1}},cb)
   }
 }
 
