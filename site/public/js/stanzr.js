@@ -281,7 +281,7 @@ var app = {
 
 
   getavatar: function(avnick,cb) {
-    if( app.avimg[avnick] || null == app.avimg[avnick] ) {
+    if( app.avimg[avnick] || null === app.avimg[avnick] ) {
       cb && cb(app.avimg[avnick])
     }
     else {
