@@ -122,6 +122,7 @@ var app = {
     }
 
     app.topic = topic
+    app.topichead = app.topicheads[app.topic] && app.topicheads[app.topic].el.box
     app.updatetopics()
 
     $('ul.topicposts').hide()
@@ -877,7 +878,7 @@ $(function(){
           }
           app.changetopic(app.active_topic)            
           app.updatetopics()
-
+          app.postbottom()
           app.leftbar.box.detail.init(res)
 
 
