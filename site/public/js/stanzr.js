@@ -573,7 +573,6 @@ $(function(){
         if( msg.nick ) {
           if( nick == msg.nick && chatid ) {
             app.midbar.box.send.render()
-            //app.sendbox()
           }
           else if( !app.joinmap[nick] ) {
             infomsg( msg.nick + ' has joined' )
@@ -1060,7 +1059,7 @@ function SendBox() {
       return page && page.user && 'twitter' == page.user.service
     },
     box: function() {
-      return app.ismod || 'open' == app.chat.state
+      return !!nick && (app.ismod || 'open' == app.chat.state )
     }
   })
 
@@ -1373,11 +1372,13 @@ function AgreeBox() {
       agrees = _.uniq(agrees)
     }
 
+    debug('pre-sort',agrees)
     agrees.sort(function(a,b){
       var ma = app.msgcache[a]
       var mb = app.msgcache[b]
       return ma && mb ? mb.a - ma.a : 0;
     })
+    debug('post-sort',agrees)
 
     self.el.msgs.empty()
 

@@ -758,6 +758,7 @@ main.api = {
         main.msg.list(chatid,sendjson(res))
       }
       else {
+        log('get-chat',{chat:req.chat$,user:req.user$,headers:req.headers})
         common.sendjson(res,req.chat$.data$())
       }
     },
@@ -1441,6 +1442,12 @@ Seneca.init(
 
       log('joinchat',nick,msg.chat)
 
+      if( !nick ) {
+        log('error',{nowjs:'no-name',on:'joinchat', msg:msgjson})
+        return
+      }
+
+
       var group = now.getGroup(msg.chat)
       group.addUser(this.user.clientId);
 
@@ -1459,6 +1466,12 @@ Seneca.init(
       var hashtag = msg.g
       var chatid = msg.c
       var nick = this.now.name
+
+      if( !nick ) {
+        log('error',{nowjs:'no-name',on:'distmsg',msg:msgjson})
+        return
+      }
+
       msg.f = nick
 
       main.cache.get('chat.'+chatid,LE(function(chat){
