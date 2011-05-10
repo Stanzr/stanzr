@@ -46,6 +46,14 @@ function denied(res) { sendcode(401,res) }
 function failed(res,err) { sendcode(500,res); log('error','failed',err) } 
 function found(res,obj,cb) { if(obj){cb(obj)} else {lost(res)} }
 
+function bad_unless(res,cond,cb){
+  if( cond ) {
+    cb && cb()
+  }
+  else {
+    bad(res)
+  }
+}
 
 function RE(res,win){
   return function(err){
@@ -100,7 +108,7 @@ function Cache(){
 
   self.set = function(key,val,cb){
     map[key] = val
-    cb(null,key,val)
+    cb && cb(null,key,val)
   }
 }
 
@@ -315,6 +323,15 @@ main.chat = {
     })
   },
 
+  save: function(chat,cb) {
+    chat.save$(function(err,chat){
+      if( err ) return cb(err,chat);
+      main.cache.set('chat.'+chat.chatid,chat,function(err,key,chat){
+        cb(err,chat)
+      })
+    })
+  },
+
   addnick: function(chatid,nick,cb) {
     main.chat.get(chatid,function(err,chat){
       if( err ) return cb(err);
@@ -340,7 +357,7 @@ main.chat = {
           chat.bans = {}
         }
 
-        chat.save$(function(err,chat){
+        main.chat.save(chat,function(err,chat){
           if( err ) return cb(err);
           var hist = main.ent.make$('app','hist')
           hist.load$({c:chatid,n:nick},function(err,existing){
@@ -425,7 +442,9 @@ main.msg = {
 
   list: function(chatid,cb) {
     var msgent = main.ent.make$('app','msg')
-    msgent.list$({c:chatid,sort$:{s:1}},cb)
+    msgent.list$({c:chatid,sort$:{s:1}},function(err,list){
+      cb(err,list)
+    })
   }
 }
 
@@ -736,14 +755,7 @@ main.api = {
       }
 
       if( /msgs$/.exec(req.url) ) {
-        main.msg.list(chatid,function(err,chat){
-          if( err ) {
-            failed(res,err)
-          }
-          else {
-            common.sendjson(res,chat)
-          }
-        })
+        main.msg.list(chatid,sendjson(res))
       }
       else {
         common.sendjson(res,req.chat$.data$())
@@ -764,7 +776,7 @@ main.api = {
             chat.hashtag = json.hashtag || ''
             chat.desc    = json.desc || ''
         
-            chat.save$(RE(res,function(chat){
+            main.chat.save(chat,RE(res,function(chat){
               main.util.tweetsearch(chat.chatid,chat.hashtag)
               common.sendjson(res,chat.data$())
             }))
@@ -801,6 +813,8 @@ main.api = {
           chat.modnicks = {}
           chat.modnicks[json.moderator]=1
 
+          chat.state = 'closed'
+
           main.seneca.act({on:'util',cmd:'quickcode',len:6},RE(res,function(quickcode){
             chat.chatid = quickcode
             savechat(chat)
@@ -811,11 +825,22 @@ main.api = {
     },
 
 
+    state: function(req,res) {
+      var state = req.json$.state
+
+      bad_unless( res, {open:1,closed:1}[state], function(){
+        req.chat$.state = state
+        main.chat.save(req.chat$,sendjson(res))
+        main.util.statusnotify(req.chat$.chatid,req.user$.nick,{sub:'chat.state',state:state})
+      })
+    },
+
+
     invite: function(req,res) {
       if( !req.chat$.invites || req.chat$.invites < 3 ) {
         main.util.twitter.updateStatus(req.json$.body)
         req.chat$.invites++
-        req.chat$.save$()
+        main.chat.save(req.chat$,sendjson(res))
       }
     },
 
@@ -846,7 +871,7 @@ main.api = {
               topic = _.extend(topic,req.json$)
               chat.topics[tI] = topic
 
-              chat.save$(RE(res,function(chat){
+              main.chat.save(chat,RE(res,function(chat){
                 common.sendjson(res,{ok:true,topic:topic})
               }))
             })
@@ -863,7 +888,7 @@ main.api = {
               chat.topics[tI].active = (tI == at)
             }
 
-            chat.save$(RE(res,function(chat){
+            main.chat.save(chat,RE(res,function(chat){
               common.sendjson(res,{ok:true,topic:at})                
               
               var group = now.getGroup(chat.chatid)
@@ -891,7 +916,7 @@ main.api = {
       
       util.debug(''+req.chat$)
 
-      req.chat$.save$(RE(res,function(out){
+      main.chat.save(req.chat$,RE(res,function(out){
         common.sendjson(res,{ok:true})
       }))
     },
@@ -990,7 +1015,7 @@ main.api = {
           req.chat$.bans[nick] = req.json$.ban
 
           main.cache.set(req.chat$.chatid+'.bans',req.chat$.bans,RE(res,function(){
-            req.chat$.save$( RE(res, function(){
+            main.chat.save(req.chat$, RE(res, function(){
               common.sendjson(res,{nick:nick,ban:req.chat$.bans[nick]})
             }))
           }))
@@ -1088,6 +1113,22 @@ var mongourl =
   mm.server+':'+mm.port+'/'+mm.name
 
 
+
+function chatmustbeopen(req,res,next) {
+  if( req.chat$ ) {
+    if( 'open' == req.chat$.state || req.chat$.modnicks[req.user$.nick] ) {
+      next()
+    }
+    else {
+      denied(res)
+    }
+  }
+  else {
+    bad(res)
+  }
+}
+
+
 function mustbemod(req,res,next) {
   if( req.chat$ ) {
     if( req.chat$.modnicks[req.user$.nick] ) {
@@ -1107,15 +1148,24 @@ function loadchat(req,res,next) {
   var m = /^\/api\/chat\/([^\/]+)/.exec(req.url)
   if( m ) {
     var chatid = m[1]
-    var chat = main.ent.make$('app','chat')
-    chat.load$({chatid:chatid},RE(res,function(chat){
+    main.cache.get('chat.'+chatid,RE(res,function(chat){
       if( chat ) {
         req.chat$ = chat
-        main.util.tweetsearch(chat.chatid,chat.hashtag)
         next()
       }
       else {
-        lost(res)
+        chat = main.ent.make$('app','chat')
+        chat.load$({chatid:chatid},RE(res,function(chat){
+          if( chat ) {
+            req.chat$ = chat
+            next()
+            main.util.tweetsearch(chat.chatid,chat.hashtag)
+            main.cache.set('chat.'+chatid,chat)
+          }
+          else {
+            lost(res)
+          }
+        }))
       }
     }))
   }
@@ -1267,7 +1317,7 @@ Seneca.init(
             
               var geturl = 'https://graph.facebook.com/me/picture'
               facebook.getProtectedResource( geturl, user.social.key, function (error, data, response) {
-                console.dir(error)
+                log('error',{service:'facebook',error:error,data:data,headers:response.headers})
 
                 if( error ) {
 	          if( 302 != error.statusCode ) {
@@ -1324,17 +1374,25 @@ Seneca.init(
       connect.router(function(capp){
         capp.post('/api/auth/:action', main.api.auth.post)
 
+        capp.put('/api/chat', main.api.chat.save)
+
         capp.get('/api/user/:nick', main.api.user.get)
         capp.get('/api/user/:nick/history', main.api.user.get_history)
 
-        capp.put('/api/chat', main.api.chat.save)
-
-        capp.post('/api/chat/:chatid/msg/:msgid/agree', main.api.chat.msg.post_agree)
-
-        capp.put('/api/chat/:chatid/user/:nick/dm', main.api.chat.dm.put)
         capp.get('/api/chat/:chatid/user/:nick/dm', main.api.chat.dm.get_conv)
         capp.get('/api/chat/:chatid/dm/:dmid?', main.api.chat.dm.get)
         capp.get('/api/chat/:chatid/dm', main.api.chat.dm.get)
+      })
+    )
+
+
+    app.use( chatmustbeopen )
+        
+    app.use( 
+      connect.router(function(capp){
+        capp.post('/api/chat/:chatid/msg/:msgid/agree', main.api.chat.msg.post_agree)
+
+        capp.put('/api/chat/:chatid/user/:nick/dm', main.api.chat.dm.put)
 
         capp.post('/api/chat/:chatid/msg/:msgid/status', main.api.chat.msg.post_status)
       })
@@ -1353,6 +1411,7 @@ Seneca.init(
         capp.post('/api/chat/:chatid/user/:nick/status', main.api.chat.user.post_status)
         capp.post('/api/chat/:chatid/invite', main.api.chat.invite)
 
+        capp.post('/api/chat/:chatid/state', main.api.chat.state)
         capp.post('/api/chat/:chatid/publish', main.api.chat.publish)
       })
     )
@@ -1394,7 +1453,7 @@ Seneca.init(
 
 
     main.everyone.now.distributeMessage = function(msgjson,cb){
-      console.log(msgjson)
+      log('msg',msgjson)
 
       var msg = JSON.parse(msgjson)
       var hashtag = msg.g
@@ -1402,27 +1461,32 @@ Seneca.init(
       var nick = this.now.name
       msg.f = nick
 
-      main.cache.get(chatid+'.bans',LE(function(bans){
-        var group = now.getGroup(chatid)
+      main.cache.get('chat.'+chatid,LE(function(chat){
+        if( chat ) {
 
-        msg.r = main.util.parsereply(msg.t)
-        
-        msg.i = uuid().toLowerCase()
-        var msgdata = {i:msg.i,f:nick,c:chatid,p:msg.p,t:msg.t,r:msg.r,w:msg.w}
-        console.dir(msgdata)
+          var group = now.getGroup(chatid)
 
-        if( !(bans && bans[nick]) ) {
-          var unsavedmsgent = main.msg.save(msgdata)
-          var msgdata = unsavedmsgent.data$()
-          delete msgdata.$
-          cb(msgdata)
+          msg.r = main.util.parsereply(msg.t)
+          
+          msg.i = uuid().toLowerCase()
+          var msgdata = {i:msg.i,f:nick,c:chatid,p:msg.p,t:msg.t,r:msg.r,w:msg.w}
 
-          console.dir(msgdata)
-          main.util.tweet(msgdata,hashtag)
-          main.util.sendtogroup(group,'message',msgdata)
-        }
-        else {
-          cb(msgdata)
+          var sendmsg = chat.modnicks[nick] ||
+            ('open' == chat.state && !(chat.bans && chat.bans[nick])) 
+
+          if( sendmsg ) {
+            var unsavedmsgent = main.msg.save(msgdata)
+            var msgdata = unsavedmsgent.data$()
+            delete msgdata.$
+            cb(msgdata)
+
+            console.dir(msgdata)
+            main.util.tweet(msgdata,hashtag)
+            main.util.sendtogroup(group,'message',msgdata)
+          }
+          else {
+            cb(msgdata)
+          }
         }
       }))
     }
