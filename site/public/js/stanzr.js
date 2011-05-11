@@ -396,6 +396,8 @@ var app = {
     post.find('h4').text(msg.f)
     post.find('p').html( app.formatmsgtext(msg.t) )
 
+    app.timeago.push(post.find('div.when').attr('title',msg.s).text($.timeago(msg.s)))
+
     if( app.chat.modnicks[msg.f] ) {
       post.find('div.moderator').removeClass('hide')
     }
@@ -543,7 +545,10 @@ $(function(){
     imagePath: '/img/'
   });
 
-    
+  //$.timeago.settings.strings.seconds = "just now"
+  $.timeago.settings.refreshMillis = 60000
+  app.timeago = $('#timeago').timeago()
+
   app.changetopic(0)
   
   app.resize()

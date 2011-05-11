@@ -1,6 +1,7 @@
 *~
 .DS_Store
-node/support/node-mongodb-native
+node/support/node-*
+node/support/now
 node/support/seneca
 site/public/css/.sass-cache
 test/db

@@ -75,9 +75,12 @@ div.post_content {
     float: left; }
   div.post_content .post_actions {
     float: right; }
-  div.post_content div.moderator {
+  div.post_content div.meta {
     color: #ccc;
-    float: left; }
+    float: left;
+    font-size: 11px;
+    padding-top: 1px;
+    margin-left: 20px; }
 
 span.count {
   color: #999999; }
