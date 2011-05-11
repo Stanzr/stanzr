@@ -1159,6 +1159,13 @@ function loadchat(req,res,next) {
         chat.load$({chatid:chatid},RE(res,function(chat){
           if( chat ) {
             req.chat$ = chat
+
+            if( !req.chat$.modnicks ) {
+              req.chat$.modnicks = {}
+              req.chat$.modnicks[req.chat$.modnick]=1
+              req.chat$.save$()
+            }
+
             next()
             main.util.tweetsearch(chat.chatid,chat.hashtag)
             main.cache.set('chat.'+chatid,chat)

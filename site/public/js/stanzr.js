@@ -528,6 +528,22 @@ $(function(){
   app.chartaca.fire('view:'+page.chat.chatid)
   //$.cookie('socketio','flashsocket')
 
+  $.reject({  
+    reject: {
+      msie: true, // Microsoft Internet Explorer  
+      opera: true, // Opera  
+      konqueror: true, // Konqueror (Linux)  
+      unknown: true // Everything else  
+    },
+    display: ['chrome','safari','firefox'],
+    header: 'Your browser is not supported yet', // Header Text  
+    paragraph1: 'You are currently using an unsupported browser', // Paragraph 1  
+    paragraph2: 'Please install one of the many optional browsers below to proceed', // Paragraph 2  
+    closeMessage: '', // Message below close window link  
+    imagePath: '/img/'
+  });
+
+    
   app.changetopic(0)
   
   app.resize()
@@ -835,6 +851,12 @@ $(function(){
       dataType:'json',
       success:function(res){
         app.chat = res
+
+        if( !app.chat.modnicks ) {
+          app.chat.modnicks = {}
+          app.chat.modnicks[app.chat.modnick]=1
+        }
+
         app.ismod = app.chat.modnicks && app.chat.modnicks[nick]
 
         var nicks = res.nicks || []
