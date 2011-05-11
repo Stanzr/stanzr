@@ -363,11 +363,11 @@ main.chat = {
           hist.load$({c:chatid,n:nick},function(err,existing){
             if( err ) return cb(err);
             if( !existing ) {
-              hist.data$({n:nick,c:chatid,w:new Date(),t:chat.title,m:chat.modname,h:chat.hashtag})
+              hist.data$({n:nick,c:chatid,w:new Date(),t:chat.title,k:'join',h:chat.hashtag})
               hist.save$(cb)
             }
             else {
-              existing.w= new Date()
+              existing.wl = new Date()
               existing.save$(cb)
             }
           })
