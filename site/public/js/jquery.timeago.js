@@ -113,7 +113,7 @@
     var $s = $t.settings;
     if ($s.refreshMillis > 0) {
       var iid = setInterval(function() { self.each(refresh); }, $s.refreshMillis);
-      console.log('iid',iid)
+      //console.log('iid',iid)
     }
     return self;
   };
