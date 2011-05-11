@@ -396,7 +396,10 @@ var app = {
     post.find('h4').text(msg.f)
     post.find('p').html( app.formatmsgtext(msg.t) )
 
-    app.timeago.push(post.find('div.when').attr('title',msg.s).text($.timeago(msg.s)))
+    if( msg.s ) {
+      var when = post.find('div.when').attr('title',msg.s).text($.timeago(msg.s))
+      app.timeago.push(when)
+    }
 
     if( app.chat.modnicks[msg.f] ) {
       post.find('div.moderator').removeClass('hide')

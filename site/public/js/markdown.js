@@ -149,13 +149,13 @@ Markdown.prototype.split_blocks = function splitBlocks( input, startLine ) {
 
   var line_no = 1;
 
-  if ( ( m = (/^(\s*\n)/)(input) ) != null ) {
+  if ( ( m = /^(\s*\n)/.exec(input) ) != null ) {
     // skip (but count) leading blank lines
     line_no += count_lines( m[0] );
     re.lastIndex = m[0].length;
   }
 
-  while ( ( m = re(input) ) != null ) {
+  while ( ( m = re.exec(input) ) != null ) {
     blocks.push( mk_block( m[1], m[2], line_no ) );
     line_no += count_lines( m[0] );
   }
@@ -1086,7 +1086,7 @@ Markdown.dialects.Maruku.block.block_meta = function block_meta( block, next ) {
 
 Markdown.dialects.Maruku.block.definition_list = function definition_list( block, next ) {
   // one or more terms followed by one or more definitions, in a single block
-  var tight = /^((?:[^\s:].*\n)+):\s+([^]+)$/,
+  var tight = /^((?:[^\s:].*\n)+):\s+([\^]+)$/,
       list = [ "dl" ];
 
   // see if we're dealing with a tight or loose block
