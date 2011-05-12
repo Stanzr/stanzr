@@ -47,6 +47,20 @@ function mockres(cb) {
 }
 
 
+function loadchat(req,cb) {
+  var chat = main.ent.make$('app','chat')
+  chat.load$({chatid:req.params.chatid},function(err,chat){
+    if( err ) { 
+      console.dir(err)
+      assert.fail()
+    }
+    else {
+      req.chat$ = chat
+      cb(req)
+    }
+  })
+}
+
 module.exports = {
 
   seneca: function() {
@@ -190,6 +204,48 @@ module.exports = {
       })) // api chat put
 
     })
-  }
+  },
 
+
+  chat_state: function() {
+    getseneca(function(seneca){
+      var nick = 'test-'+uuid().substring(0,8)
+
+      ;main.api.chat.save(
+        mockreq(
+          {},
+          {title:'s1',moderator:nick,topics:[
+            {title:'t1',desc:'d1'}
+          ]},
+          {nick:nick}),
+        mockres(function(res){
+          assert.equal(200,res.status)
+          var chat = JSON.parse(res.body)
+          var chatid = chat.chatid
+          assert.ok(chatid)
+          assert.equal('closed',chat.state)
+
+      ;loadchat(
+        mockreq(
+          {chatid:chatid},
+          {state:'open'},
+          {nick:nick}),
+        function(req) {
+
+      ;main.api.chat.state(
+        req,
+        mockres(function(res){
+          assert.equal(200,res.status)
+          var chat = JSON.parse(res.body)
+          var chatid = chat.chatid
+          assert.ok(chatid)
+          assert.equal('open',chat.state)
+
+
+      })) // chat.state         
+      })  // loadchat
+
+      })) // chat.save
+    })
+  }
 }

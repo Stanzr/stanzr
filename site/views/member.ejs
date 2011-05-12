@@ -67,6 +67,8 @@
 <div class="addthis_toolbox addthis_default_style " style="width:250px">
 <a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
 <a class="addthis_button_tweet"></a>
+<a class="addthis_button_linkedin"></a>
+<a class="addthis_button_email"></a>
 </div>
 <script type="text/javascript">var addthis_config = {"data_track_clickback":true};</script>
 <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid=ra-4da9f0b86183f2b2"></script>
@@ -101,9 +103,19 @@
         <p class="left">Next topic started</p>
         <p class="right">Go &gt;</p>
       </div>
-      <div class="rally_makeactive clearfix">
+
+      <div class="rally_open clearfix hide">
+        <a>Open this chat</a>
+      </div>
+
+      <div class="rally_close clearfix hide">
+        <a>Close this chat</a>
+      </div>
+
+      <div class="rally_makeactive clearfix hide">
         <a>Start this topic</a>
       </div>
+
       <a class="topic_copyall hide">copy all</a>
     </div>
 
@@ -188,7 +200,9 @@ if( 'done' == val.chat.state ) {
           <div class="post_content">
 
             <div class="clearfix">
-              <h4></h4><div class="moderator hide">&nbsp;&nbsp;&nbsp;moderator</div>
+              <h4></h4>
+              <div class="moderator meta hide">moderator</div>
+              <div class="when meta"></div>
               <div class="post_actions">
 
                 <a class="imgbtn sprite-at-reply" title="Mention or send a Reply">&nbsp;</a>
@@ -214,13 +228,16 @@ if( 'done' == val.chat.state ) {
    
     </div>
 
-    <div class="topicsend">
-      <input type="text" id="post_text" disabled="disabled" class="logged-out">
-      <input type="button" value="Send" id="post_send" disabled="disabled" class="logged-out">
-      <div class="join-in logged-out">
+    <div id="send_box" class="topicsend hide">
+      <input type="text" id="post_text" xdisabled="disabled" xclass="logged-out">
+      <input type="button" value="Send" id="post_send" xdisabled="disabled" xclass="logged-out">
+
+<!--
+      <div class="join-in xlogged-out">
         <a class="topic_signup">Sign up to join in</a> - we'd love to hear from you...
       </div>
-      <div class="tweetout logged-out">
+-->
+      <div class="tweetout xlogged-out">
         <input id="send_tweet" type="checkbox" checked="yes"> Also post on Twitter - appends <span id="rally_hash">#<%=val.hashtag%></span> 
       </div>
     </div>
@@ -554,4 +571,7 @@ if( 'done' == val.chat.state ) {
   <p id="settings_msg"></p>
 
 </div>
+
+
+
 

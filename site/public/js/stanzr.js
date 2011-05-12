@@ -96,9 +96,12 @@ var app = {
 
   topic: 0,
   active_topic: 0,
+  topicheads:[],
+
   chat: {},
   msgcache: {},
   nickmap: {},
+  joinmap: {},
   avimg: {},
   invitesused: 0,
 
@@ -107,6 +110,9 @@ var app = {
     dummy: null
     ,loginfail: 'Your Login details are incorrect. Please try again.'
     ,registerfail: 'That username is taken. Please try again.'
+
+    ,chatopenmsg: 'chat opened'
+    ,chatclosedmsg: 'chat closed'
   },
 
 
@@ -116,26 +122,8 @@ var app = {
     }
 
     app.topic = topic
-
-    $('div.topichead').hide()
-    app.topichead = $('#topic_head_'+app.topic).show()
-
-    if( app.active_topic != topic && topic < app.active_topic ) {
-      app.topichead.find('div.rally_gotoactive').show().click(app.gotoactive)
-    }
-    else {
-      app.topichead.find('div.rally_gotoactive').hide()
-    }
-
-    if( app.ismod ) {
-      if( app.active_topic + 1 == topic ) {
-        app.topichead.find('div.rally_makeactive').show().click(app.makeactive)
-      }
-      else {
-        app.topichead.find('div.rally_makeactive').hide()
-      }
-    }
-
+    app.topichead = app.topicheads[app.topic] && app.topicheads[app.topic].el.box
+    app.updatetopics()
 
     $('ul.topicposts').hide()
     app.topicposts = $('#topic_posts_'+app.topic).show()
@@ -156,13 +144,9 @@ var app = {
   },
 
 
+  /*
   sendbox: function() {
-    debug('sendbox')
-
-    if( 'done'==page.chat.state ) {
-      $('div.topicsend').hide()
-    }
-    else {
+    if( 'open'==page.chat.state ) {
       // show or hide on topix
       $('#post_text').removeAttr("disabled").removeClass('logged-out').focus();
       $('#post_send').removeAttr("disabled").removeClass('logged-out');
@@ -170,8 +154,11 @@ var app = {
       $('.topicsend .tweetout').removeClass('logged-out').fadeIn();
       app.midbar.box.send.render()
     }
+    else {
+      $('div.topicsend').hide()
+    }
   },
-
+  */
 
   resize: function( chop ) {
     chop = 'undefined'==typeof(chop)?0:_.isNumber(chop)?chop:0;
@@ -294,11 +281,12 @@ var app = {
 
 
   getavatar: function(avnick,cb) {
-    if( app.avimg[avnick] ) {
+    if( app.avimg[avnick] || null === app.avimg[avnick] ) {
       cb && cb(app.avimg[avnick])
     }
     else {
       http.get('/api/user/'+avnick+'/avatar',function(res){
+        app.avimg[avnick] = res.avimg || null
         cb && cb(res.avimg)
       })
     }
@@ -358,6 +346,44 @@ var app = {
   },
 
 
+  openchat: function() {
+    if( app.ismod && 'open' != app.chat.state ) {
+      app.chat.state = 'open'
+      http.post( '/api/chat/'+app.chat.chatid+'/state',
+                 {state:'open'}, 
+                 RE(function(data){
+                   app.updatetopics(data)
+                 }))
+    }
+  },
+
+
+  closechat: function() {
+    if( app.ismod && 'open' == app.chat.state ) {
+      app.chat.state = 'closed'
+      http.post( '/api/chat/'+app.chat.chatid+'/state',
+                 {state:'closed'}, 
+                 RE(function(data){
+                   app.updatetopics(data)
+                 }))
+    }
+  },
+
+
+  updatetopics: function() {
+    debug('updatetopics',app.topicheads)
+    for( var i = 0; i < app.topicheads.length; i++ ) {
+      app.topicheads[i].render()
+    }
+  },
+
+
+  formatmsgtext: function( text ) {
+    var t = $('#escaper').text(text).html()
+    return linkify( t )
+  },
+
+
   displaymsg: function(msg) {
     debug(msg)
     if( msg.h ) return;
@@ -369,8 +395,13 @@ var app = {
     var post = $('#posts_tm li.message').clone()
     post.attr('id','msg_'+msg.i)
     post.find('h4').text(msg.f)
-    //post.find('p').text(msg.t)
-    post.find('p').html( linkify( document.createTextNode(msg.t).textContent ) )
+    post.find('p').html( app.formatmsgtext(msg.t) )
+
+    if( msg.s ) {
+      var when = post.find('div.when').attr('title',msg.s).text($.timeago(msg.s))
+      app.timeago.push(when)
+    }
+
     if( app.chat.modnicks[msg.f] ) {
       post.find('div.moderator').removeClass('hide')
     }
@@ -503,6 +534,25 @@ $(function(){
   app.chartaca.fire('view:'+page.chat.chatid)
   //$.cookie('socketio','flashsocket')
 
+  $.reject({  
+    reject: {
+      msie: true, // Microsoft Internet Explorer  
+      opera: true, // Opera  
+      konqueror: true, // Konqueror (Linux)  
+      unknown: true // Everything else  
+    },
+    display: ['chrome','safari','firefox'],
+    header: 'Your browser is not supported yet', // Header Text  
+    paragraph1: 'You are currently using an unsupported browser', // Paragraph 1  
+    paragraph2: 'Please install one of the many optional browsers below to proceed', // Paragraph 2  
+    closeMessage: '', // Message below close window link  
+    imagePath: '/img/'
+  });
+
+  //$.timeago.settings.strings.seconds = "just now"
+  $.timeago.settings.refreshMillis = 60000
+  app.timeago = $('#timeago').timeago()
+
   app.changetopic(0)
   
   app.resize()
@@ -547,10 +597,11 @@ $(function(){
       else if( 'join' == msg.type ) {
         if( msg.nick ) {
           if( nick == msg.nick && chatid ) {
-            app.sendbox()
+            app.midbar.box.send.render()
           }
-          else if( !app.nickmap[nick] ) {
+          else if( !app.joinmap[nick] ) {
             infomsg( msg.nick + ' has joined' )
+            app.joinmap[nick]=1
           }
 
           app.nickmap[nick] = true
@@ -602,6 +653,12 @@ $(function(){
       else if( 'status' == msg.type ) {
         if( msg.visible ) {
           app.updatemsg(msg.msgid,msg.visible,debug)
+        }
+        else if( 'chat.state' == msg.sub ) {
+          app.chat.state = msg.state
+          app.updatetopics()
+          app.midbar.box.send.render()
+          infomsg( 'open' == msg.state ? app.text.chatopenmsg : app.text.chatclosedmsg )
         }
       }
       else if( 'external' == msg.type ) {
@@ -803,6 +860,12 @@ $(function(){
       dataType:'json',
       success:function(res){
         app.chat = res
+
+        if( !app.chat.modnicks ) {
+          app.chat.modnicks = {}
+          app.chat.modnicks[app.chat.modnick]=1
+        }
+
         app.ismod = app.chat.modnicks && app.chat.modnicks[nick]
 
         var nicks = res.nicks || []
@@ -815,7 +878,6 @@ $(function(){
         var topicheads = $('#topicheads')
         var postsarea = $('div.postsarea')
 
-        var topichead_tm = $('#topichead_tm')
         var topicposts_tm = $('#topicposts_tm')
 
         app.topic  = res.topic || 0
@@ -825,45 +887,18 @@ $(function(){
 
           for( var i = 0; i < topics.length; i++ ) {
             var topic = topics[i]
+            topic.index = i
+            topic.islast = i == topics.length-1
 
             if( topic.active ) {
               app.active_topic = i
             }
 
-            var topichead = topichead_tm.clone()
-            topichead.attr('id','topic_head_'+i)
-            topichead.find('h4').text(topic.title)
-            topichead.find('p.rally_topicdesc').text(topic.desc)
+            var topichead = new TopicHead(topic)
+            topichead.build()
+            app.topicheads.push(topichead)
 
-            var backward_fill = topichead.find('div a.sprite-page-backward-fill')
-            var backward      = topichead.find('div a.sprite-page-backward')
-            var forward       = topichead.find('div a.sprite-page-forward')
-
-            if( 0 == i ) {
-              backward.hide()
-              backward_fill.show()
-            }
-            else {
-              backward_fill.hide()
-            }
-
-            if( topics.length-1 == i ) {
-              forward.hide()
-            }
-
-            function movetopic(dir){
-              return function() {
-                app.changetopic(app.topic + dir)            
-              }
-            }
-
-
-            backward.click(movetopic(-1))
-            forward.click(movetopic(1))
-
-            topicheads.append(topichead)
-            topichead.css({display:'none'})
-
+            topicheads.append(topichead.el.box)
 
             var topicposts = topicposts_tm.clone()
             topicposts.attr('id','topic_posts_'+i)
@@ -872,7 +907,8 @@ $(function(){
             topicposts.css({display:'none'})
           }
           app.changetopic(app.active_topic)            
-
+          app.updatetopics()
+          app.postbottom()
           app.leftbar.box.detail.init(res)
 
 
@@ -925,6 +961,7 @@ function showif(obj,spec) {
       var elem = obj.el[en]
       if( elem ) {
         var show = (obj.__showif[en])()
+        debug('showif',obj.el.box&&obj.el.box.attr('id'), en,show,elem)
         if( show ) {
           elem.show()
         }
@@ -937,6 +974,98 @@ function showif(obj,spec) {
 }
 
 
+function TopicHead(topic) {
+  var self = this
+  self.topic = topic
+
+  debug('TopicHead',topic)
+
+  self.el = {
+    dummy: null
+
+    ,topichead_tm: $('#topichead_tm')
+  }
+
+  
+
+
+
+  self.build = function() {
+    var topichead = self.el.topichead_tm.clone()
+    topichead.attr('id','topic_head_'+self.topic.index)
+
+    debug(topichead)
+
+    self.el.box = topichead
+
+    self.el.backward_fill = topichead.find('div a.sprite-page-backward-fill')
+    self.el.backward      = topichead.find('div a.sprite-page-backward')
+    self.el.forward       = topichead.find('div a.sprite-page-forward')
+
+    self.el.gotoactive = topichead.find('div.rally_gotoactive')
+    self.el.makeactive = topichead.find('div.rally_makeactive')
+    self.el.open = topichead.find('div.rally_open')
+    self.el.close = topichead.find('div.rally_close')
+
+    self.el.title = topichead.find('h4')
+    self.el.desc  = topichead.find('p.rally_topicdesc')
+
+    self.el.title.text(topic.title)
+    self.el.desc.text(topic.desc)
+
+
+    function movetopic(dir){
+      return function() {
+        app.changetopic(app.topic + dir)            
+      }
+    }    
+    self.el.backward.click(movetopic(-1))
+    self.el.forward.click(movetopic(1))
+
+    self.el.gotoactive.click( app.gotoactive )
+    self.el.makeactive.click( app.makeactive )
+    self.el.open.click( app.openchat )
+    self.el.close.click( app.closechat )
+
+
+    showif(self,{
+      box: function() {
+        return app.topic == self.topic.index
+      },
+      backward: function() {
+        return 0 < topic.index
+      },
+      backward_fill: function() {
+        return 0 == topic.index
+      },
+      forward: function() {
+        return !topic.islast
+      },
+      gotoactive: function() {
+        return app.active_topic != topic && topic.index < app.active_topic
+      },
+      makeactive: function() {
+        return app.ismod && 'open' == app.chat.state && app.active_topic + 1 == topic.index
+      },
+      open: function() {
+        return app.ismod && 'open' != app.chat.state
+      },
+      close: function() {
+        return app.ismod && 'open' == app.chat.state && topic.islast && app.active_topic == topic.index
+      }
+    })
+
+  }
+  
+
+  self.render = function() {
+    debug('render', self.topic)
+    showif(self)
+  }
+
+
+}
+
 
 function SendBox() {
   var self = this
@@ -944,11 +1073,14 @@ function SendBox() {
   self.el = {
     dummy: null
 
+    ,box: $('#send_box')
+
     ,sendbtn: $("#post_send")
     ,text: $("#post_text")
     ,tweet: $('#send_tweet')
 
     ,tweetout: $('div.tweetout')
+    
   }
 
 
@@ -956,6 +1088,9 @@ function SendBox() {
   showif(self,{
     tweetout: function(){
       return page && page.user && 'twitter' == page.user.service
+    },
+    box: function() {
+      return !!nick && (app.ismod || 'open' == app.chat.state )
     }
   })
 
@@ -1015,8 +1150,8 @@ function ChatDetailsBox() {
     $('#rally_desc').html( markdown.toHTML(chat.desc) )
     
     if( app.ismod ) {
-      $('#rally_editbtn').show().click(app.popup.box.hostchat.editchat)
-      $('#rally_curatebtn').show().click(app.curate.render)
+      $('#rally_editbtn').show().click(killpopups(app.popup.box.hostchat.editchat))
+      $('#rally_curatebtn').show().click(killpopups(app.curate.render))
     }
 
 
@@ -1268,11 +1403,13 @@ function AgreeBox() {
       agrees = _.uniq(agrees)
     }
 
+    debug('pre-sort',agrees)
     agrees.sort(function(a,b){
       var ma = app.msgcache[a]
       var mb = app.msgcache[b]
       return ma && mb ? mb.a - ma.a : 0;
     })
+    debug('post-sort',agrees)
 
     self.el.msgs.empty()
 
