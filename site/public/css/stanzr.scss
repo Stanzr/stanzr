@@ -526,7 +526,9 @@ div.modalbox {
   
   p.descr {color: $fontmetaC; margin-bottom: 10px;}
   
-  h2 {font-size: 18px; margin-bottom: 15px;}
+  h2 {font-size: 18px;}
+  
+  #head_twitter, #head_linkedin, #head_facebook {font-weight: bold;}
 
 }
 
@@ -539,7 +541,7 @@ div.modalbox {
 }
 
 .auth_vertlist {
-  margin: 10px 0 25px 0;
+  margin: 10px 0 15px 0;
   
   div {margin-bottom: 10px;}
 }

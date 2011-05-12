@@ -349,8 +349,9 @@ div.modalbox {
     color: #999999;
     margin-bottom: 10px; }
   div.modalbox h2 {
-    font-size: 18px;
-    margin-bottom: 15px; }
+    font-size: 18px; }
+  div.modalbox #head_twitter, div.modalbox #head_linkedin, div.modalbox #head_facebook {
+    font-weight: bold; }
 
 #login_box {
   /*   height: 250px; */ }
@@ -359,7 +360,7 @@ div.modalbox {
   /*   height: 350px; */ }
 
 .auth_vertlist {
-  margin: 10px 0 25px 0; }
+  margin: 10px 0 15px 0; }
   .auth_vertlist div {
     margin-bottom: 10px; }
 

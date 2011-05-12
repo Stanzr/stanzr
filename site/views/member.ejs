@@ -379,7 +379,7 @@ if( 'done' == val.chat.state ) {
 <div id="login_box" class="modalbox">
   <div class="modal_close"><a onclick="$('#login_box').hide();" class="textbtn">&times;</a></div>
 
-  <h2>Login Using:</h2>
+  <h2>Signup :</h2>
   
   <div class="auth_vertlist">
       <div>
@@ -394,26 +394,31 @@ if( 'done' == val.chat.state ) {
         <a id="head_facebook" href="/api/user/oauth/facebook/login<%=logintag%>" class="auth_img sprite-facebook16">&nbsp;&nbsp;&nbsp;</a>
         <a id="head_facebook" href="/api/user/oauth/facebook/login<%=logintag%>">Facebook</a>      
       </div>
+      <div>Or <a href="#">create an account</a></div>
   </div>
 
-  <h2>Or Login Directly</h2>
+  <div style="display:none;">
   
-  <label for="login_username">Username</label>
-  <input id="login_username">
-  
-  <label for="login_password">Password</label>
-  <input type="password" id="login_password"><br />
-  
-  <a id="login_loginbtn" class="textbtn">login</a>
-  
-  <p id="login_msg"></p>
+    <label for="login_username">Username</label>
+    <input id="login_username">
+    
+    <label for="login_password">Password</label>
+    <input type="password" id="login_password"><br />
+    
+    <a id="login_loginbtn" class="textbtn">login</a>
+    
+    <p id="login_msg"></p>
+
+  </div>
+
 </div>
 
 
 <div id="signup_box" class="modalbox">
   <div class="modal_close"><a onclick="$('#signup_box').hide()" class="textbtn">&times;</a></div>
 
-  <h2>Login Using:</h2>
+  <h2 class="bottom">Signup</h2>
+  <p class="descr">Use your existing account on&hellip;</p>
 
   <div class="auth_vertlist">
       <div>
@@ -428,25 +433,31 @@ if( 'done' == val.chat.state ) {
         <a id="head_facebook" href="/api/user/oauth/facebook/login<%=logintag%>" class="auth_img sprite-facebook16">&nbsp;&nbsp;&nbsp;</a>
         <a id="head_facebook" href="/api/user/oauth/facebook/login<%=logintag%>">Facebook</a>      
       </div>
+      <div>
+        Or <a href="#">create an account</a> 
+      </div>
   </div>
 
-  <h2>Or Register:</h2>
+  <div style="display: none;">
+    <h2>Or Register:</h2>
+    
+    <label for="register_username">Username</label>
+    <input id="register_username">
   
-  <label for="register_username">Username</label>
-  <input id="register_username">
+    <label for="register_email">Email</label>
+    <input id="register_email">
+    
+    <label for="register_password">Password</label>
+    <input type="password" id="register_password">
+  
+    <label for="register_repeat">Repeat Password</label>
+    <input type="password" id="register_repeat"><br />
+    
+    <a id="register_registerbtn" class="textbtn">Register</a>
+    
+    <p id="register_msg"></p>
+  </div>
 
-  <label for="register_email">Email</label>
-  <input id="register_email">
-  
-  <label for="register_password">Password</label>
-  <input type="password" id="register_password">
-
-  <label for="register_repeat">Repeat Password</label>
-  <input type="password" id="register_repeat"><br />
-  
-  <a id="register_registerbtn" class="textbtn">Register</a>
-  
-  <p id="register_msg"></p>
 </div>
 
 
