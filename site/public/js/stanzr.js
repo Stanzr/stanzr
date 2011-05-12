@@ -379,7 +379,8 @@ var app = {
 
 
   formatmsgtext: function( text ) {
-    return linkify( document.createTextNode(text).textContent )
+    var t = $('#escaper').text(text).html()
+    return linkify( t )
   },
 
 

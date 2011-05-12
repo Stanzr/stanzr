@@ -257,6 +257,7 @@ main.util = {
             i:msg.i,
             v:msg.v,
             w:msg.w,
+            s:msg.s,
             a:0,
             an:[]
           }
