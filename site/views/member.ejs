@@ -50,6 +50,7 @@
       <h2>#<%=val.hashtag%></h2>
       <a id="rally_editbtn" class="textbtn hide">edit</a>
       <a id="rally_curatebtn" class="textbtn hide">curate</a>
+      <a id="rally_unpublishbtn" class="textbtn hide">unpublish</a>
     </div>
 
     <div>
@@ -77,11 +78,11 @@
     </div>
 
     <div class="chat_description">
-      <div id="rally_desc">
-<%=val.chat.desc%>
-      </div>
-      <div id="chat_logo">
+      <div id="chat_logo" class="hide">
         <img>
+      </div>
+      <div id="rally_desc" class="hide">
+<%=val.chat.desc%>
       </div>
     </div>
 
@@ -144,17 +145,19 @@
 <% 
 if( 'done' == val.chat.state ) {
 %>
-      <ul class="topicposts" style="display:block">
+      <ul class="topicposts" style="display:block;overflow-y:auto;overflow-x:hidden">
 <%
   for( var i = 0; i < val.entries.length; i++ ) {
     var entry = val.entries[i]
     var type = entry.t
     var body = entry.b
 
+    var avimg = val.usermap[body.f] ? val.usermap[body.f].avimg : ''
+
     if( 'm' == type ) {
 %>
         <li class="message clearfix" style="display:block">
-          <div class="post_avatar sprite-silhouette32"></div>
+          <div class="post_avatar sprite-silhouette32"><img src="<%=avimg%>" width="32" height="32" /></div>
           <div class="post_content">
 
             <div class="clearfix">
@@ -379,8 +382,9 @@ if( 'done' == val.chat.state ) {
 <div id="login_box" class="modalbox">
   <div class="modal_close"><a onclick="$('#login_box').hide();" class="textbtn">&times;</a></div>
 
-  <h2>Signup :</h2>
-  
+  <h2>Login</h2>
+  <p class="descr">Use your existing account on&hellip;</p>
+
   <div class="auth_vertlist">
       <div>
         <a id="head_linkedin" href="/api/user/oauth/linkedin/login<%=logintag%>" class="auth_img sprite-linkedin16">&nbsp;&nbsp;&nbsp;</a>
@@ -394,10 +398,10 @@ if( 'done' == val.chat.state ) {
         <a id="head_facebook" href="/api/user/oauth/facebook/login<%=logintag%>" class="auth_img sprite-facebook16">&nbsp;&nbsp;&nbsp;</a>
         <a id="head_facebook" href="/api/user/oauth/facebook/login<%=logintag%>">Facebook</a>      
       </div>
-      <div>Or <a href="#">create an account</a></div>
+      <div>Or <a id="login_reveal" onclick="$('#login_form').slideDown()">use your own account</a></div>
   </div>
 
-  <div style="display:none;">
+  <div id="login_form" class="hide">
   
     <label for="login_username">Username</label>
     <input id="login_username">
@@ -434,13 +438,11 @@ if( 'done' == val.chat.state ) {
         <a id="head_facebook" href="/api/user/oauth/facebook/login<%=logintag%>">Facebook</a>      
       </div>
       <div>
-        Or <a href="#">create an account</a> 
+        Or <a  id="signup_reveal" onclick="$('#signup_form').slideDown()">create an account</a> 
       </div>
   </div>
 
-  <div style="display: none;">
-    <h2>Or Register:</h2>
-    
+  <div id="signup_form" class="hide">
     <label for="register_username">Username</label>
     <input id="register_username">
   

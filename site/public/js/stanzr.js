@@ -93,6 +93,8 @@ var http = {
 
 var app = {
   debug:window.location.hash=='#debug',
+  
+  mode:'chat',
 
   topic: 0,
   active_topic: 0,
@@ -115,6 +117,10 @@ var app = {
     ,chatclosedmsg: 'chat closed'
   },
 
+
+  reloadpage: function(chatid) {
+    window.location.href = '/api/bounce/'+chatid+'?'+Math.random()
+  },
 
   changetopic: function(topic) {
     if( 'done' == page.chat.state ) {
@@ -162,18 +168,18 @@ var app = {
 
   resize: function( chop ) {
     chop = 'undefined'==typeof(chop)?0:_.isNumber(chop)?chop:0;
-
+    var published = 'done'==(app.chat.state||page.chat.state)?100:0
 
     var winh    = $(window).height()
     var headerh = $('div.header').height()
     var colh    = Math.max( 400, winh - headerh - chop)
     $('div.col').height(colh)
 
-    if( app.topichead ) {
-      var thh = app.topichead.height() || 50
+    //if( app.topichead ) {
+      var thh = (app.topichead && app.topichead.height()) || 50
       var sbh = $('div.topicsend').height() || 100
-      $('div.postsarea').height( colh-(sbh+thh+50) - chop )
-    }
+      $('div.postsarea').height( colh-(sbh+thh+50) - chop + published)
+    //}
   },
 
 
@@ -230,6 +236,7 @@ var app = {
       data:'{}',
       dataType:'json',
       success:function(res){
+        app.rightbar.box.agree.render()
       }
     })
   },
@@ -250,15 +257,20 @@ var app = {
 
 
   loaddm: function(dmid,other,cb) {
-    $.ajax({
-      url:'/api/chat/'+app.chat.chatid+
-        (other?'/user/'+other:'')+
-        '/dm'+(dmid?'/'+dmid:''),
-      dataType:'json',
-      success:function(res){
-        cb && cb(res)
-      }
-    })
+    if( nick ) {
+      $.ajax({
+        url:'/api/chat/'+app.chat.chatid+
+          (other?'/user/'+other:'')+
+          '/dm'+(dmid?'/'+dmid:''),
+        dataType:'json',
+        success:function(res){
+          cb && cb(res)
+        }
+      })
+    }
+    else {
+      cb([])
+    }
   },
 
 
@@ -349,6 +361,7 @@ var app = {
   openchat: function() {
     if( app.ismod && 'open' != app.chat.state ) {
       app.chat.state = 'open'
+      app.leftbar.box.detail.render()
       http.post( '/api/chat/'+app.chat.chatid+'/state',
                  {state:'open'}, 
                  RE(function(data){
@@ -358,13 +371,15 @@ var app = {
   },
 
 
-  closechat: function() {
-    if( app.ismod && 'open' == app.chat.state ) {
+  closechat: function(cb) {
+    if( app.ismod && 'closed' != app.chat.state ) {
       app.chat.state = 'closed'
+      app.leftbar.box.detail.render()
       http.post( '/api/chat/'+app.chat.chatid+'/state',
                  {state:'closed'}, 
                  RE(function(data){
                    app.updatetopics(data)
+                   cb && 'function'==typeof(cb) && cb()
                  }))
     }
   },
@@ -698,7 +713,7 @@ $(function(){
             next()
           }
           else {
-            window.location.href = '/api/bounce/'+(chatid||'member')
+            app.reloadpage(chatid||'member')
           }
         }
         else {
@@ -726,7 +741,6 @@ $(function(){
   function loginbox() {
     $('#login_box').show()
   }
-
   var loginProcess = function(){
     $.ajax({
       url:'/api/auth/login',
@@ -736,7 +750,7 @@ $(function(){
       data:JSON.stringify({nick:$('#login_username').val(),password:$('#login_password').val()}),
       success:function(res){
         if( res.ok ) {
-          window.location.href = '/api/bounce/'+(chatid||'member')
+          app.reloadpage(chatid||'member')
         }
         else {
           $('#login_msg').text(app.text.loginfail)
@@ -767,7 +781,7 @@ $(function(){
       dataType:'json',
       data:'{}',
       success:function(res){
-        window.location.href = '/api/bounce/'+(chatid||'member')
+        app.reloadpage(chatid||'member')
       }
     })
   })
@@ -780,11 +794,13 @@ $(function(){
     $('div.topicsend').hide()
   }
   else {
-    debug('aaa')
+    debug('joinchat: start')
+
     if( nick ) {
-      debug('bbb')
+      debug('joinchat: logged-in: '+nick)
+
       now.ready(function(){
-        debug('ccc')
+        debug('joinchat: nowjs ready')
         inituser()
       })
     }
@@ -868,7 +884,7 @@ $(function(){
 
         app.ismod = app.chat.modnicks && app.chat.modnicks[nick]
 
-        var nicks = res.nicks || []
+        var nicks = app.chat.nicks || []
         for( var i = 0; i < nicks.length; i++ ) {
           var other = nicks[i]
           app.rightbar.box.avatar.add(other)
@@ -880,8 +896,8 @@ $(function(){
 
         var topicposts_tm = $('#topicposts_tm')
 
-        app.topic  = res.topic || 0
-        var topics = res.topics || ['General']
+        app.topic  = app.chat.topic || 0
+        var topics = app.chat.topics || ['General']
 
         if( 'done'!=page.chat.state ) {
 
@@ -909,8 +925,7 @@ $(function(){
           app.changetopic(app.active_topic)            
           app.updatetopics()
           app.postbottom()
-          app.leftbar.box.detail.init(res)
-
+          app.leftbar.box.detail.init(app.chat).render()
 
           $.ajax({
             url:'/api/chat/'+chatid+'/msgs',
@@ -933,8 +948,9 @@ $(function(){
 
         // chat done
         else {
+          app.leftbar.box.detail.init(app.chat).render()
           app.rightbar.box.agree.load()
-          app.rightbar.box.reply.set(res)
+          app.rightbar.box.reply.set(app.chat)
         }
       }
     })
@@ -1042,16 +1058,16 @@ function TopicHead(topic) {
         return !topic.islast
       },
       gotoactive: function() {
-        return app.active_topic != topic && topic.index < app.active_topic
+        return app.active_topic != topic && topic.index < app.active_topic && 'open'==app.chat.state
       },
       makeactive: function() {
-        return app.ismod && 'open' == app.chat.state && app.active_topic + 1 == topic.index
+        return app.ismod && 'open' == app.chat.state && app.active_topic + 1 == topic.index && 'open'==app.chat.state
       },
       open: function() {
-        return app.ismod && 'open' != app.chat.state
+        return app.ismod && 'open' != app.chat.state && 'chat'==app.mode
       },
       close: function() {
-        return app.ismod && 'open' == app.chat.state && topic.islast && app.active_topic == topic.index
+        return app.ismod && 'open' == app.chat.state && topic.islast && app.active_topic == topic.index && 'chat'==app.mode
       }
     })
 
@@ -1135,9 +1151,14 @@ function ChatDetailsBox() {
 
   self.el = {
     dummy: null
+    ,logo: $('#chat_logo')  
     ,img: $('#chat_logo img')  
 
     ,modmsgbtn: $('#rally_modmsgbtn')
+    
+    ,editbtn: $('#rally_editbtn')
+    ,curatebtn: $('#rally_curatebtn')
+    ,unpublishbtn: $('#rally_unpublishbtn')
   }
 
 
@@ -1147,13 +1168,28 @@ function ChatDetailsBox() {
     $('#rally_modname').text(chat.modname)
     $('#rally_whenstr').text(chat.whenstr)
     
-    $('#rally_desc').html( markdown.toHTML(chat.desc) )
+    $('#rally_desc').html( markdown.toHTML(chat.desc) ).show()
     
     if( app.ismod ) {
-      $('#rally_editbtn').show().click(killpopups(app.popup.box.hostchat.editchat))
-      $('#rally_curatebtn').show().click(killpopups(app.curate.render))
+      self.el.editbtn.click(killpopups(app.popup.box.hostchat.editchat))
+      self.el.curatebtn.click(killpopups(app.curate.render))
+      self.el.unpublishbtn.click(killpopups(function(){app.closechat(function(){
+        app.reloadpage(app.chat.chatid)
+      })}))
     }
 
+
+    showif(self,{
+      editbtn: function(){
+        return app.ismod
+      },
+      curatebtn: function(){
+        return app.ismod && 'closed'==app.chat.state
+      },
+      unpublishbtn: function(){
+        return app.ismod && 'done'==app.chat.state
+      }
+    })
 
     if( chat.logo ) {
       var imgurl = 'http://c1.stanzr.com/img/logo/'+chat.logo
@@ -1162,6 +1198,7 @@ function ChatDetailsBox() {
       imgobj.onload = function() {
         var width = 200 < imgobj.width ? 200 : imgobj.width
         self.el.img.css({width:width}).attr('src',imgurl).show()
+        self.el.logo.show()
       }
     }
 
@@ -1170,6 +1207,13 @@ function ChatDetailsBox() {
       app.rightbar.box.dm.other = modnick
       app.rightbar.box.dm.drilldown()
     })
+
+    return self
+  }
+
+
+  self.render = function() {
+    showif(self)
   }
 }
 
@@ -1383,6 +1427,8 @@ function AgreeBox() {
 
   self.el = {
     dummy: null
+    ,box: $('#agree_box')
+
     ,drilldown: $('#agree_drilldown')
     ,drillup: $('#agree_drillup')
     ,box: $('#agree_box')
@@ -1395,6 +1441,13 @@ function AgreeBox() {
   self.init('agree')
 
   var agrees = []
+
+
+  showif(self,{
+    box:function() {
+      return 0 < self.count
+    }
+  })
 
 
   self.render = function(msg) {
@@ -1413,6 +1466,7 @@ function AgreeBox() {
 
     self.el.msgs.empty()
 
+    self.count = 0
     for( var i = 0; i < agrees.length; i++ ) {
       function displaymostagreed(msg){
         if( 1 <= msg.a ) {
@@ -1424,6 +1478,7 @@ function AgreeBox() {
           if( !msg.h ) {
             self.el.msgs.append(msgdiv)
             msgdiv.fadeIn()
+            self.count++
           }
 
           if( 'up' == self.drill && 100 < self.el.msgs.height() ) {
@@ -1445,6 +1500,8 @@ function AgreeBox() {
         }
       }
     }
+
+    showif(self)
   }
 
 
@@ -1470,6 +1527,8 @@ function ReplyBox() {
 
   self.el = {
     dummy: null
+    ,box: $('#reply_box')
+
     ,drilldown: $('#reply_drilldown')
     ,drillup: $('#reply_drillup')
     ,box: $('#reply_box')
@@ -1482,6 +1541,13 @@ function ReplyBox() {
 
 
   var replies = []
+
+  showif(self,{
+    box:function() {
+      return 0 < replies.length
+    }
+  })
+
 
   self.set = function(msgs) {
     if( !_.isArray(msgs) ) {
@@ -1500,6 +1566,9 @@ function ReplyBox() {
 
     if( found ) {
       self.render()
+    }
+    else {
+      showif(self)
     }
   }
 
@@ -1546,6 +1615,8 @@ function ReplyBox() {
         }
       }
     }
+
+    showif(self)
   }
   
 }
@@ -1810,7 +1881,7 @@ function HostChatBox() {
         }),
         success:function(res){
           if( res.chatid ) {
-            window.location.href = '/api/bounce/'+res.chatid
+            app.reloadpage(res.chatid)
           }
           else {
             $('#hostchat_msg').text('Unable to create chat session')
@@ -2033,7 +2104,7 @@ function HistoryBox() {
         histitem.find('.history_chat_modname').text(chatitem.m)
         histitem.click((function(chatid){
           return function(){
-            window.location.href = '/api/bounce/'+chatid
+            app.reloadpage(chatid)
           }
         })(chatitem.c))
         self.el.history.append(histitem)
@@ -2155,6 +2226,9 @@ function Curate() {
 
 
   self.render = function() {
+    app.mode = 'curate'
+    app.updatetopics()
+
     app.resize(40)
     self.el.topbar.animate({height:40})
     app.el.leftcol.animate({width:1},function(){
@@ -2167,6 +2241,7 @@ function Curate() {
     })
 
     $('div.topicsend').fadeOut()
+    $('div.when').fadeOut()
 
     var items = self.el.list.find('li')
     if( 0 == items.length ) {
@@ -2219,7 +2294,9 @@ function Curate() {
 
 
   self.unrender = function() {
-    
+    app.mode = 'chat'
+    app.updatetopics()
+
     self.el.topbar.animate({height:0})
 
     app.el.midcol.css({'overflow-y':'hidden'}).animate({width:450},function(){
@@ -2232,6 +2309,7 @@ function Curate() {
     $('a.topic_copyall').addClass('hide')
 
     $('div.topicsend').fadeIn()
+    $('div.when').fadeIn()
 
     $('li.message').unbind('click.curate').css({'background-color':'white'})
 
@@ -2263,6 +2341,7 @@ function Curate() {
     var order = ((1+parseInt(msg.p,10))*TOPIC_START)+parseInt(msg.v,10)
     msgitem.find('h4').text( msg.f )
     msgitem.find('p').text( msg.t )
+    msgitem.find('div.post_avatar').html('<img src="'+app.avimg[msg.f]+'" width="32" height="32"></img>')
     msgitem.attr( 'data-order', order )
     msgitem.attr( 'data-original', msgid )
     msgitem.click(function(){self.remove(order)})
@@ -2359,7 +2438,8 @@ function Curate() {
                    f:item.find('h4').text(),
                    t:item.find('p.post').text(),
                    i:item.attr('data-original'),
-                   a:(app.msgcache[msgid].a||0)
+                   a:(app.msgcache[msgid].a||0),
+                   w:(app.msgcache[msgid].w||0)
                  } :
                  isAnno ? {b:item.find('textarea').val()} : null
 
@@ -2380,7 +2460,7 @@ function Curate() {
     
     if( 0 < entries.length ) {
       http.post('/api/chat/'+app.chat.chatid+'/publish',{entries:entries},function(){
-        window.location.href = '/api/bounce/'+app.chat.chatid   
+        app.reloadpage(app.chat.chatid)
       })
     }
   })

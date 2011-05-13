@@ -116,6 +116,25 @@ function Cache(){
 main.cache = new Cache()
 
 
+
+function waitfor( obj, prop, info, cb ) {
+  function exists(i) {
+    if( obj && obj[prop] ) {
+      log('waitfor',{info:info,found:true,prop:prop,cb:!!cb,i:i})
+      cb && cb()
+    }
+    else if( i < 22 ) {
+      log('waitfor',{info:info,found:false,prop:prop,cb:!!cb,i:i})
+      setTimeout(function(){exists(i+1)},300)
+    }
+    else {
+      log('waitfor',{info:info,found:false,abort:true,prop:prop,cb:!!cb,i:i})
+    }
+  }
+  exists(0)
+}
+
+
 main.util = {
   twitter: new TweetSearch(),
 
@@ -179,8 +198,8 @@ main.util = {
             log('error','showUser',err)
 
             var group = now.getGroup(chatid)        
-            if( group.now.receiveMessage ) {
 
+            waitfor(group.now,'receiveMessage','tweetsearch:'+nick,function() {
               if( err ) {
                 data = {profile_image_url:''}
               }
@@ -196,7 +215,7 @@ main.util = {
                 nick, 
                 JSON.stringify(msg)
               )
-            }
+            })
 
           })
         })
@@ -243,7 +262,7 @@ main.util = {
   },
 
   sendtogroup: function(group,type,msg) {
-    if( group.now.receiveMessage ) {
+    waitfor( group.now, 'receiveMessage', JSON.stringify([group,type,msg]), function() {
       group.now.receiveMessage(
         msg.f, 
         JSON.stringify(
@@ -263,12 +282,12 @@ main.util = {
           }
         )
       )
-    }
+    })
   },
 
   dmnotify: function(chatid,from,to,dmid) {
     var group = now.getGroup(chatid)
-    if( group.now.receiveMessage ) {
+    waitfor( group.now, 'receiveMessage', JSON.stringify([chatid,from,to,dmid]), function() {
       group.now.receiveMessage(
         from, 
         JSON.stringify(
@@ -279,14 +298,15 @@ main.util = {
           }
         )
       )
-    }
+    })
   },
+
 
   statusnotify: function(chatid,from,data) {
     var group = now.getGroup(chatid)
-    if( group.now.receiveMessage ) {
+    waitfor( group.now, 'receiveMessage', JSON.stringify([chatid,from,data]), function() {
       group.now.receiveMessage( from, JSON.stringify( _.extend({type:'status'},data) ) )
-    }
+    })
   },
 
 
@@ -513,7 +533,18 @@ main.view = {
                   var pub = main.ent.make$('app','pub')
                   main.chat.getpublished(chat.chatid,RE(res,function(entries){
                     locals.val.entries = entries
-                    res.render('member', {locals:locals})
+                    var user = main.ent.make$('sys','user')
+                    user.list$({},RE(res,function(users){
+                      
+                      var usermap = {}
+                      for( var i = 0; i < users.length; i++ ) {
+                        var user = users[i]
+                        usermap[user.nick] = user
+                      }
+                      locals.val.usermap = usermap
+
+                      res.render('member', {locals:locals})
+                    }))
                   }))
                 }
                 else {
@@ -894,9 +925,9 @@ main.api = {
               common.sendjson(res,{ok:true,topic:at})                
               
               var group = now.getGroup(chat.chatid)
-              if( group.now.receiveMessage ) {
+              waitfor( group.now, 'receiveMessage', 'topic:'+at, function() {
                 group.now.receiveMessage(chat.modnicks, JSON.stringify({type:'topic', topic:at}))
-              }
+              })
             }))
           })
         })
@@ -908,19 +939,43 @@ main.api = {
       var pub = main.ent.make$('app','pub')
       var entries = req.json$.entries
 
-      for(var i = 0; i < entries.length; i++ ){
-        var entry = entries[i]
-        var p = pub.make$({t:entry.t,o:entry.o,b:entry.b,c:chatid,a:entry.a})
-        p.save$()
+      pub.list$({c:chatid},RE(res,function(oldentries){
+        console.dir('======================================================')
+        console.dir(oldentries)
+
+        function removeoldentry(i) {
+          if( i < oldentries.length ) {
+            var entry = oldentries[i]
+            pub.remove$({id:entry.id},RE(res,function(){
+              console.dir(entry.id)
+              removeoldentry(i+1)
+            }))
+          }
+          else {
+            insertnewentries()
+          }
+        }
+        removeoldentry(0)
+
+      }))
+
+
+      function insertnewentries() {
+        for(var i = 0; i < entries.length; i++ ){
+          var entry = entries[i]
+          var p = pub.make$({t:entry.t,o:entry.o,b:entry.b,c:chatid,a:entry.a})
+          p.save$()
+        }
+
+        req.chat$.state = 'done'
+      
+        util.debug(''+req.chat$)
+
+        main.chat.save(req.chat$,RE(res,function(out){
+          common.sendjson(res,{ok:true})
+        }))
       }
 
-      req.chat$.state = 'done'
-      
-      util.debug(''+req.chat$)
-
-      main.chat.save(req.chat$,RE(res,function(out){
-        common.sendjson(res,{ok:true})
-      }))
     },
 
 
@@ -973,9 +1028,9 @@ main.api = {
               main.api.chat.msg.get_agrees(req,res)
 
               var group = now.getGroup(req.params.chatid)
-              if( group.now.receiveMessage ) {
+              waitfor( group.now, 'receiveMessage', 'agree:'+msg.i, function(){
                 group.now.receiveMessage(req.user$.nick, JSON.stringify({type:'agree',msgid:msg.i}))
-              }
+              })
             }))
           }))
         })
@@ -1427,7 +1482,7 @@ Seneca.init(
 
 
 
-
+    console.__debug__ = true
 
     main.everyone = now.initialize(
       app, 
@@ -1459,9 +1514,9 @@ Seneca.init(
       var group = now.getGroup(msg.chat)
       group.addUser(this.user.clientId);
 
-      if( group.now.receiveMessage ) {
+      waitfor( group.now, 'receiveMessage', 'joinchat:'+nick+':'+msg.chat, function() {
         group.now.receiveMessage(nick, JSON.stringify({type:'join', nick:nick}))
-      }
+      })
 
       main.chat.addnick(msg.chat,nick)
     }
