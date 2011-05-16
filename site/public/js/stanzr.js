@@ -854,7 +854,7 @@ $(function(){
 
 
 
-  if( page.user.admin && chatid ) {
+  if( page.user.admin && chatid && 'member'!=chatid) {
 
     app.popup.box.aliases  = new WinzigBox('aliases_box')
     $('#aliases_box').winzig({
