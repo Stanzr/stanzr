@@ -482,9 +482,15 @@ var app = {
       }
 
       var share = post.find('a.share')
-      share.click(function(){
-        app.popup.box.share.render(msg.i)
-      })
+
+      if( 'twitter' == page.user.service ) {
+        share.click(function(){
+          app.popup.box.share.render(msg.i)
+        })
+      }
+      else {
+        share.hide()
+      }
     }
 
     
