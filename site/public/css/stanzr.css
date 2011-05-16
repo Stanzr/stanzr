@@ -505,6 +505,12 @@ div.modalbox {
     text-decoration: none;
     color: #999999; }
 
+.winzig {
+  padding: 4px !important; }
+
+.winzig input {
+  width: 60% !important; }
+
 /* LANDING PAGE */
 * html .landing {
   height: 100%; }

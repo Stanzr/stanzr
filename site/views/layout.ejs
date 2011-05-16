@@ -13,7 +13,8 @@
 
   <script>
     var chatid = '<%=val.chatid||'member'%>'
-    var nick = '<%=val.nick||''%>'
+    var alias  = '<%=val.alias||val.chatid||'member'%>'
+    var nick   = '<%=val.nick||''%>'
 
     var page = {
       chat: <%-JSON.stringify(val.chat)%>,
@@ -33,6 +34,7 @@
   
   <script src="/js/jquery.livequery.js"></script>
   <script src="/js/jquery.timeago.js"></script>
+  <script src="/js/jquery.winzig.js"></script>
   <script src="/js/ba-linkify.js"></script>  
   <script src="/js/jquery.cookie.js"></script>
   <script src="/js/jquery.reject.js"></script>

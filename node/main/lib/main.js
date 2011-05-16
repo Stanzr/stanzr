@@ -320,6 +320,12 @@ main.util = {
     return msg;
   },
 
+  
+  findalias: function(name,cb){
+    var alias = main.ent.make$('app','alias')
+    alias.load$({a:name},cb)
+  },
+
 
   fire: function(event,chatid) {
     common.request.get(
@@ -501,6 +507,7 @@ main.view = {
             var nick = user.nick
             userdesc.nick = user.nick
             userdesc.service = user.social?user.social.service:'system'
+            userdesc.admin = user.admin
           }
 
           if( req.params.chatid ) {
@@ -521,6 +528,7 @@ main.view = {
                   },
                   val: {
                     chatid: chat.chatid,
+                    alias: req.params.alias || chat.chatid,
                     hashtag: chat.hashtag,
                     nick: nick,
                     hostyours: !!(/QJAAMZDU$/.exec(req.url)),
@@ -940,14 +948,10 @@ main.api = {
       var entries = req.json$.entries
 
       pub.list$({c:chatid},RE(res,function(oldentries){
-        console.dir('======================================================')
-        console.dir(oldentries)
-
         function removeoldentry(i) {
           if( i < oldentries.length ) {
             var entry = oldentries[i]
             pub.remove$({id:entry.id},RE(res,function(){
-              console.dir(entry.id)
               removeoldentry(i+1)
             }))
           }
@@ -1146,6 +1150,108 @@ main.api = {
 }
 
 
+main.api.chat.admin = {}
+
+main.api.chat.admin.moderator = {}
+
+main.api.chat.admin.moderator.get = function(req,res) {
+  var items = []
+  for( var modnick in req.chat$.modnicks ) {
+    items.push({text:modnick})
+  }
+  common.sendjson(res,items)
+}
+
+main.api.chat.admin.moderator.put = function(req,res) {
+  var modnick = req.json$.text
+  req.chat$.modnicks[modnick]=1
+  req.chat$.save$(RE(res,function(){
+    common.sendjson(res,{text:modnick})
+  }))
+}
+
+main.api.chat.admin.moderator.post = function(req,res) {
+  var oldmodnick = req.params.name
+  var newmodnick = req.json$.text
+
+  delete req.chat$.modnicks[oldmodnick]
+  req.chat$.modnicks[newmodnick]=1
+
+  req.chat$.save$(RE(res,function(){
+    common.sendjson(res,{text:newmodnick})
+  }))
+}
+
+main.api.chat.admin.moderator.del = function(req,res) {
+  var oldmodnick = req.params.name
+
+  delete req.chat$.modnicks[oldmodnick]
+  req.chat$.save$(RE(res,function(){
+    common.sendjson(res,{text:oldmodnick})
+  }))
+}
+
+
+main.api.chat.admin.alias = {}
+
+main.api.chat.admin.alias.get = function(req,res) {
+  var alias = main.ent.make$('app','alias')
+  alias.list$({c:req.params.chatid},RE(res,function(list){
+    var items = []
+    for( var i = 0; i < list.length; i++ ) {
+      items.push({text:list[i].a})
+    }
+    common.sendjson(res,items)
+  }))
+}
+
+main.api.chat.admin.alias.put = function(req,res) {
+  var name = req.json$.text
+  main.util.findalias(name,RE(res,function(alias){
+    if( alias ) return bad(res);
+
+    alias = main.ent.make$('app','alias',{
+      c:req.params.chatid,
+      a:name
+    })
+
+    alias.save$(RE(res,function(){
+      common.sendjson(res,{text:name})
+    }))
+  }))
+}
+
+main.api.chat.admin.alias.post = function(req,res) {
+  var oldname = req.params.name
+  var newname = req.json$.text
+
+  main.util.findalias(oldname,RE(res,function(oldalias){
+    if( !oldalias ) return bad(res);
+
+    main.util.findalias(newname,RE(res,function(newalias){
+      if( newalias ) return bad(res);
+
+      oldalias.a = newname
+      oldalias.save$(RE(res,function(){
+        common.sendjson(res,{text:newname})
+      }))
+    }))
+  }))
+}
+
+main.api.chat.admin.alias.del = function(req,res) {
+  var oldname = req.params.name
+  main.util.findalias(oldname,RE(res,function(oldalias){
+    if( !oldalias ) return bad(res);
+    
+    oldalias.remove(RE(res,function(){
+    common.sendjson(res,{text:oldname})
+    }))
+  }))
+}
+
+
+
 function initseneca( seneca ) {
   main.seneca = seneca
   main.ent    = seneca.make('stanzr',null,null)
@@ -1188,7 +1294,7 @@ function chatmustbeopen(req,res,next) {
 
 function mustbemod(req,res,next) {
   if( req.chat$ ) {
-    if( req.chat$.modnicks[req.user$.nick] ) {
+    if( req.chat$.modnicks[req.user$.nick] || req.user$.admin ) {
       next()
     }
     else {
@@ -1197,6 +1303,16 @@ function mustbemod(req,res,next) {
   }
   else {
     bad(res)
+  }
+}
+
+
+function mustbeadmin(req,res,next) {
+  if( req.user$.admin ) {
+    next()
+  }
+  else {
+    denied(res)
   }
 }
 
@@ -1297,18 +1413,51 @@ Seneca.init(
 
     app.set('views', __dirname + '/../../../site/views');
     app.set('view engine', 'ejs');
-    
+
+    app.use(function(req,res,next){
+      var url = req.url.substring(1)
+      
+      var ignore = 
+        0==url.indexOf('js') ||
+        0==url.indexOf('img') ||
+        0==url.indexOf('css') ||
+        0==url.indexOf('api') ||
+        0==url.indexOf('favicon.ico') ||
+        false
+
+      if( ignore ) {
+        next()
+      }
+      else {
+        var alias = main.ent.make$('app','alias')
+
+        alias.load$({a:url},RE(res,function(alias){
+          if( alias ) {
+            req.params = req.params || {}
+            req.params.chatid = alias.c
+            req.params.alias = alias.a
+            main.view.chat.hash(req,res,next)
+          }
+          else {
+            next()
+          }
+        }))
+      }
+    })
 
     app.get('/', main.view.chat.hash)
+
     app.get('/:chatid', main.view.chat.hash)
     app.get('/:chatid/moderator', main.view.chat.moderator)
 
-    // http://localhost:8080/jdu12icf/QJAAMZDU
+    // http://localhost:8080/member/QJAAMZDU
     app.get('/:chatid/QJAAMZDU', main.view.chat.hash)
 
     app.listen(conf.web.port);
     log("port", app.address().port)
 
+
+    
 
     app.use( connect.logger() )
     app.use( connect.static( __dirname + '/../../../site/public') )
@@ -1481,6 +1630,23 @@ Seneca.init(
     )
 
 
+    app.use( mustbeadmin )
+
+    app.use( 
+      connect.router(function(capp){
+        capp.get('/api/chat/:chatid/admin/moderator', main.api.chat.admin.moderator.get)
+        capp.put('/api/chat/:chatid/admin/moderator', main.api.chat.admin.moderator.put)
+        capp.post('/api/chat/:chatid/admin/moderator/:name', main.api.chat.admin.moderator.post)
+        capp.del('/api/chat/:chatid/admin/moderator/:name', main.api.chat.admin.moderator.del)
+
+        capp.get('/api/chat/:chatid/admin/alias', main.api.chat.admin.alias.get)
+        capp.put('/api/chat/:chatid/admin/alias', main.api.chat.admin.alias.put)
+        capp.post('/api/chat/:chatid/admin/alias/:name', main.api.chat.admin.alias.post)
+        capp.del('/api/chat/:chatid/admin/alias/:name', main.api.chat.admin.alias.del)
+      })
+    )
+
+
 
     console.__debug__ = true
 
@@ -1556,7 +1722,7 @@ Seneca.init(
             delete msgdata.$
             cb(msgdata)
 
-            console.dir(msgdata)
+            log('message',msgdata)
             main.util.tweet(msgdata,hashtag)
             main.util.sendtogroup(group,'message',msgdata)
           }

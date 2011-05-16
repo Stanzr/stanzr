@@ -118,8 +118,8 @@ var app = {
   },
 
 
-  reloadpage: function(chatid) {
-    window.location.href = '/api/bounce/'+chatid+'?'+Math.random()
+  reloadpage: function(chatalias) {
+    window.location.href = '/api/bounce/'+(chatalias||alias||'member')+'?'+Math.random()
   },
 
   changetopic: function(topic) {
@@ -501,6 +501,95 @@ var app = {
 
 
 
+  inituser: function(){    
+    now.receiveMessage = function(from, jsonstr){
+      debug('msgin',from,jsonstr)
+      var msg = JSON.parse(jsonstr)
+
+      if( 'message' == msg.type ) {
+        if( !app.msgcache[msg.i] ) {
+          app.msgcache[msg.i] = msg
+          app.displaymsg(msg)
+          app.rightbar.box.reply.set(msg)
+        }
+      }
+      else if( 'join' == msg.type ) {
+        if( msg.nick ) {
+          if( nick == msg.nick && chatid ) {
+            app.midbar.box.send.render()
+          }
+          else if( !app.joinmap[nick] ) {
+            infomsg( msg.nick + ' has joined' )
+            app.joinmap[nick]=1
+          }
+
+          app.nickmap[nick] = true
+          app.rightbar.box.avatar.add(from)
+        }
+      }
+      else if( 'topic' == msg.type ) {
+        if( app.active_topic != msg.topic ) {
+          app.active_topic = msg.topic
+          var topics = app.chat.topics
+          for(var i = 0; i < topics.length; i++ ) {
+            topics[i].active = (i==app.active_topic)
+          }
+
+          app.changetopic(app.topic)
+          if( app.chat.modnick != nick ) {
+            infomsg( 'discussion has moved to next topic' )
+          }
+        }
+      }
+      else if( 'agree' == msg.type ) {
+        var msgid = msg.msgid
+
+        function incmsg(msg) {
+          msg.an = msg.an || []
+          msg.an.push(from)
+          msg.an = _.uniq(msg.an)
+          msg.a = msg.an.length
+
+          app.rightbar.box.agree.render(msg)
+        }
+
+        if( app.msgcache[msgid] ) {
+          incmsg(app.msgcache[msgid])
+        }
+        else {
+          app.loadmsg(msgid,function(){
+            incmsg(app.msgcache[msgid])
+          })
+        }
+      }
+      else if( 'dm' == msg.type ) {
+        if( msg.to == nick ) {
+          app.loaddm(msg.dm,null,function(msg){
+            app.rightbar.box.dm.add(msg)
+          })
+        }
+      }
+      else if( 'status' == msg.type ) {
+        if( msg.visible ) {
+          app.updatemsg(msg.msgid,msg.visible,debug)
+        }
+        else if( 'chat.state' == msg.sub ) {
+          app.chat.state = msg.state
+          app.updatetopics()
+          app.midbar.box.send.render()
+          infomsg( 'open' == msg.state ? app.text.chatopenmsg : app.text.chatclosedmsg )
+        }
+      }
+      else if( 'external' == msg.type ) {
+        app.rightbar.box.avatar.external(msg)
+      }
+    }
+
+    
+    setTimeout(app.joinchat,1000)
+  },
+
+
 
 
   popup: {
@@ -592,102 +681,6 @@ $(function(){
 
 
 
-
-  function inituser(){    
-    if( !now.name ) {
-      now.name = nick
-    }
-
-    now.receiveMessage = function(from, jsonstr){
-      debug('msgin',from,jsonstr)
-      var msg = JSON.parse(jsonstr)
-
-      if( 'message' == msg.type ) {
-        if( !app.msgcache[msg.i] ) {
-          app.msgcache[msg.i] = msg
-          app.displaymsg(msg)
-          app.rightbar.box.reply.set(msg)
-        }
-      }
-      else if( 'join' == msg.type ) {
-        if( msg.nick ) {
-          if( nick == msg.nick && chatid ) {
-            app.midbar.box.send.render()
-          }
-          else if( !app.joinmap[nick] ) {
-            infomsg( msg.nick + ' has joined' )
-            app.joinmap[nick]=1
-          }
-
-          app.nickmap[nick] = true
-          app.rightbar.box.avatar.add(from)
-        }
-      }
-      else if( 'topic' == msg.type ) {
-        if( app.active_topic != msg.topic ) {
-          app.active_topic = msg.topic
-          var topics = app.chat.topics
-          for(var i = 0; i < topics.length; i++ ) {
-            topics[i].active = (i==app.active_topic)
-          }
-
-          app.changetopic(app.topic)
-          if( app.chat.modnick != nick ) {
-            infomsg( 'discussion has moved to next topic' )
-          }
-        }
-      }
-      else if( 'agree' == msg.type ) {
-        var msgid = msg.msgid
-
-        function incmsg(msg) {
-          msg.an = msg.an || []
-          msg.an.push(from)
-          msg.an = _.uniq(msg.an)
-          msg.a = msg.an.length
-
-          app.rightbar.box.agree.render(msg)
-        }
-
-        if( app.msgcache[msgid] ) {
-          incmsg(app.msgcache[msgid])
-        }
-        else {
-          app.loadmsg(msgid,function(){
-            incmsg(app.msgcache[msgid])
-          })
-        }
-      }
-      else if( 'dm' == msg.type ) {
-        if( msg.to == nick ) {
-          app.loaddm(msg.dm,null,function(msg){
-            app.rightbar.box.dm.add(msg)
-          })
-        }
-      }
-      else if( 'status' == msg.type ) {
-        if( msg.visible ) {
-          app.updatemsg(msg.msgid,msg.visible,debug)
-        }
-        else if( 'chat.state' == msg.sub ) {
-          app.chat.state = msg.state
-          app.updatetopics()
-          app.midbar.box.send.render()
-          infomsg( 'open' == msg.state ? app.text.chatopenmsg : app.text.chatclosedmsg )
-        }
-      }
-      else if( 'external' == msg.type ) {
-        app.rightbar.box.avatar.external(msg)
-      }
-    }
-
-    
-    setTimeout(app.joinchat,1000)
-  }
-
-
-
-
   function signupbox(next) {
     $('#signup_box').show()
     app.signupbox_next = next
@@ -713,7 +706,7 @@ $(function(){
             next()
           }
           else {
-            app.reloadpage(chatid||'member')
+            app.reloadpage()
           }
         }
         else {
@@ -750,7 +743,7 @@ $(function(){
       data:JSON.stringify({nick:$('#login_username').val(),password:$('#login_password').val()}),
       success:function(res){
         if( res.ok ) {
-          app.reloadpage(chatid||'member')
+          app.reloadpage()
         }
         else {
           $('#login_msg').text(app.text.loginfail)
@@ -781,7 +774,7 @@ $(function(){
       dataType:'json',
       data:'{}',
       success:function(res){
-        app.reloadpage(chatid||'member')
+        app.reloadpage()
       }
     })
   })
@@ -799,9 +792,13 @@ $(function(){
     if( nick ) {
       debug('joinchat: logged-in: '+nick)
 
+      if( !now.name ) {
+        now.name = nick
+      }
+
       now.ready(function(){
         debug('joinchat: nowjs ready')
-        inituser()
+        app.inituser()
       })
     }
     else {
@@ -856,6 +853,25 @@ $(function(){
   }))
 
 
+
+  if( page.user.admin && chatid ) {
+
+    app.popup.box.aliases  = new WinzigBox('aliases_box')
+    $('#aliases_box').winzig({
+      entityurl:'/api/chat/'+chatid+'/admin/alias',
+      onerror:function(){
+        alert('Admin operation failed: duplicate alias.')
+      }
+    })
+
+    app.popup.box.moderators  = new WinzigBox('moderators_box')
+    $('#moderators_box').winzig({
+      entityurl:'/api/chat/'+chatid+'/admin/moderator',
+      onerror:function(){
+        alert('Admin operation failed: unknown chat.')
+      }
+    })
+  }
 
 
   $('h4').live('click',function(event){
@@ -1159,6 +1175,9 @@ function ChatDetailsBox() {
     ,editbtn: $('#rally_editbtn')
     ,curatebtn: $('#rally_curatebtn')
     ,unpublishbtn: $('#rally_unpublishbtn')
+
+    ,aliasesbtn: $('#rally_aliasesbtn')
+    ,moderatorsbtn: $('#rally_moderatorsbtn')
   }
 
 
@@ -1174,10 +1193,15 @@ function ChatDetailsBox() {
       self.el.editbtn.click(killpopups(app.popup.box.hostchat.editchat))
       self.el.curatebtn.click(killpopups(app.curate.render))
       self.el.unpublishbtn.click(killpopups(function(){app.closechat(function(){
-        app.reloadpage(app.chat.chatid)
+        app.reloadpage(alias)
       })}))
     }
 
+
+    if( page.user.admin ) {
+      self.el.aliasesbtn.click(killpopups(app.popup.box.aliases.render))
+      self.el.moderatorsbtn.click(killpopups(app.popup.box.moderators.render))
+    }
 
     showif(self,{
       editbtn: function(){
@@ -1188,6 +1212,12 @@ function ChatDetailsBox() {
       },
       unpublishbtn: function(){
         return app.ismod && 'done'==app.chat.state
+      },
+      aliasesbtn: function(){
+        return page.user.admin
+      },
+      moderatorsbtn: function(){
+        return page.user.admin
       }
     })
 
@@ -1881,7 +1911,7 @@ function HostChatBox() {
         }),
         success:function(res){
           if( res.chatid ) {
-            app.reloadpage(res.chatid)
+            app.reloadpage()
           }
           else {
             $('#hostchat_msg').text('Unable to create chat session')
@@ -2198,6 +2228,20 @@ function SettingsBox() {
 }
 
 
+function WinzigBox(elemid) {
+  var self = this
+
+  self.el = {
+    box: $('#'+elemid)
+  }
+
+  self.render = function() {
+    self.el.box.winzig('reload')
+    self.el.box.slideDown()
+  }
+
+}
+
 
 function Curate() {
   var self = this
@@ -2460,7 +2504,7 @@ function Curate() {
     
     if( 0 < entries.length ) {
       http.post('/api/chat/'+app.chat.chatid+'/publish',{entries:entries},function(){
-        app.reloadpage(app.chat.chatid)
+        app.reloadpage()
       })
     }
   })
@@ -2468,5 +2512,6 @@ function Curate() {
 
 window.restartchat = function() {
   now.name = nick
+  app.inituser()
   setTimeout(app.joinchat,1000)
 }
