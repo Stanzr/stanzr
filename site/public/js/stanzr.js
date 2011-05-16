@@ -1192,7 +1192,7 @@ function SendBox() {
 
   self.post = function() {
     var tweet = self.el.tweet.attr('checked')
-    var text  = self.el.text.val()
+    var text  = self.el.text.val().replace(/\n/g,'')
     
     // Make sure we have text before sending, minimum text length
     // should be set here, and include logic for commands with no text,
@@ -1202,7 +1202,7 @@ function SendBox() {
     var msg = {c:chatid,t:text,type:'message',p:app.topic,w:tweet,g:app.chat.hashtag}
     debug(msg)
     
-    self.el.text.val("");
+    setTimeout(function(){self.el.text.val('').text('')},200);
     self.el.text.focus();
     
     now.distributeMessage(JSON.stringify(msg),function(msg){
