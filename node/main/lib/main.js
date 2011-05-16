@@ -55,6 +55,7 @@ function bad_unless(res,cond,cb){
   }
 }
 
+
 function RE(res,win){
   return function(err){
     if( err ) {
@@ -93,6 +94,13 @@ function sendjson(res) {
   return RE(res,function(data) {
     data = data || {}
     common.sendjson(res,data)
+  })
+}
+
+
+function sendok(res) {
+  return RE(res,function(){
+    common.sendjson(res,{ok:true})
   })
 }
 
@@ -472,6 +480,11 @@ main.msg = {
     msgent.list$({c:chatid,sort$:{s:1}},function(err,list){
       cb(err,list)
     })
+  },
+
+  load: function(chatid,msgid,cb) {
+    var msgent = main.ent.make$('app','msg')
+    msgent.load$({c:chatid,i:msgid},cb)
   }
 }
 
@@ -973,8 +986,6 @@ main.api = {
 
         req.chat$.state = 'done'
       
-        util.debug(''+req.chat$)
-
         main.chat.save(req.chat$,RE(res,function(out){
           common.sendjson(res,{ok:true})
         }))
@@ -1148,6 +1159,24 @@ main.api = {
     }
   }
 }
+
+
+main.api.chat.msg.tweet = function(req,res) {
+  var msg = main.ent.make$('app','msg')
+  main.msg.load(req.params.chatid,req.params.msgid,RE(res,function(msg){
+    if( !msg ) return lost(res);
+
+    var text = req.json$.text
+    if( text.length <= 140 ) {
+      var tweetmsg = {w:1,f:req.user$.nick,t:text}
+      main.util.tweet(tweetmsg,req.chat$.hashtag)
+
+      msg.rt = msg.rg ? 1+msg.rt : 1;
+      msg.save$(sendok(res))
+    }
+  }))
+}
+
 
 
 main.api.chat.admin = {}
@@ -1398,7 +1427,7 @@ function json(req,res,next) {
 
 
 Seneca.init(
-  {logger:log,
+  {logger:null,
    entity:mongourl,
    plugins:['util','user','echo']
   },
@@ -1411,6 +1440,21 @@ Seneca.init(
     initseneca(seneca)
 
     var app = main.app = express.createServer()
+
+    app.use(function(req,res,next){
+      var host = req.headers.host
+      if( 'localhost' == host ||
+          'stanzr.com' == host ||
+          'stanzr.test' == host ||
+          0 == host.indexOf('192.168.') ) 
+      {
+        next()
+      }
+      else {
+        res.writeHead(301,{'Location':conf.hosturl+req.url})
+        res.end()
+      }
+    })
 
     app.set('views', __dirname + '/../../../site/views');
     app.set('view engine', 'ejs');
@@ -1596,6 +1640,8 @@ Seneca.init(
         capp.get('/api/chat/:chatid/user/:nick/dm', main.api.chat.dm.get_conv)
         capp.get('/api/chat/:chatid/dm/:dmid?', main.api.chat.dm.get)
         capp.get('/api/chat/:chatid/dm', main.api.chat.dm.get)
+
+        capp.post('/api/chat/:chatid/msg/:msgid/tweet', main.api.chat.msg.tweet)
       })
     )
 
@@ -1656,6 +1702,7 @@ Seneca.init(
       {
         socketio: {
           transports: ['flashsocket', 'websocket', 'htmlfile', 'xhr-multipart', 'xhr-polling', 'jsonp-polling'],
+          xtransports: ['xhr-polling'],
           rememberTransport:false,
           connectTimeout:300,
           tryTransportsOnConnectTimeout:true,

@@ -210,11 +210,15 @@ if( 'done' == val.chat.state ) {
               <div class="when meta"></div>
               <div class="post_actions">
 
+
                 <a class="imgbtn sprite-at-reply" title="Mention or send a Reply">&nbsp;</a>
                 <span class="replies count"></span>
 
                 <a class="imgbtn sprite-approve" title="Like or +1 this Stanza">&nbsp;</a>
                 <span class="agrees count" title="Number of Likes"></span>
+
+                <a class="imgbtn share" title="Share this Stanza">&raquo;</a>
+                <span class="retweet count" title="Number of Shares"></span>
 
 
                 <a class="imgbtn sprite-hide hide">&times;</a>
@@ -234,17 +238,33 @@ if( 'done' == val.chat.state ) {
     </div>
 
     <div id="send_box" class="topicsend hide">
-      <input type="text" id="post_text" xdisabled="disabled" xclass="logged-out">
-      <input type="button" value="Send" id="post_send" xdisabled="disabled" xclass="logged-out">
+      <!--input type="text" id="post_text" xdisabled="disabled" xclass="logged-out"-->
+
+      <table>
+        <tr>
+          <td>
+            <textarea id="post_text"></textarea>
+          </td>
+          <td>
+            <input type="button" value="Send" id="post_send" xdisabled="disabled" xclass="logged-out">
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <input id="send_tweet" type="checkbox" checked="yes"> Also post on Twitter - appends <span id="rally_hash">#<%=val.hashtag%></span> 
+          </td>
+          <td>
+            <p id="send_count" class="hide"></p>
+          </td>
+        </tr>
+      </table>
 
 <!--
       <div class="join-in xlogged-out">
         <a class="topic_signup">Sign up to join in</a> - we'd love to hear from you...
       </div>
 -->
-      <div class="tweetout xlogged-out">
-        <input id="send_tweet" type="checkbox" checked="yes"> Also post on Twitter - appends <span id="rally_hash">#<%=val.hashtag%></span> 
-      </div>
+
     </div>
 
   </div>
@@ -534,7 +554,7 @@ if( 'done' == val.chat.state ) {
   <a id="profile_banbtn" class="textbtn hide">&nbsp;&nbsp;&nbsp;ban</a>
   <a id="profile_unbanbtn" class="textbtn hide">&nbsp;&nbsp;&nbsp;unban</a>
 
-
+  
   <a id="profile_invitebtn" class="textbtn">invite</a>
   <textarea id="profile_body" style="width:180px;height:100px"></textarea><br />
 
@@ -586,6 +606,19 @@ if( 'done' == val.chat.state ) {
   <p id="settings_msg"></p>
 
 </div>
+
+
+<div id="share_box" class="modalbox hide">
+  <div class="modal_close"><a onclick="$('#share_box').hide()" class="textbtn">&times;</a></div>
+
+  <h2>Post to Twitter</h2>
+  
+  <textarea id="share_text"></textarea>
+  <a id="share_postbtn" class="textbtn">post</a>
+  <p id="share_count" class="green"></p>
+
+</div>
+
 
 <div id="aliases_box" style="width:300px" class="modalbox hide"></div>
 <div id="moderators_box" style="width:300px" class="modalbox hide"></div>

@@ -125,6 +125,13 @@ a {
          color: $fontmetaC;
      }
 
+     &.share {
+         font-size: 30px;
+         line-height: 0.5em;
+         text-decoration: none; 
+         color: $fontmetaC;
+     }
+
      &:hover {
        text-decoration: none;
      }
@@ -400,18 +407,47 @@ div {
       bottom: 0;
       padding: 0px 5px 5px 10px;
 
+      table {
+        border: 0px;
+        margin: 0px;
+        padding: 0px;
+        
+        td, tr {
+          border: 0px;
+          margin: 0px;
+          padding: 0px;
+          background: none;
+        }
+      }
+
       #post_text {
         border: 1px solid #999;
         font-size: 13px;
         background-color: #fff;
         width: 370px;
+        height:30px;
         padding: 2px;
       }
 
-      div.tweetout {
-        display: none;
-        color: $fontmetaC;
+      #post_send {
+        margin: 8px;
+        clear: right;
       }
+
+      p {
+        width: 30px;
+        margin: 0px;
+        padding: 0px;
+
+        &.undermax {
+          color: green;
+        }
+
+        &.overmax {
+          color: red;
+        }
+      }
+
     }
   }
 
@@ -664,6 +700,30 @@ div.modalbox {
 #dm_text {
   width:  200px;
   height: 50px;
+}
+
+
+#share_box {
+  width:  400px;
+  height: 100px;
+}
+
+#share_text {
+  width:  380px;
+  height: 50px;
+}
+
+#share_count {
+  width: 30px;
+  float:right;
+
+  &.undermax {
+    color: green;
+  }
+
+  &.overmax {
+    color: red;
+  }
 }
 
 

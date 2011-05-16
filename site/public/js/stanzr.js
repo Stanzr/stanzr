@@ -398,6 +398,15 @@ var app = {
     return linkify( t )
   },
 
+  
+  share: function(msgid,text,cb) {
+    http.post( '/api/chat/'+app.chat.chatid+'/msg/'+msgid+'/tweet',
+               {text:text}, 
+               RE(function(data){
+                 cb && 'function'==typeof(cb) && cb()
+               }))
+  },
+
 
   infomsg: function(text) {
     var post = $('#posts_tm li.infomsg').clone()
@@ -471,6 +480,11 @@ var app = {
           app.agree(msg.i)
         })
       }
+
+      var share = post.find('a.share')
+      share.click(function(){
+        app.popup.box.share.render(msg.i)
+      })
     }
 
     
@@ -825,9 +839,11 @@ $(function(){
   app.popup.box.settings  = new SettingsBox()
   app.popup.box.history   = new HistoryBox()
 
+  app.popup.box.share   = new ShareBox().init()
+
   app.leftbar.box.detail  = new ChatDetailsBox()
 
-  app.midbar.box.send  = new SendBox()
+  app.midbar.box.send  = new SendBox().init()
 
   app.rightbar.box.avatar = new AvatarBox()
   app.rightbar.box.agree  = new AgreeBox()
@@ -840,6 +856,7 @@ $(function(){
   app.el.head_signup.click(killpopups(signupbox))
   app.el.topic_signup.click(killpopups(signupbox))
   app.el.head_login.click(killpopups(loginbox))
+
 
   app.el.head_nick.click(killpopups(function(){
     app.popup.box.settings.render()
@@ -1111,6 +1128,7 @@ function SendBox() {
     ,sendbtn: $("#post_send")
     ,text: $("#post_text")
     ,tweet: $('#send_tweet')
+    ,count: $('#send_count')
 
     ,tweetout: $('div.tweetout')
     
@@ -1126,6 +1144,46 @@ function SendBox() {
       return !!nick && (app.ismod || 'open' == app.chat.state )
     }
   })
+
+
+  self.init = function() {
+    self.el.tweet.change(function(){self.el.text.keydown()})
+
+    self.el.text.NobleCount('#send_count',{
+      max_chars:280,
+      on_update:function(t_obj, char_area, c_settings, char_rem){
+        var tweet = self.el.tweet.attr('checked')
+
+        var countelem = self.el.count
+        char_rem = tweet ? char_rem - 140 : char_rem
+
+        if( tweet ) {
+          self.el.count.text( parseInt(self.el.count.text())-140 )
+        }
+
+        var warnsize = 20
+        var oversize = 0
+
+        if( char_rem < warnsize ) {
+          countelem.show()
+          if( char_rem < oversize ) {
+            countelem.removeClass('undermax').addClass('overmax')
+            self.el.sendbtn.hide()
+          }
+          else {
+            self.el.sendbtn.show()
+            countelem.removeClass('overmax').addClass('undermax')
+          }
+        }
+        else {
+          self.el.sendbtn.show()
+          countelem.hide()
+        }
+      } 
+    })
+
+    return self
+  }
 
 
   self.render = function() {
@@ -2225,6 +2283,63 @@ function SettingsBox() {
     self.el.savebtn.click(function(){
       debug('save')
     })
+  }
+}
+
+
+function ShareBox() {
+  var self = this
+
+  self.el = {
+    dummy: null
+
+    ,box: $('#share_box')
+
+    ,text: $('#share_text')
+    ,count: $('#share_count')
+
+    ,postbtn: $('#share_postbtn')
+  }
+
+  
+  showif(self,{
+  })
+
+
+  self.init = function() {
+    self.el.postbtn.click(function(){
+      var text = self.el.text.val()
+      app.share(self.msg.i,text,function(){
+        self.el.box.hide()
+      })
+    })
+
+    self.el.text.NobleCount('#share_count',{
+      max_chars: 140-(page.chat.hashtag.length)-1,
+      on_negative: 'overmax',
+      on_positive: 'undermax',
+      on_update: function(t_obj, char_area, c_settings, char_rem){
+        if( char_rem < 0 ) {
+          self.el.postbtn.hide()
+        }
+        else {
+          self.el.postbtn.show()
+        }
+      }
+    })
+
+    return self
+  }
+
+
+  self.render = function(msgid) {
+    self.el.box.show()
+
+    self.msg = app.msgcache[msgid]
+    var text =  ('RT '+self.msg.t).replace(/\n/g,'')
+    self.el.text.text(text).keydown()
+
+    showif(self)
   }
 }
 

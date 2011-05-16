@@ -23,6 +23,11 @@ a {
       line-height: 0;
       text-decoration: none;
       color: #999999; }
+    a.imgbtn.share {
+      font-size: 30px;
+      line-height: 0.5em;
+      text-decoration: none;
+      color: #999999; }
     a.imgbtn:hover {
       text-decoration: none; }
 
@@ -249,15 +254,33 @@ div.midcol {
     position: absolute;
     bottom: 0;
     padding: 0px 5px 5px 10px; }
+    div.midcol div.topicsend table {
+      border: 0px;
+      margin: 0px;
+      padding: 0px; }
+      div.midcol div.topicsend table td, div.midcol div.topicsend table tr {
+        border: 0px;
+        margin: 0px;
+        padding: 0px;
+        background: none; }
     div.midcol div.topicsend #post_text {
       border: 1px solid #999;
       font-size: 13px;
       background-color: #fff;
       width: 370px;
+      height: 30px;
       padding: 2px; }
-    div.midcol div.topicsend div.tweetout {
-      display: none;
-      color: #999999; }
+    div.midcol div.topicsend #post_send {
+      margin: 8px;
+      clear: right; }
+    div.midcol div.topicsend p {
+      width: 30px;
+      margin: 0px;
+      padding: 0px; }
+      div.midcol div.topicsend p.undermax {
+        color: green; }
+      div.midcol div.topicsend p.overmax {
+        color: red; }
 div.rightcol {
   background-color: white;
   width: 265px;
@@ -453,6 +476,22 @@ div.modalbox {
 #dm_text {
   width: 200px;
   height: 50px; }
+
+#share_box {
+  width: 400px;
+  height: 100px; }
+
+#share_text {
+  width: 380px;
+  height: 50px; }
+
+#share_count {
+  width: 30px;
+  float: right; }
+  #share_count.undermax {
+    color: green; }
+  #share_count.overmax {
+    color: red; }
 
 #head_nick_img {
   background-position: 7px -746px;
