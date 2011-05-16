@@ -251,7 +251,9 @@ if( 'done' == val.chat.state ) {
         </tr>
         <tr>
           <td>
-            <input id="send_tweet" type="checkbox" checked="yes"> Also post on Twitter - appends <span id="rally_hash">#<%=val.hashtag%></span> 
+            <div class="tweetout">
+              <input id="send_tweet" type="checkbox" checked="yes"> Also post on Twitter - appends <span id="rally_hash">#<%=val.hashtag%></span> 
+            </div>
           </td>
           <td>
             <p id="send_count" class="hide"></p>
