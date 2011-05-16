@@ -1279,7 +1279,7 @@ var mongourl =
 
 function chatmustbeopen(req,res,next) {
   if( req.chat$ ) {
-    if( 'open' == req.chat$.state || req.chat$.modnicks[req.user$.nick] ) {
+    if( 'open' == req.chat$.state || req.chat$.modnicks[req.user$.nick] || req.user$.admin ) {
       next()
     }
     else {
