@@ -1312,6 +1312,7 @@ function mustbeadmin(req,res,next) {
     next()
   }
   else {
+    console.log('NOT ADMIN: '+req.user$)
     denied(res)
   }
 }

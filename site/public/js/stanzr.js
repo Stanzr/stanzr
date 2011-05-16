@@ -399,6 +399,16 @@ var app = {
   },
 
 
+  infomsg: function(text) {
+    var post = $('#posts_tm li.infomsg').clone()
+    post.find('p').text(text)
+    var topicposts = $('#topic_posts_'+app.topic)
+    topicposts.append(post)
+    post.animate({opacity:1},500)
+    app.postbottom()
+  },
+
+
   displaymsg: function(msg) {
     debug(msg)
     if( msg.h ) return;
@@ -519,7 +529,7 @@ var app = {
             app.midbar.box.send.render()
           }
           else if( !app.joinmap[nick] ) {
-            infomsg( msg.nick + ' has joined' )
+            app.infomsg( msg.nick + ' has joined' )
             app.joinmap[nick]=1
           }
 
@@ -537,7 +547,7 @@ var app = {
 
           app.changetopic(app.topic)
           if( app.chat.modnick != nick ) {
-            infomsg( 'discussion has moved to next topic' )
+            app.infomsg( 'discussion has moved to next topic' )
           }
         }
       }
@@ -577,7 +587,7 @@ var app = {
           app.chat.state = msg.state
           app.updatetopics()
           app.midbar.box.send.render()
-          infomsg( 'open' == msg.state ? app.text.chatopenmsg : app.text.chatclosedmsg )
+          app.infomsg( 'open' == msg.state ? app.text.chatopenmsg : app.text.chatclosedmsg )
         }
       }
       else if( 'external' == msg.type ) {
@@ -806,15 +816,6 @@ $(function(){
     }
   }
 
-
-  function infomsg(text) {
-    var post = $('#posts_tm li.infomsg').clone()
-    post.find('p').text(text)
-    var topicposts = $('#topic_posts_'+app.topic)
-    topicposts.append(post)
-    post.animate({opacity:1},500)
-    app.postbottom()
-  }
 
 
   
@@ -1911,7 +1912,7 @@ function HostChatBox() {
         }),
         success:function(res){
           if( res.chatid ) {
-            app.reloadpage()
+            app.reloadpage(res.chatid)
           }
           else {
             $('#hostchat_msg').text('Unable to create chat session')
