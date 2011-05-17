@@ -574,7 +574,7 @@ main.view = {
                   res.render('member', {locals:locals})
                 }
               }
-              else {
+              else if( 'member' == req.params.chatid ) {
                 res.render(
                   'member', 
                   { locals: {
@@ -589,6 +589,10 @@ main.view = {
                       chat:chatdesc
                     }
                   }})
+              }
+              else {
+                res.writeHead(302,{'Location':'/'})
+                res.end()
               }
             }))
           }
