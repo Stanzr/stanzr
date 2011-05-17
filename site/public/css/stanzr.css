@@ -508,8 +508,14 @@ div.modalbox {
   float: left; }
 
 #terms_toc {
-  overflow: auto;
-  clear: both; }
+  overflow-y: auto;
+  overflow-x: hidden;
+  clear: both;
+  width: 300px;
+  height: 100px;
+  margin: 4px 0px;
+  border: 1px solid white;
+  padding: 2px; }
 
 #head_nick_img {
   background-position: 7px -746px;

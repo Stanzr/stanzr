@@ -921,7 +921,7 @@ $(function(){
 
 
   if( chatid ) {
-    if( !page.user.toc ) {
+    if( nick && !page.user.toc ) {
       app.popup.box.terms.render()
     }
 
@@ -2374,6 +2374,7 @@ function TermsBox() {
     ,box: $('#terms_box')
 
     ,msg: $('#terms_msg')
+    ,toc: $('#terms_toc')
 
     ,email: $('#terms_email')
     ,check: $('#terms_check')
@@ -2392,6 +2393,13 @@ function TermsBox() {
     self.el.email.text(page.user.email)
 
     showif(self)
+
+    $.ajax({
+      url:'/terms.html',
+      type:'GET',
+      success:function(terms){
+        self.el.toc.html(terms)
+      }})
 
     self.el.okbtn.click(function(){
       if( !self.el.check.attr('checked') ) {
