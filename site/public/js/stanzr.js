@@ -2357,7 +2357,7 @@ function ShareBox() {
     self.el.box.show()
 
     self.msg = app.msgcache[msgid]
-    var text =  ('RT '+self.msg.t).replace(/\n/g,'')
+    var text =  ('RT @'+self.msg.f+' '+self.msg.t).replace(/\n/g,'')
     self.el.text.text(text).keydown()
 
     showif(self)
