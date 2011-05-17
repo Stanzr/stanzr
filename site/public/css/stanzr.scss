@@ -411,7 +411,8 @@ div {
         border: 0px;
         margin: 0px;
         padding: 0px;
-        
+        width: 430px;        
+
         td, tr {
           border: 0px;
           margin: 0px;
@@ -435,7 +436,6 @@ div {
       }
 
       p {
-        width: 30px;
         margin: 0px;
         padding: 0px;
 
@@ -726,7 +726,29 @@ div.modalbox {
   }
 }
 
+#send_count {
+  text-align: center;
+  width: 100px;
+}
 
+
+#terms_box {
+  width: 300px;
+  height: 250px;
+}
+
+#terms_okbtn {
+  float: right;
+}
+
+#terms_cancelbtn {
+  float: left;
+}
+
+#terms_toc {
+  overflow: auto;
+  clear:both;
+}
 
 
 #head_nick_img {

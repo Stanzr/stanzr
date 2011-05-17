@@ -521,6 +521,8 @@ main.view = {
             userdesc.nick = user.nick
             userdesc.service = user.social?user.social.service:'system'
             userdesc.admin = user.admin
+            userdesc.toc = user.toc
+            userdesc.email = user.email
           }
 
           if( req.params.chatid ) {
@@ -1161,6 +1163,19 @@ main.api = {
 }
 
 
+main.api.user.post = function( req, res ) {
+  var nick = req.params.nick
+  if( nick == req.user$.nick ) {
+    req.user$.email = req.json$.email
+    req.user$.toc = 1
+    req.user$.save$(sendok(res))
+  }
+  else {
+    denied(res)
+  }
+}
+
+
 main.api.chat.msg.tweet = function(req,res) {
   var msg = main.ent.make$('app','msg')
   main.msg.load(req.params.chatid,req.params.msgid,RE(res,function(msg){
@@ -1517,7 +1532,10 @@ Seneca.init(
           twitter: {
             keys:conf.keys.twitter
           },
-          facebook: {version:2,keys:conf.keys.facebook},
+          facebook: {
+            version:2,
+            keys:conf.keys.facebook
+          },
           linkedin: {
             keys:conf.keys.linkedin
           }
@@ -1525,9 +1543,9 @@ Seneca.init(
       },
 
     },function(err,ctxt){
-      eyes.inspect(err,'user router')
       if( err ) {
-        failed(ctxt.res,err)
+        log('error',err)
+        failed(ctxt.res,{err:err,ctxt:ctxt})
       }
       else {
         var user = ctxt.user
@@ -1635,6 +1653,7 @@ Seneca.init(
         capp.put('/api/chat', main.api.chat.save)
 
         capp.get('/api/user/:nick', main.api.user.get)
+        capp.post('/api/user/:nick', main.api.user.post)
         capp.get('/api/user/:nick/history', main.api.user.get_history)
 
         capp.get('/api/chat/:chatid/user/:nick/dm', main.api.chat.dm.get_conv)

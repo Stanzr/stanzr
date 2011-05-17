@@ -292,6 +292,16 @@ var app = {
   },
 
 
+  updateuser: function(data,cb) {
+    http.post(
+      '/api/user/'+page.user.nick,
+      {email:data.email},
+      RE(function(res){
+        cb && cb(res)
+      }))
+  },
+
+
   getavatar: function(avnick,cb) {
     if( app.avimg[avnick] || null === app.avimg[avnick] ) {
       cb && cb(app.avimg[avnick])
@@ -844,6 +854,7 @@ $(function(){
   app.popup.box.profile   = new ProfileBox()
   app.popup.box.settings  = new SettingsBox()
   app.popup.box.history   = new HistoryBox()
+  app.popup.box.terms     = new TermsBox()
 
   app.popup.box.share   = new ShareBox().init()
 
@@ -910,6 +921,10 @@ $(function(){
 
 
   if( chatid ) {
+    if( !page.user.toc ) {
+      app.popup.box.terms.render()
+    }
+
     $.ajax({
       url:'/api/chat/'+chatid,
       type:'GET',
@@ -2346,6 +2361,54 @@ function ShareBox() {
     self.el.text.text(text).keydown()
 
     showif(self)
+  }
+}
+
+
+function TermsBox() {
+  var self = this
+
+  self.el = {
+    dummy: null
+
+    ,box: $('#terms_box')
+
+    ,msg: $('#terms_msg')
+
+    ,email: $('#terms_email')
+    ,check: $('#terms_check')
+    ,okbtn: $('#terms_okbtn')
+    ,cancelbtn: $('#terms_cancelbtn')
+  }
+
+  
+  showif(self,{
+  })
+
+
+  self.render = function() {
+    self.el.box.show()
+
+    self.el.email.text(page.user.email)
+
+    showif(self)
+
+    self.el.okbtn.click(function(){
+      if( !self.el.check.attr('checked') ) {
+        self.el.msg.text('Please tick to indicate acceptance of our terms and conditions.').show()
+      }
+      else if( !self.el.email.val() ) {
+        self.el.msg.text('Please enter your email address.').show()
+      }
+      else {
+        self.el.box.hide()
+        app.updateuser({email:self.el.email.val()})
+      }
+    })
+
+    self.el.cancelbtn.click(function(){
+      window.location.href = '/'
+    })
   }
 }
 

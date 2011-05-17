@@ -257,7 +257,8 @@ div.midcol {
     div.midcol div.topicsend table {
       border: 0px;
       margin: 0px;
-      padding: 0px; }
+      padding: 0px;
+      width: 430px; }
       div.midcol div.topicsend table td, div.midcol div.topicsend table tr {
         border: 0px;
         margin: 0px;
@@ -274,7 +275,6 @@ div.midcol {
       margin: 8px;
       clear: right; }
     div.midcol div.topicsend p {
-      width: 30px;
       margin: 0px;
       padding: 0px; }
       div.midcol div.topicsend p.undermax {
@@ -492,6 +492,24 @@ div.modalbox {
     color: green; }
   #share_count.overmax {
     color: red; }
+
+#send_count {
+  text-align: center;
+  width: 100px; }
+
+#terms_box {
+  width: 300px;
+  height: 250px; }
+
+#terms_okbtn {
+  float: right; }
+
+#terms_cancelbtn {
+  float: left; }
+
+#terms_toc {
+  overflow: auto;
+  clear: both; }
 
 #head_nick_img {
   background-position: 7px -746px;
