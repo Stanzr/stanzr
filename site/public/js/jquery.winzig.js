@@ -316,10 +316,17 @@
 ""
 ]
 
-    var head = document.getElementsByTagName("head")[0];         
-    var style = document.createElement('style');
-    style.innerHTML = css.join('\n')
-    head.insertBefore(style,head.children[0])
+    try {
+      var head    = document.getElementsByTagName("head")[0]         
+      var cssNode = document.createElement('style')
+      cssNode.innerHTML = css.join('\n')
+      head.insertBefore(cssNode,head.children[0])
+    }
+    catch( e ) {
+      if( console ) {
+        console.log(e)
+      }
+    }
   }
 
 
@@ -371,18 +378,18 @@
       },
       reload: function( ) {
         main.data('winzig-settings').build.render()
-      },
+      }
     }
 
 
     if( methods[method] ) {
-      return methods[ method ].apply( this, Array.prototype.slice.call( arguments, 1 ));
+      return methods[ method ].apply( this, Array.prototype.slice.call( arguments, 1 ))
     } 
     else if ( typeof method === 'object' || ! method ) {
-      return methods.init.apply( this, arguments );
+      return methods.init.apply( this, arguments )
     } 
     else {
-      $.error( 'Method ' +  method + ' does not exist on jQuery.winzig' );
+      $.error( 'Method ' +  method + ' does not exist on jQuery.winzig' )
     }    
       
     return main 

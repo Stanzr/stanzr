@@ -11,7 +11,12 @@ function enterkey(cb) {
 
 function debug() {
   if( app && app.debug && 'undefined' != typeof(console) ) {
-    console.log.apply(console,arguments)
+    if( console.log.apply ) {
+      console.log.apply(console,arguments)
+    }
+    else {
+      console.log(JSON.stringify(Array.prototype.slice.call(arguments)))
+    }
   }
 }
 
@@ -2292,7 +2297,7 @@ function SettingsBox() {
 
     app.getuser(function(user){
       ui.text(self.el.box,{
-        '#settings_username':user.nick,
+        '#settings_username':user.nick
       })
       ui.val(self.el.box,{
         '#settings_email':user.email
