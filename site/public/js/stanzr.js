@@ -10,6 +10,17 @@ function enterkey(cb) {
 
 
 function debug() {
+  try {
+    var p = $('<p>')
+    p.text(JSON.stringify(Array.prototype.slice.call(arguments)))
+    $('#log').append(p)
+  }
+  catch( e ) {
+    var p = $('<p>')
+    p.text(''+e)
+    $('#log').append(p)
+  }
+
   if( app && app.debug && 'undefined' != typeof(console) ) {
     if( console.log.apply ) {
       console.log.apply(console,arguments)
@@ -681,8 +692,10 @@ function killpopups(next) {
 $(function(){
   app.chartaca = Chartaca.init({key:'2910f2ee-3737-48ec-980f-001574c2d2de',target:'stanzr.com'})
   app.chartaca.fire('view:'+page.chat.chatid)
-  //$.cookie('socketio','flashsocket')
 
+  $('#headlogo').click(function(){$('#log').show()})
+
+/*
   $.reject({  
     reject: {
       msie: true, // Microsoft Internet Explorer  
@@ -697,8 +710,8 @@ $(function(){
     closeMessage: '', // Message below close window link  
     imagePath: '/img/'
   });
+*/
 
-  //$.timeago.settings.strings.seconds = "just now"
   $.timeago.settings.refreshMillis = 60000
   app.timeago = $('#timeago').timeago()
 
