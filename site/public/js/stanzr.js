@@ -10,6 +10,7 @@ function enterkey(cb) {
 
 
 function debug() {
+/*
   try {
     var p = $('<p>')
     p.text(JSON.stringify(Array.prototype.slice.call(arguments)))
@@ -20,6 +21,7 @@ function debug() {
     p.text(''+e)
     $('#log').append(p)
   }
+*/
 
   if( app && app.debug && 'undefined' != typeof(console) ) {
     if( console.log.apply ) {
@@ -693,7 +695,7 @@ $(function(){
   app.chartaca = Chartaca.init({key:'2910f2ee-3737-48ec-980f-001574c2d2de',target:'stanzr.com'})
   app.chartaca.fire('view:'+page.chat.chatid)
 
-  $('#headlogo').click(function(){$('#log').show()})
+  //$('#headlogo').click(function(){$('#log').show()})
 
 /*
   $.reject({  
