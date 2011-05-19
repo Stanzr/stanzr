@@ -46,6 +46,22 @@ function RE(win) {
 }
 
 
+function setCaretPosition(ctrl, pos){
+  if(ctrl.setSelectionRange)
+  {
+    ctrl.focus();
+    ctrl.setSelectionRange(pos,pos);
+  }
+  else if (ctrl.createTextRange) {
+    var range = ctrl.createTextRange();
+    range.collapse(true);
+    range.moveEnd('character', pos);
+    range.moveStart('character', pos);
+    range.select();
+  }
+}
+
+
 function ct(cb) {
   return function(event){
     debug(event)
@@ -133,6 +149,9 @@ var app = {
 
     ,chatopenmsg: 'chat opened'
     ,chatclosedmsg: 'chat closed'
+
+    ,enteremail: 'Please enter your email address.'
+    ,entername: 'Please enter your name.'
   },
 
 
@@ -310,10 +329,10 @@ var app = {
   },
 
 
-  updateuser: function(data,cb) {
+  userterms: function(data,cb) {
     http.post(
-      '/api/user/'+page.user.nick,
-      {email:data.email},
+      '/api/user/'+page.user.nick+'/terms',
+      {email:data.email,name:data.name},
       RE(function(res){
         cb && cb(res)
       }))
@@ -483,7 +502,9 @@ var app = {
       post.find('a.sprite-at-reply').click(function(){
         var txt = $('#post_text').val()
         if( -1 == txt.indexOf( msg.f ) ) {
-          $('#post_text').val( '@'+msg.f+' '+txt ) 
+          var replywith = '@'+msg.f+' '+txt
+          $('#post_text').val( replywith ) 
+          setCaretPosition($('#post_text')[0],replywith.length)
         }
         $('#post_text').focus()
       })
@@ -661,7 +682,7 @@ var app = {
     show: function(others) {
       for( var i = 0; i < others.length; i++ ) {
         var box = app.rightbar.box[others[i]]
-        box && box.show()
+        box && showif(box) //box.show()
       }
     },
     
@@ -932,7 +953,8 @@ $(function(){
   $('h4').live('click',function(event){
     var n = $(event.target).text()
     if( app.nickmap[n] ) {
-      app.popup.box.profile.render(n)
+      app.popup.box.profile.render(n,app.avimg[n])
+      app.popup.box.profile.el.box.show()
     }
   })
 
@@ -1043,6 +1065,17 @@ $(function(){
 
 
 
+function showhide(jqe,show) {
+  if( jqe ) {
+    if( show ) {
+      jqe.show()
+    }
+    else {
+      jqe.hide()
+    }
+  }
+}
+
 function showif(obj,spec) {
   if( spec ) { 
     obj.__showif = spec
@@ -1063,6 +1096,9 @@ function showif(obj,spec) {
     }
   }
 }
+
+
+
 
 
 function TopicHead(topic) {
@@ -1270,7 +1306,9 @@ function ChatDetailsBox() {
     ,logo: $('#chat_logo')  
     ,img: $('#chat_logo img')  
 
+
     ,modmsgbtn: $('#rally_modmsgbtn')
+    ,modname: $('#rally_modname')
     
     ,editbtn: $('#rally_editbtn')
     ,curatebtn: $('#rally_curatebtn')
@@ -1283,9 +1321,11 @@ function ChatDetailsBox() {
 
   self.init = function(chat) {
 
-    $('#rally_title').text(chat.title)
-    $('#rally_modname').text(chat.modname)
-    $('#rally_whenstr').text(chat.whenstr)
+    $('#rally_title').text(chat.title||'')
+    $('#rally_modname').text(chat.modname||'')
+    $('#rally_modtitle').text(chat.modtitle||'')
+    $('#rally_modorg').text(chat.modorg||'')
+    $('#rally_whenstr').text(chat.whenstr||'')
     
     $('#rally_desc').html( markdown.toHTML(chat.desc) ).show()
     
@@ -1338,6 +1378,12 @@ function ChatDetailsBox() {
       app.rightbar.box.dm.drilldown()
     })
 
+    self.el.modname.click(function(){
+      for( var modnick in app.chat.modnicks ) break;
+      app.popup.box.profile.render(modnick,app.avimg[modnick]);
+      app.popup.box.profile.el.box.show()
+    })
+
     return self
   }
 
@@ -1370,8 +1416,10 @@ function RightbarBox() {
         app.rightbar.show(others)
         self.drill = 'up'
         self.render()
+
+        self.showhide()
       },200)
-      self.el.drilldown.show()
+
       self.el.drillup.hide()
       return self
     }
@@ -1392,6 +1440,10 @@ function RightbarBox() {
   }
   
 
+  this.showhide = function() {
+    showhide( this.el.drilldown, this.showdrilldown ? this.showdrilldown() : true )
+  }
+
   this.init = function(me) {
     var self = this
     var others = []
@@ -1401,12 +1453,15 @@ function RightbarBox() {
       }
     }
 
+    this.showhide()
+
     self.drillup = drillup(self,others)
     self.drilldown = drilldown(self,others)
 
     self.el.drillup.click(self.drillup)
     self.el.drilldown.click(self.drilldown)
   }
+
 }
 
 
@@ -1427,6 +1482,12 @@ function DirectMessageBox() {
     ,send: $('#dm_send')
     ,sendbtn: $('#dm_sendbtn')
     ,allbtn: $('#dm_allbtn')
+  }
+
+  var dmcount = 0
+
+  self.showdrilldown = function() {
+    return 3 < dmcount && 'up'==self.drill
   }
 
   self.init('dm')
@@ -1454,6 +1515,9 @@ function DirectMessageBox() {
 
 
   showif(self,{
+    box: function() {
+      return 0 < dmcount || 'down' == self.drill
+    },
     send: function(){
       return !!self.other && 'down' == self.drill
     },
@@ -1461,6 +1525,7 @@ function DirectMessageBox() {
       return !!self.other
     }
   })
+
 
 
 
@@ -1488,6 +1553,7 @@ function DirectMessageBox() {
     }
 
     function buildlist(dmlist) {
+      dmcount = dmlist && dmlist.length
       for( var i = 0; i < dmlist.length; i++ ) {
         var msg = dmlist[i]
         var msgdiv = self.el.msg_tm.clone().attr('id','').css({display:'block'})
@@ -1511,6 +1577,7 @@ function DirectMessageBox() {
       }
 
       showif(self)
+      self.showhide()
 
       if( 'down' == self.drill ) {
         if( self.other ) {
@@ -1555,6 +1622,8 @@ DirectMessageBox.prototype = new RightbarBox()
 function AgreeBox() {
   var self = this
 
+  var agrees = []
+
   self.el = {
     dummy: null
     ,box: $('#agree_box')
@@ -1568,9 +1637,13 @@ function AgreeBox() {
 
   }
 
+  self.showdrilldown = function() {
+    return 3 < agrees.length
+  }
+
   self.init('agree')
 
-  var agrees = []
+
 
 
   showif(self,{
@@ -1632,6 +1705,7 @@ function AgreeBox() {
     }
 
     showif(self)
+    self.showhide()
   }
 
 
@@ -1655,6 +1729,9 @@ AgreeBox.prototype = new RightbarBox()
 function ReplyBox() {
   var self = this
 
+  var replies = []
+
+
   self.el = {
     dummy: null
     ,box: $('#reply_box')
@@ -1667,10 +1744,14 @@ function ReplyBox() {
     ,msg_tm: $('#reply_msg_tm')
   }
 
+  self.showdrilldown = function() {
+    return 3 < replies.length
+  }
+
+
   self.init('reply')
 
 
-  var replies = []
 
   showif(self,{
     box:function() {
@@ -1747,6 +1828,7 @@ function ReplyBox() {
     }
 
     showif(self)
+    self.showhide()
   }
   
 }
@@ -1759,10 +1841,17 @@ function AvatarBox() {
   
   self.el = {
     dummy: null
+    ,box: $('#avatar_box')
     ,drilldown: $('#avatar_drilldown')
     ,drillup: $('#avatar_drillup')
-    ,box: $('#avatar_box')
   }
+
+  showif(self,{
+    box: function() { return true; },
+    drilldown: function() { return 'up'==self.drill; },
+    drillup: function() { return 'down'==self.drill; }
+  })
+
 
   self.init('avatar')
 
@@ -1775,8 +1864,20 @@ function AvatarBox() {
         var avatar = $('#miniavatar_tm').clone()
         avatar.attr('id','miniavatar_'+avnick)
         
-        app.popup.box.profile.render(avnick);
-        
+        avatar.click(function(){
+          app.popup.box.profile.render(avnick,app.avimg[avnick],externals[avnick]);
+          app.popup.box.profile.el.box.show()
+        })
+  
+        avatar.mouseenter(function(){
+          app.popup.box.profile.render(avnick,app.avimg[avnick],externals[avnick]);
+          app.popup.box.profile.el.box.css({
+            top:20+(avatar.offset().top),
+            left:(avatar.offset().left)-220
+          }).show()
+        })
+
+        /*
         avatar
           .attr('title', $('#profile_box').html())
           .qtip({
@@ -1791,7 +1892,7 @@ function AvatarBox() {
               distance: false
             }
           });
-        
+        x*/
         
         $('#rally_miniavatars').append(avatar)
         avatar.show()
@@ -1886,11 +1987,13 @@ function HostChatBox() {
 
     ,box: $('#hostchat_box')
 
-    ,title:   $('#hostchat_title')
-    ,modname: $('#hostchat_modname')
-    ,whenstr: $('#hostchat_whenstr')
-    ,hashtag: $('#hostchat_hashtag')
-    ,desc:    $('#hostchat_desc')
+    ,title:    $('#hostchat_title')
+    ,modname:  $('#hostchat_modname')
+    ,modtitle: $('#hostchat_modtitle')
+    ,modorg:   $('#hostchat_modorg')
+    ,whenstr:  $('#hostchat_whenstr')
+    ,hashtag:  $('#hostchat_hashtag')
+    ,desc:     $('#hostchat_desc')
 
     ,details:    $('#hostchat_details')
     ,topics:     $('#hostchat_topics')
@@ -1906,6 +2009,8 @@ function HostChatBox() {
 
     self.el.title.val()
     self.el.modname.val()
+    self.el.modtitle.val()
+    self.el.modorg.val()
     self.el.whenstr.val()
     self.el.hashtag.val()
     self.el.desc.val()
@@ -1927,6 +2032,8 @@ function HostChatBox() {
 
     self.el.title.val( chat.title );
     self.el.modname.val( chat.modname );
+    self.el.modtitle.val( chat.modtitle );
+    self.el.modorg.val( chat.modorg );
     self.el.whenstr.val( chat.whenstr );
     self.el.hashtag.val( chat.hashtag );
     self.el.desc.val( chat.desc );
@@ -2003,6 +2110,8 @@ function HostChatBox() {
 
           title:      title,
           modname:    self.el.modname.val(),
+          modtitle:   self.el.modtitle.val(),
+          modorg:     self.el.modorg.val(),
           whenstr:    self.el.whenstr.val(),
           hashtag:    hashtag,
           desc:       self.el.desc.val(),
@@ -2108,25 +2217,25 @@ function ProfileBox() {
   }
   self.el.nick = self.el.box.find('h2')
 
-  var cnick
-  var avimg
-  var external
+  self.cnick
+  self.avimg
+  self.external
 
   showif(self,{
     messagebtn: function() {
-      return nick != cnick && !external
+      return nick != self.cnick && !self.external
     },
     banbtn: function() {
-      return app.ismod && nick != cnick && !app.chat.bans[cnick] && !external
+      return app.ismod && nick != self.cnick && !app.chat.bans[self.cnick] && !self.external
     },
     unbanbtn: function() {
-      return app.ismod && nick != cnick && app.chat.bans[cnick] && !external
+      return app.ismod && nick != self.cnick && app.chat.bans[self.cnick] && !self.external
     },
     you: function() {
-      return nick == cnick
+      return nick == self.cnick
     },
     invitebtn: function() {
-      return external && app.ismod && app.invitesused < 3
+      return self.external && app.ismod && app.invitesused < 3
     },
     sendbtn: function() {
       return false
@@ -2138,15 +2247,14 @@ function ProfileBox() {
 
 
   self.render = function(pnick,pavimg,pext) {
-    cnick = pnick
-    avimg = pavimg || app.avimg[cnick]
-    external = pext
+    self.cnick = pnick
+    self.avimg = pavimg || app.avimg[self.cnick]
+    self.external = pext
 
-    //self.el.box.show()
-    self.el.nick.text(cnick)
+    self.el.nick.text(self.cnick)
 
-    if( avimg ) {
-      self.el.avimg.html('<img src="'+avimg+'" width="32" height="32"></img>')
+    if( self.avimg ) {
+      self.el.avimg.html('<img src="'+self.avimg+'" width="32" height="32"></img>')
     }
 
     showif(self)
@@ -2155,7 +2263,7 @@ function ProfileBox() {
 
   function sendban(ban,cb) {
     $.ajax({
-      url:'/api/chat/'+app.chat.chatid+'/user/'+cnick+'/status',
+      url:'/api/chat/'+app.chat.chatid+'/user/'+self.cnick+'/status',
       type:'POST',
       contentType:'application/json',
       dataType:'json',
@@ -2166,36 +2274,41 @@ function ProfileBox() {
     })
   }
 
+  
+  self.el.box.mouseleave(function(){
+    self.el.box.hide()
+  })
 
-  self.el.messagebtn.live('click', function(){
-    //self.el.box.hide()
-    $('body .qtip').hide();
-    app.rightbar.box.dm.other = cnick
+  self.el.messagebtn.click(function(){
+    self.el.box.hide()
+    //$('body .qtip').hide();
+    app.rightbar.box.dm.other = self.cnick
     app.rightbar.box.dm.drilldown()
+    app.rightbar.box.dm.render()
   })
 
   self.el.banbtn.click(function(){
-    app.chat.bans[cnick]=1
+    app.chat.bans[self.cnick]=1
     showif(self)
-    app.rightbar.box.avatar.ban(true,cnick)
+    app.rightbar.box.avatar.ban(true,self.cnick)
     sendban(true,function(){
     })
   })
 
   self.el.unbanbtn.click(function(){
-    delete app.chat.bans[cnick]
+    delete app.chat.bans[self.cnick]
     showif(self)
-    app.rightbar.box.avatar.ban(false,cnick)
+    app.rightbar.box.avatar.ban(false,self.cnick)
     sendban(false,function(){
     })    
   })
 
   self.el.invitebtn.click(function(){
     self.el.box.css({height:300})
-    self.el.body.val('@'+cnick+' Come join the chat at: http://www.stanzr.com/'+app.chat.chatid).show()
+    self.el.body.val('@'+self.cnick+' Come join the chat at: http://www.stanzr.com/'+app.chat.chatid).show()
     self.el.sendbtn.show().click(function(){
       var body = self.el.body.val()
-      app.sendinvite(cnick,body)
+      app.sendinvite(self.cnick,body)
       self.el.box.hide()
     })
   })
@@ -2351,6 +2464,7 @@ function ShareBox() {
     self.el.postbtn.click(function(){
       var text = self.el.text.val()
       app.share(self.msg.i,text,function(){
+        self.el.text.text('')
         self.el.box.hide()
       })
     })
@@ -2397,9 +2511,9 @@ function TermsBox() {
     ,toc: $('#terms_toc')
 
     ,email: $('#terms_email')
-    ,check: $('#terms_check')
+    ,name: $('#terms_name')
+
     ,okbtn: $('#terms_okbtn')
-    ,cancelbtn: $('#terms_cancelbtn')
   }
 
   
@@ -2410,7 +2524,8 @@ function TermsBox() {
   self.render = function() {
     self.el.box.show()
 
-    self.el.email.text(page.user.email)
+    self.el.email.val(page.user.email)
+    self.el.name.val(page.user.name)
 
     showif(self)
 
@@ -2422,20 +2537,16 @@ function TermsBox() {
       }})
 
     self.el.okbtn.click(function(){
-      if( !self.el.check.attr('checked') ) {
-        self.el.msg.text('Please tick to indicate acceptance of our terms and conditions.').show()
+      if( !self.el.email.val() ) {
+        self.el.msg.text(app.text.enteremail).show()
       }
-      else if( !self.el.email.val() ) {
-        self.el.msg.text('Please enter your email address.').show()
+      else if( !self.el.name.val() ) {
+        self.el.msg.text(app.text.entername).show()
       }
       else {
         self.el.box.hide()
-        app.updateuser({email:self.el.email.val()})
+        app.userterms({email:self.el.email.val(),name:self.el.name.val()})
       }
-    })
-
-    self.el.cancelbtn.click(function(){
-      window.location.href = '/'
     })
   }
 }

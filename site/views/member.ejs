@@ -57,7 +57,8 @@
 
     <div>
       <h2>Moderated by <a id="rally_modname"><%=val.chat.modname%></a></h2>
-      <h3 id="rally_modtitle"></h3>
+      <h3 id="rally_modtitle"><%=val.chat.modtitle%></h3>
+      <h3 id="rally_modorg"><%=val.chat.modorg%></h3>
       <a id="rally_modmsgbtn" class="textbtn">send a message</a>
     </div>
 
@@ -504,6 +505,12 @@ if( 'done' == val.chat.state ) {
   <label for="hostchat_modname">Moderated by</label>
   <input id="hostchat_modname">
 
+  <label for="hostchat_modtitle">Moderator title</label>
+  <input id="hostchat_modtitle">
+
+  <label for="hostchat_modorg">Moderator organization</label>
+  <input id="hostchat_modorg">
+
   <label for="hostchat_whenstr">Scheduled for</label>
   <input id="hostchat_whenstr">
   <p class="descr">Include a timezone, like PDT</p>
@@ -615,7 +622,7 @@ if( 'done' == val.chat.state ) {
 </div>
 
 
-<div id="share_box" class="modalbox hide">
+<div id="share_box" class="modalbox xhide">
   <div class="modal_close"><a onclick="$('#share_box').hide()" class="textbtn">&times;</a></div>
 
   <h2>Post to Twitter</h2>
@@ -628,23 +635,23 @@ if( 'done' == val.chat.state ) {
 
 
 <div id="terms_box" class="modalbox hide">
-  <h2>Welcome!</h2>
+  <h2>Welcome to Stanzr!</h2>
   
-  <p id="terms_toc"></p>
   <p>
-    <a href="/terms.html">terms of service</a>
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <a href="/privacy.html">privacy policy</a>
+    Name:
+    <input id="terms_name">
   </p>
-  <p><input id="terms_check" type="checkbox" checked="yes" style="display:inline;width:10px;">Accept terms and conditions.</p>
+
   <p>
-    Please enter your email address:
+    Email address:
     <input id="terms_email">
   </p>
 
+  <p>By Clicking Create My Account, you Agree to the Terms of Service Below</p>
+  <p id="terms_toc"></p>
+
   <div style="clear:both">
-  <a id="terms_cancelbtn" class="textbtn">cancel</a>
-  <a id="terms_okbtn" class="textbtn">ok</a>
+  <a id="terms_okbtn" class="textbtn">create my account</a>
   </div>
 
   <p id="terms_msg" style="clear:both"></p>

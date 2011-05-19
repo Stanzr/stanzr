@@ -512,6 +512,8 @@ main.view = {
             state   :'',
             title   :'',
             modname :'',
+            modtitle :'',
+            modorg   :'',
             whenstr :'',
             desc    :''
           }
@@ -523,28 +525,31 @@ main.view = {
             userdesc.admin = user.admin
             userdesc.toc = user.toc
             userdesc.email = user.email
+            userdesc.name = user.name
           }
 
           if( req.params.chatid ) {
             var chatent = main.ent.make$('app','chat')
             chatent.load$({chatid:req.params.chatid},RE(res,function(chat){
               if( chat ) {
-                chatdesc.chatid  = chat.chatid || ''
-                chatdesc.hashtag = chat.hashtag || ''
-                chatdesc.state   = chat.state || ''
-                chatdesc.title   = chat.title || ''
-                chatdesc.modname = chat.modname || ''
-                chatdesc.whenstr = chat.whenstr || ''
-                chatdesc.desc    = chat.desc || ''
+                chatdesc.chatid   = chat.chatid || ''
+                chatdesc.hashtag  = chat.hashtag || ''
+                chatdesc.state    = chat.state || ''
+                chatdesc.title    = chat.title || ''
+                chatdesc.modname  = chat.modname || ''
+                chatdesc.modtitle = chat.modtitle || ''
+                chatdesc.modorg   = chat.modorg || ''
+                chatdesc.whenstr  = chat.whenstr || ''
+                chatdesc.desc     = chat.desc || ''
 
                 var locals = {
                   txt: {
-                    title: chat.chatid
+                    title: chat.title
                   },
                   val: {
                     chatid: chat.chatid,
                     alias: req.params.alias || chat.chatid,
-                    hashtag: chat.hashtag,
+                    hashtag: chat.hashtag || '',
                     nick: nick,
                     hostyours: !!(/QJAAMZDU$/.exec(req.url)),
                     user:userdesc,
@@ -830,11 +835,13 @@ main.api = {
 
         function savechat(chat) {
           main.util.mustbemod( req, res, chat.modnicks, function() {
-            chat.title   = json.title || 'Chat session'
-            chat.modname = json.modname || ''
-            chat.whenstr = json.whenstr || ''
-            chat.hashtag = json.hashtag || ''
-            chat.desc    = json.desc || ''
+            chat.title    = json.title || 'Chat session'
+            chat.modname  = json.modname || ''
+            chat.modtitle = json.modtitle || ''
+            chat.modorg   = json.modorg || ''
+            chat.whenstr  = json.whenstr || ''
+            chat.hashtag  = json.hashtag || ''
+            chat.desc     = json.desc || ''
         
             main.chat.save(chat,RE(res,function(chat){
               main.util.tweetsearch(chat.chatid,chat.hashtag)
@@ -1167,10 +1174,11 @@ main.api = {
 }
 
 
-main.api.user.post = function( req, res ) {
+main.api.user.post_terms = function( req, res ) {
   var nick = req.params.nick
   if( nick == req.user$.nick ) {
     req.user$.email = req.json$.email
+    req.user$.name = req.json$.name
     req.user$.toc = 1
     req.user$.save$(sendok(res))
   }
@@ -1657,7 +1665,7 @@ Seneca.init(
         capp.put('/api/chat', main.api.chat.save)
 
         capp.get('/api/user/:nick', main.api.user.get)
-        capp.post('/api/user/:nick', main.api.user.post)
+        capp.post('/api/user/:nick/terms', main.api.user.post_terms)
         capp.get('/api/user/:nick/history', main.api.user.get_history)
 
         capp.get('/api/chat/:chatid/user/:nick/dm', main.api.chat.dm.get_conv)
