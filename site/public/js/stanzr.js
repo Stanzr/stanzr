@@ -1877,6 +1877,10 @@ function AvatarBox() {
           }).show()
         })
 
+        avatar.mouseleave(function(){
+          app.popup.box.profile.checkmouse()
+        })
+
         /*
         avatar
           .attr('title', $('#profile_box').html())
@@ -2256,6 +2260,9 @@ function ProfileBox() {
     if( self.avimg ) {
       self.el.avimg.html('<img src="'+self.avimg+'" width="32" height="32"></img>')
     }
+    else {
+      self.el.avimg.html('')
+    }
 
     showif(self)
   }
@@ -2274,8 +2281,20 @@ function ProfileBox() {
     })
   }
 
+
+  self.checkmouse = function() {
+    if( !self.mouseoverme ) {
+      //self.el.box.hide()
+    }
+  }
   
+  self.el.box.mouseenter(function(){
+    self.mouseoverme = true
+  })
+
+
   self.el.box.mouseleave(function(){
+    self.mouseoverme = false
     self.el.box.hide()
   })
 
