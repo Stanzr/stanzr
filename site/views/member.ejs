@@ -53,6 +53,7 @@
       <a id="rally_unpublishbtn" class="textbtn hide">unpublish</a>
       <a id="rally_aliasesbtn" class="textbtn hide">aliases</a>
       <a id="rally_moderatorsbtn" class="textbtn hide">moderators</a>
+      <a id="rally_analyticsbtn" class="textbtn hide" target="blank">analytics</a>
     </div>
 
     <div>
@@ -160,7 +161,7 @@ if( 'done' == val.chat.state ) {
     if( 'm' == type ) {
 %>
         <li class="message clearfix" style="display:block">
-          <div class="post_avatar sprite-silhouette32"><img src="<%=avimg%>" width="32" height="32" /></div>
+          <div class="post_avatar sprite-silhouette32"><%if(avimg){%><img src="<%=avimg%>" width="32" height="32" /><%}%></div>
           <div class="post_content">
 
             <div class="clearfix">

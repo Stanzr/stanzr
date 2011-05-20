@@ -2,7 +2,8 @@
   display: none; }
 
 a {
-  text-decoration: none; }
+  text-decoration: none;
+  cursor: pointer; }
   a:hover {
     text-decoration: underline; }
   a.textbtn {

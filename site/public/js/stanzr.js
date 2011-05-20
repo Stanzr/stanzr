@@ -455,6 +455,22 @@ var app = {
   },
 
 
+  formatpublishedchat: function() {
+    
+    app.leftbar.box.detail.init(app.chat).render()
+    app.rightbar.box.agree.load()
+    app.rightbar.box.reply.set(app.chat)
+    app.rightbar.box.dm.render()
+
+    $('p.post').each(function(index,post){
+      var p = $(post)
+      var ht = app.formatmsgtext( p.text() )
+      p.html(ht)
+    })
+
+  },
+
+
   infomsg: function(text) {
     var post = $('#posts_tm li.infomsg').clone()
     post.find('p').text(text)
@@ -935,6 +951,9 @@ $(function(){
     app.popup.box.aliases  = new WinzigBox('aliases_box')
     $('#aliases_box').winzig({
       entityurl:'/api/chat/'+chatid+'/admin/alias',
+      onitem:function(itemdata){
+        window.location = '/'+itemdata.text
+      },
       onerror:function(){
         alert('Admin operation failed: duplicate alias.')
       }
@@ -1045,9 +1064,7 @@ $(function(){
 
         // chat done
         else {
-          app.leftbar.box.detail.init(app.chat).render()
-          app.rightbar.box.agree.load()
-          app.rightbar.box.reply.set(app.chat)
+          app.formatpublishedchat()
         }
       }
     })
@@ -1316,6 +1333,7 @@ function ChatDetailsBox() {
 
     ,aliasesbtn: $('#rally_aliasesbtn')
     ,moderatorsbtn: $('#rally_moderatorsbtn')
+    ,analyticsbtn: $('#rally_analyticsbtn')
   }
 
 
@@ -1341,6 +1359,7 @@ function ChatDetailsBox() {
     if( page.user.admin ) {
       self.el.aliasesbtn.click(killpopups(app.popup.box.aliases.render))
       self.el.moderatorsbtn.click(killpopups(app.popup.box.moderators.render))
+      self.el.analyticsbtn.attr('href','/'+chat.chatid+'/moderator')
     }
 
     showif(self,{
@@ -1357,6 +1376,9 @@ function ChatDetailsBox() {
         return page.user.admin
       },
       moderatorsbtn: function(){
+        return page.user.admin
+      },
+      analyticsbtn: function(){
         return page.user.admin
       }
     })
@@ -1516,7 +1538,7 @@ function DirectMessageBox() {
 
   showif(self,{
     box: function() {
-      return 0 < dmcount || 'down' == self.drill
+      return 'done'!=page.chat.state && ( 0 < dmcount || 'down' == self.drill )
     },
     send: function(){
       return !!self.other && 'down' == self.drill
@@ -1530,6 +1552,11 @@ function DirectMessageBox() {
 
 
   self.render = function(other) {
+    if( 'done'==page.chat.state ) {
+      showif(self)
+      return
+    }
+
     self.el.list.empty()
 
     other = other || self.other
@@ -1856,6 +1883,28 @@ function AvatarBox() {
   self.init('avatar')
 
   var avatars = {}
+  var externals = {}
+
+
+  function buildpopup(avatar,avnick,avimg) {
+    avatar.click(function(){
+      app.popup.box.profile.render(avnick,avimg,externals[avnick]);
+      app.popup.box.profile.el.box.show()
+    })
+    
+    avatar.mouseenter(function(){
+      app.popup.box.profile.render(avnick,avimg,externals[avnick]);
+      app.popup.box.profile.el.box.css({
+        top:20+(avatar.offset().top),
+        left:(avatar.offset().left)-220
+      }).show()
+    })
+
+    avatar.mouseleave(function(){
+      app.popup.box.profile.checkmouse()
+    })
+  }
+
 
   self.add = function(avnick) {
     if( avnick ) {
@@ -1864,57 +1913,11 @@ function AvatarBox() {
         var avatar = $('#miniavatar_tm').clone()
         avatar.attr('id','miniavatar_'+avnick)
         
-        avatar.click(function(){
-          app.popup.box.profile.render(avnick,app.avimg[avnick],externals[avnick]);
-          app.popup.box.profile.el.box.show()
-        })
-  
-        avatar.mouseenter(function(){
-          app.popup.box.profile.render(avnick,app.avimg[avnick],externals[avnick]);
-          app.popup.box.profile.el.box.css({
-            top:20+(avatar.offset().top),
-            left:(avatar.offset().left)-220
-          }).show()
-        })
+        buildpopup(avatar,avnick,app.avimg[avnick])
 
-        avatar.mouseleave(function(){
-          app.popup.box.profile.checkmouse()
-        })
-
-        /*
-        avatar
-          .attr('title', $('#profile_box').html())
-          .qtip({
-            hide: {
-              target: false,
-              event: 'mouseleave',
-              effect: true,
-              delay: 250,
-              fixed: true,
-              inactive: false,
-              leave: 'window',
-              distance: false
-            }
-          });
-        x*/
-        
         $('#rally_miniavatars').append(avatar)
         avatar.show()
         avatars[avnick] = avatar
-
-        /*
-        $.ajax({
-          url:'/api/user/'+avnick,
-          type:'GET',
-          dataType:'json',
-          success:function(res){
-            if( res.avimg ) {
-              app.avimg[avnick] = res.avimg
-              avatar.html('<img src="'+res.avimg+'" width="32" height="32"></img>')
-            }
-          }
-        })
-        */
 
         app.getavatar(avnick,function(avimg){
           if( avimg ) {
@@ -1935,7 +1938,6 @@ function AvatarBox() {
   }
 
 
-  var externals = {}
 
   self.external = function(msg) {
     if( externals[msg.f] ){
@@ -1957,9 +1959,8 @@ function AvatarBox() {
 
     avatar.find('div.external').removeClass('hide')
 
-    avatar.click(function(){
-      app.popup.box.profile.render(msg.f,msg.av,true)
-    })
+    buildpopup(avatar,msg.f,msg.av)
+
     $('#rally_miniavatars').append(avatar)
     avatar.show()
   }
@@ -2324,7 +2325,7 @@ function ProfileBox() {
 
   self.el.invitebtn.click(function(){
     self.el.box.css({height:300})
-    self.el.body.val('@'+self.cnick+' Come join the chat at: http://www.stanzr.com/'+app.chat.chatid).show()
+    self.el.body.val('@'+self.cnick+' Come join the chat at: '+window.location.href).show()
     self.el.sendbtn.show().click(function(){
       var body = self.el.body.val()
       app.sendinvite(self.cnick,body)
@@ -2614,6 +2615,7 @@ function Curate() {
 
   self.render = function() {
     app.mode = 'curate'
+    app.changetopic(0)
     app.updatetopics()
 
     app.resize(40)
@@ -2727,8 +2729,12 @@ function Curate() {
     var msgitem = self.el.msg_tm.clone()
     var order = ((1+parseInt(msg.p,10))*TOPIC_START)+parseInt(msg.v,10)
     msgitem.find('h4').text( msg.f )
-    msgitem.find('p').text( msg.t )
-    msgitem.find('div.post_avatar').html('<img src="'+app.avimg[msg.f]+'" width="32" height="32"></img>')
+    msgitem.find('p').html( app.formatmsgtext(msg.t) )
+
+    if( app.avimg[msg.f] ) {
+      msgitem.find('div.post_avatar').html('<img src="'+app.avimg[msg.f]+'" width="32" height="32"></img>')
+    }
+
     msgitem.attr( 'data-order', order )
     msgitem.attr( 'data-original', msgid )
     msgitem.click(function(){self.remove(order)})
