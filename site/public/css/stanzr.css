@@ -3,7 +3,8 @@
 
 a {
   text-decoration: none;
-  cursor: pointer; }
+  cursor: pointer;
+  color: #268CBF; }
   a:hover {
     text-decoration: underline; }
   a.textbtn {
