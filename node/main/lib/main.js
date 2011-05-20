@@ -1471,6 +1471,7 @@ Seneca.init(
     app.use(function(req,res,next){
       var host = req.headers.host
       if( 'localhost' == host ||
+          'localhost:8080' == host ||
           'stanzr.com' == host ||
           'stanzr.test' == host ||
           0 == host.indexOf('192.168.') ) 
