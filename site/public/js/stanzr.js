@@ -2650,8 +2650,12 @@ function Curate() {
 
       var posts = $('#topic_posts_'+topic).find('li.message')
       for( var i = 0; i < posts.length; i++) {
-        var item = self.makeitem(posts[i])
-        self.insert(item)
+        var msgid = $(posts[i]).attr('id').substring(4)
+        var msg = app.msgcache[msgid]
+        if( !msg.h ) {
+          var item = self.makeitem(posts[i])
+          self.insert(item)
+        }
       }
     })
 
