@@ -16,7 +16,7 @@ $hicolC: #f7efe1;
 $navbgC: #666;
 $bodybgC: #ccc;
 $modalbgC: #e6e6e6;
-$topicheadbgC: #d1cabf;
+$topicheadbgC: #d0c9be;
 
 $fontbodyC: #404040;
 $fontmetaC: #999;
@@ -408,6 +408,8 @@ div {
       position: absolute;
       bottom: 0;
       padding: 0px 5px 5px 10px;
+      background-color: #d0c9be;
+      border-top: 1px solid #C4B9A9;
 
       table {
         border: 0px;
@@ -663,6 +665,7 @@ div.modalbox {
 
 #topicheads {
   padding: 0px;
+  border-bottom: 1px solid #C4B9A9;
 }
 
 #topichead_tm {

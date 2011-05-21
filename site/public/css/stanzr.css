@@ -196,7 +196,7 @@ div.midcol {
   div.midcol > div {
     padding: 10px; }
   div.midcol div.topichead {
-    background-color: #d1cabf;
+    background-color: #d0c9be;
     padding: 10px; }
     div.midcol div.topichead h4 {
       width: 375px;
@@ -258,7 +258,9 @@ div.midcol {
   div.midcol div.topicsend {
     position: absolute;
     bottom: 0;
-    padding: 0px 5px 5px 10px; }
+    padding: 0px 5px 5px 10px;
+    background-color: #d0c9be;
+    border-top: 1px solid #C4B9A9; }
     div.midcol div.topicsend table {
       border: 0px;
       margin: 0px;
@@ -451,7 +453,8 @@ div.modalbox {
   display: none; }
 
 #topicheads {
-  padding: 0px; }
+  padding: 0px;
+  border-bottom: 1px solid #C4B9A9; }
 
 #topichead_tm {
   display: none; }
@@ -576,7 +579,7 @@ div.modalbox {
     background-color: white;
     padding: 5px; }
   #curate_list li.curate_topic {
-    background-color: #d1cabf; }
+    background-color: #d0c9be; }
   #curate_list li.curate_anno {
     border: none;
     background-color: #f7efe1; }
