@@ -387,7 +387,12 @@ var app = {
   joinchat: function() {
     var msg = JSON.stringify({chat:chatid})
     debug(msg)
-    now.joinchat(msg)
+    try {
+      now.joinchat(msg)
+    }
+    catch(e) {
+      debug('joinchat',e)
+    }
   },
 
 
@@ -731,6 +736,8 @@ function killpopups(next) {
 $(function(){
   app.chartaca = Chartaca.init({key:'2910f2ee-3737-48ec-980f-001574c2d2de',target:'stanzr.com'})
   app.chartaca.fire('view:'+page.chat.chatid)
+
+  $.cookie('socketio',null)
 
   $.ajaxSetup({ cache: false })
 

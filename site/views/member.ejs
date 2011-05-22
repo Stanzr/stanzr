@@ -20,7 +20,7 @@
       <li><a id="head_logout">Log out</a></li>
       <% } else { %>
 
-      <% var logintag = '/'+(val.chatid||'member')+'?'+Math.random() %>
+      <% var logintag = '/'+(val.alias||val.chatid||'member')+'?'+Math.random() %>
 
       <li class="navgroup-left">
         <a id="head_linkedin" href="/api/user/oauth/linkedin/login<%=logintag%>" class="first sprite-linkedin16">&nbsp;&nbsp;&nbsp;</a>

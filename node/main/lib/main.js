@@ -1737,7 +1737,7 @@ Seneca.init(
       {
         socketio: {
           transports: ['flashsocket', 'websocket', 'htmlfile', 'xhr-multipart', 'xhr-polling', 'jsonp-polling'],
-          xtransports: ['xhr-polling'],
+          xtransports: ['xhr-'],
           rememberTransport:false,
           connectTimeout:300,
           tryTransportsOnConnectTimeout:true,
