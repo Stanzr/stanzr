@@ -154,7 +154,7 @@ exports.readjson = function(req,res,win,fail) {
 exports.sendjson = function(res,obj){
   res.writeHead(200,{
     'Content-Type': 'application/json',
-    'Cache-Control': 'private, max-age=0'
+    'Cache-Control': 'private, max-age=0, no-cache, no-store'
   });
   var objstr = JSON.stringify(obj);
   util.debug('SENDJSON:'+objstr);

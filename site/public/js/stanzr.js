@@ -732,6 +732,8 @@ $(function(){
   app.chartaca = Chartaca.init({key:'2910f2ee-3737-48ec-980f-001574c2d2de',target:'stanzr.com'})
   app.chartaca.fire('view:'+page.chat.chatid)
 
+  $.ajaxSetup({ cache: false })
+
   //$('#headlogo').click(function(){$('#log').show()})
 
 /*
