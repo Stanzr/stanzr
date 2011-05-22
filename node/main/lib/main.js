@@ -818,7 +818,7 @@ main.api = {
         return
       }
 
-      if( /msgs$/.exec(req.url) ) {
+      if( /msgs(\?.+)?$/.exec(req.url) ) {
         main.msg.list(chatid,sendjson(res))
       }
       else {
