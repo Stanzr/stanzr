@@ -506,8 +506,8 @@ div.modalbox {
     color: red; }
 
 #send_count {
-  text-align: center;
-  width: 100px; }
+  text-align: left;
+  /*   width: 100px; */ }
 
 #terms_box {
   width: 300px;
