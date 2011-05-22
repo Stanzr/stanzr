@@ -1,9 +1,13 @@
 .hide {
   display: none; }
 
+table, th, td {
+  vertical-align: top; }
+
 a {
   text-decoration: none;
-  cursor: pointer; }
+  cursor: pointer;
+  color: #268CBF; }
   a:hover {
     text-decoration: underline; }
   a.textbtn {
@@ -192,7 +196,7 @@ div.midcol {
   div.midcol > div {
     padding: 10px; }
   div.midcol div.topichead {
-    background-color: #d1cabf;
+    background-color: #d0c9be;
     padding: 10px; }
     div.midcol div.topichead h4 {
       width: 375px;
@@ -254,7 +258,9 @@ div.midcol {
   div.midcol div.topicsend {
     position: absolute;
     bottom: 0;
-    padding: 0px 5px 5px 10px; }
+    padding: 0px 5px 5px 10px;
+    background-color: #d0c9be;
+    border-top: 1px solid #C4B9A9; }
     div.midcol div.topicsend table {
       border: 0px;
       margin: 0px;
@@ -377,6 +383,11 @@ div.modalbox {
   div.modalbox #head_twitter, div.modalbox #head_linkedin, div.modalbox #head_facebook {
     font-weight: bold; }
 
+.ui-tooltip-titlebar, .ui-tooltip-content {
+  background-color: #666666 !important;
+  border-color: #595959 !important;
+  color: #fff !important; }
+
 #login_box {
   /*   height: 250px; */ }
 
@@ -447,7 +458,8 @@ div.modalbox {
   display: none; }
 
 #topicheads {
-  padding: 0px; }
+  padding: 0px;
+  border-bottom: 1px solid #C4B9A9; }
 
 #topichead_tm {
   display: none; }
@@ -572,7 +584,7 @@ div.modalbox {
     background-color: white;
     padding: 5px; }
   #curate_list li.curate_topic {
-    background-color: #d1cabf; }
+    background-color: #d0c9be; }
   #curate_list li.curate_anno {
     border: none;
     background-color: #f7efe1; }
