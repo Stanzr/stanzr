@@ -1375,7 +1375,7 @@ function mustbeadmin(req,res,next) {
 
 
 function loadchat(req,res,next) {
-  var m = /^\/api\/chat\/([^\/]+)/.exec(req.url)
+  var m = /^\/api\/chat\/([^\/\?]+)/.exec(req.url)
   if( m ) {
     var chatid = m[1]
     main.cache.get('chat.'+chatid,RE(res,function(chat){
@@ -1450,6 +1450,103 @@ function json(req,res,next) {
   }
 }
 
+
+
+function initsocial( main.seneca.service('user',{
+  hosturl:conf.hosturl,
+  prefix:'/api/user',
+  tenant:'stanzr',
+  oauth: {
+    services: {
+      twitter: {
+        keys:conf.keys.twitter
+      },
+      facebook: {
+        version:2,
+        keys:conf.keys.facebook
+      },
+      linkedin: {
+        keys:conf.keys.linkedin
+      }
+    }
+  },
+
+},function(err,ctxt){
+  if( err ) {
+    log('error',err)
+    failed(ctxt.res,{err:err,ctxt:ctxt})
+  }
+  else {
+    var user = ctxt.user
+
+    if( user.social ) {
+
+      function saveavimg(user,avimg,service){
+        user.avimg = avimg
+        user.save$(function(err,user){
+          if( err ) {
+            log('error','saveavimg',{error:err,social:service,kind:'avatar',user:user})
+          }
+        })
+      }
+
+      if( 'twitter' == user.social.service ) {
+
+        var twit = new twitter({
+          consumer_key: conf.keys.twitter.key,
+          consumer_secret: conf.keys.twitter.secret,
+          access_token_key: user.social.key,
+          access_token_secret: user.social.secret
+        });
+
+        twit.showUser(ctxt.username,function(data){
+
+          if( 'Error' != data.name ) {
+            saveavimg(user,data.profile_image_url,'twitter')
+          }
+          else {
+            if( err ) {
+              log('error','avimg',{error:data,social:'twitter',kind:'showUser',user:user})
+            }
+          }
+        })
+
+      }
+      else {
+        try {
+          var facebook = new oauth.OAuth2(
+            conf.keys.facebook.key,
+            conf.keys.facebook.secret,
+            'https://graph.facebook.com'
+          )
+          
+          var geturl = 'https://graph.facebook.com/me/picture'
+          facebook.getProtectedResource( geturl, user.social.key, function (error, data, response) {
+            log('error',{service:'facebook',error:error,data:data,headers:response.headers})
+
+            if( error ) {
+	      if( 302 != error.statusCode ) {
+                log('error','avimg',{error:error,social:'facebook',kind:'showUser',user:user})
+              }
+              else {
+                saveavimg(user,error.headers['location'],'facebook')
+              }
+            }
+          })
+        }
+        catch( ex ) {
+          log('error',ex)
+        }
+      }
+    }
+
+    var res = ctxt.res
+    res.writeHead( 301, {
+      'Location':"/"+(ctxt.tag?ctxt.tag:'')
+    })
+    res.end()
+  }
+}))
 
 
 
@@ -1534,104 +1631,8 @@ Seneca.init(
 
     app.use( connect.logger() )
     app.use( connect.static( __dirname + '/../../../site/public') )
-    
 
-    app.use( main.seneca.service('user',{
-      hosturl:conf.hosturl,
-      prefix:'/api/user',
-      tenant:'stanzr',
-      oauth: {
-        services: {
-          twitter: {
-            keys:conf.keys.twitter
-          },
-          facebook: {
-            version:2,
-            keys:conf.keys.facebook
-          },
-          linkedin: {
-            keys:conf.keys.linkedin
-          }
-        }
-      },
-
-    },function(err,ctxt){
-      if( err ) {
-        log('error',err)
-        failed(ctxt.res,{err:err,ctxt:ctxt})
-      }
-      else {
-        var user = ctxt.user
-
-        if( user.social ) {
-
-          function saveavimg(user,avimg,service){
-            user.avimg = avimg
-            user.save$(function(err,user){
-              if( err ) {
-                log('error','saveavimg',{error:err,social:service,kind:'avatar',user:user})
-              }
-            })
-          }
-
-          if( 'twitter' == user.social.service ) {
-
-            var twit = new twitter({
-              consumer_key: conf.keys.twitter.key,
-              consumer_secret: conf.keys.twitter.secret,
-              access_token_key: user.social.key,
-              access_token_secret: user.social.secret
-            });
-
-            twit.showUser(ctxt.username,function(data){
-
-              if( 'Error' != data.name ) {
-                saveavimg(user,data.profile_image_url,'twitter')
-              }
-              else {
-                if( err ) {
-                  log('error','avimg',{error:data,social:'twitter',kind:'showUser',user:user})
-                }
-              }
-            })
-
-          }
-          else {
-            try {
-              var facebook = new oauth.OAuth2(
-                conf.keys.facebook.key,
-                conf.keys.facebook.secret,
-                'https://graph.facebook.com'
-              )
-            
-              var geturl = 'https://graph.facebook.com/me/picture'
-              facebook.getProtectedResource( geturl, user.social.key, function (error, data, response) {
-                log('error',{service:'facebook',error:error,data:data,headers:response.headers})
-
-                if( error ) {
-	          if( 302 != error.statusCode ) {
-                    log('error','avimg',{error:error,social:'facebook',kind:'showUser',user:user})
-                  }
-                  else {
-                    saveavimg(user,error.headers['location'],'facebook')
-                  }
-                }
-              })
-            }
-            catch( ex ) {
-              log('error',ex)
-            }
-          }
-        }
-
-        var res = ctxt.res
-        res.writeHead( 301, {
-          'Location':"/"+(ctxt.tag?ctxt.tag:'')
-        })
-        res.end()
-      }
-    }))
-
+    app.use( initsocial() )    
     
     app.use( json )
     app.use( loadchat )
