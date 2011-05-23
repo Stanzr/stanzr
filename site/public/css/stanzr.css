@@ -1,6 +1,9 @@
 .hide {
   display: none; }
 
+.disable {
+  background-color: #dfdfdf; }
+
 table, th, td {
   vertical-align: top; }
 
@@ -422,7 +425,7 @@ div.modalbox {
     display: none; }
 
 #profile_box {
-  height: 100px; }
+  height: 150px; }
 
 #settings_box {
   height: 400px;

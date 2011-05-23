@@ -89,6 +89,11 @@ $fontnavC:  #fff;
   display: none;
 }
 
+.disable {
+  background-color: #dfdfdf;
+}
+
+
 table, th, td {vertical-align: top;}
 
 a {
@@ -624,7 +629,7 @@ div.modalbox {
 }
 
 #profile_box {
-  height: 100px;
+  height: 150px;
 }
 
 #settings_box {

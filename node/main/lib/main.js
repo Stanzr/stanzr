@@ -795,6 +795,24 @@ main.api = {
       }))
     },
 
+    get_details: function(req,res) {
+      var nick = req.params.nick
+      var user = main.ent.make$('sys','user')
+      user.load$({nick:nick},RE(res,function(user){
+        if( user ) {
+          common.sendjson(res,{
+            nick:user.nick,
+            avimg:user.avimg,
+            name:user.name,
+            social:{service:(user.social?user.social.service:null)}
+          })
+        }
+        else {
+          lost(res)
+        }
+      }))
+    },
+
     get_history: function(req,res) {
       var nick = req.params.nick
       if( nick == req.user$.nick ) {
@@ -1656,6 +1674,8 @@ Seneca.init(
 
         capp.get('/api/chat/:chatid/topic/:topic', main.api.chat.topic.get)
         capp.get('/api/user/:nick/avatar', main.api.user.get_avatar)
+
+        capp.get('/api/user/:nick/details', main.api.user.get_details)
       })
     )
 

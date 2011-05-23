@@ -141,6 +141,7 @@ var app = {
   avimg: {},
   invitesused: 0,
 
+  usercache: {},
 
   text: {
     dummy: null
@@ -324,6 +325,16 @@ var app = {
 
   getuser: function(cb) {
     http.get('/api/user/'+page.user.nick,function(res){
+      cb && cb(res)
+    })
+  },
+
+
+  getuserdetails: function(pnick,cb) {
+    http.get('/api/user/'+pnick+'/details',function(res){
+      if( res ) {
+        app.usercache[pnick] = res 
+      }
       cb && cb(res)
     })
   },
@@ -2222,6 +2233,8 @@ function ProfileBox() {
     ,unbanbtn: $('#profile_unbanbtn')
 
     ,you: $('#profile_you')
+    ,moderator: $('#profile_moderator')
+    ,smlink: $('#profile_smlink')
 
     ,avimg: $('#profile_avimg')
     ,invitebtn: $('#profile_invitebtn')
@@ -2230,6 +2243,7 @@ function ProfileBox() {
 
   }
   self.el.nick = self.el.box.find('h2')
+  self.el.name = self.el.box.find('h3')
 
   self.cnick
   self.avimg
@@ -2256,6 +2270,9 @@ function ProfileBox() {
     },
     body: function() {
       return false
+    },
+    moderator: function() {
+      return app.chat.modnicks[self.cnick]
     }
   })
 
@@ -2267,11 +2284,39 @@ function ProfileBox() {
 
     self.el.nick.text(self.cnick)
 
+
     if( self.avimg ) {
       self.el.avimg.html('<img src="'+self.avimg+'" width="32" height="32"></img>')
     }
     else {
       self.el.avimg.html('')
+    }
+
+
+    function userdetails(user) {
+      self.el.name.text(user.name)
+
+      if( user.social ) {
+        var sn = user.social.service
+        var url = 
+          'twitter'==sn  ?'http://twitter.com/'+user.nick:
+          'facebook'==sn ?'http://facebook.com/'+user.nick:
+          'linkedin'==sn ?'http://www.linkedin.com/in/'+user.nick:
+          '';
+        if( url ) {
+          self.el.smlink.text(url).attr('href',url)
+        }
+      }
+    }
+
+    self.el.name.text('')
+    self.el.smlink.text('').attr('href','')
+
+    if( app.usercache[self.cnick] ) {
+      userdetails(app.usercache[self.cnick])
+    }
+    else {
+      app.getuserdetails(self.cnick,userdetails)
     }
 
     showif(self)
