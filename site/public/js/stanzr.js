@@ -2240,6 +2240,9 @@ function ProfileBox() {
 
     ,box: $('#profile_box')
 
+    ,nick: $('#profile_nick')
+    ,name: $('#profile_name')
+
     ,messagebtn: $('#profile_messagebtn')
     ,banbtn: $('#profile_banbtn')
     ,unbanbtn: $('#profile_unbanbtn')
@@ -2254,8 +2257,6 @@ function ProfileBox() {
     ,body: $('#profile_body')
 
   }
-  self.el.nick = self.el.box.find('h2')
-  self.el.name = self.el.box.find('h3')
 
   self.cnick
   self.avimg
