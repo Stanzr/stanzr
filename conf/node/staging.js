@@ -5,7 +5,7 @@ module.exports = {
     hosturl:'http://staging.stanzr.com',
     tweetsearch:true,
     web: {
-      port: 8090
+      port: 80
     },
     mongo: {
       main: {
