@@ -774,7 +774,7 @@ main.api = {
       var user = main.ent.make$('sys','user')
       user.load$({nick:nick},RE(res,function(user){
         if( user ) {
-          common.sendjson(res,{nick:user.nick,email:user.email,avimg:user.avimg})
+          common.sendjson(res,{nick:user.nick,email:user.email,avimg:user.avimg,name:user.name})
         }
         else {
           lost(res)
@@ -1224,6 +1224,55 @@ main.api.chat.msg.tweet = function(req,res) {
 
 
 
+main.api.user.post = function(req,res) {
+  var nick = req.params.nick
+
+  if( nick == req.user$.nick || 
+      req.chat$.modnicks[req.user$.nick] || 
+      req.user$.admin ) 
+  {
+    var pwd   = req.json$.pwd || ''
+    var pwd2  = req.json$.pwd2 || ''
+    
+    if( pwd ) {
+      if( pwd === pwd2 && 1 < pwd.length) {
+        main.userpin.cmd('change_password',{password:pwd},RE(res,function(out){
+          updateuser(out.user)
+        }))
+      }
+      else {
+        bad(res)
+      }
+    }
+    else {
+      updateuser()
+    }
+  
+    function updateuser(pwdupdate) {
+      var user = main.ent.make$('sys','user')
+      user.load$({nick:nick},RE(res,function(user){
+        if( !user ) return lost(res);
+
+        user.name  = req.json$.name || ''
+        user.email = req.json$.email || ''
+
+        if( pwdupdate ) {
+          user.salt = pwdupdate.salt
+          user.pass = pwdupdate.pass
+        }
+
+        user.save$(RE(res,function(){
+          common.sendjson(res,{ok:true})
+        }))
+      }))
+    }
+  }
+  else {
+    denied(res)
+  }
+}
+
+
 main.api.chat.admin = {}
 
 main.api.chat.admin.moderator = {}
@@ -1329,7 +1378,9 @@ main.api.chat.admin.alias.del = function(req,res) {
 function initseneca( seneca ) {
   main.seneca = seneca
   main.ent    = seneca.make('stanzr',null,null)
-  
+  main.userpin = seneca.pin({tenant:'stanzr',on:'user'})
+
+
   seneca.add({on:'stanzr',cmd:'time'},function(args,seneca,cb){
     cb(null,new Date())
   })
@@ -1689,6 +1740,9 @@ Seneca.init(
         capp.put('/api/chat', main.api.chat.save)
 
         capp.get('/api/user/:nick', main.api.user.get)
+        capp.post('/api/user/:nick', main.api.user.post)
+
+
         capp.post('/api/user/:nick/terms', main.api.user.post_terms)
         capp.get('/api/user/:nick/history', main.api.user.get_history)
 

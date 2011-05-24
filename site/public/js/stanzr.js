@@ -153,6 +153,8 @@ var app = {
 
     ,enteremail: 'Please enter your email address.'
     ,entername: 'Please enter your name.'
+
+    ,pwdnomatch: 'Your passwords do not match'
   },
 
 
@@ -344,6 +346,16 @@ var app = {
     http.post(
       '/api/user/'+page.user.nick+'/terms',
       {email:data.email,name:data.name},
+      RE(function(res){
+        cb && cb(res)
+      }))
+  },
+
+
+  updateuser: function(data,cb) {
+    http.post(
+      '/api/user/'+page.user.nick,
+      {email:data.email,name:data.name,pwd:data.pwd,pwd2:data.pwd2},
       RE(function(res){
         cb && cb(res)
       }))
@@ -2486,7 +2498,15 @@ function SettingsBox() {
 
     ,box: $('#settings_box')
 
-    ,savebtn: $('#curate_savebtn')
+    ,name: $('#settings_name')
+    ,email: $('#settings_email')
+
+    ,pwd: $('#settings_pwd')
+    ,pwd2: $('#settings_pwd2')
+
+    ,savebtn: $('#settings_savebtn')
+
+    ,msg: $('#settings_msg')
   }
 
   
@@ -2502,14 +2522,35 @@ function SettingsBox() {
         '#settings_username':user.nick
       })
       ui.val(self.el.box,{
-        '#settings_email':user.email
+        '#settings_email':user.email,
+        '#settings_name':user.name
       })
     })
 
     showif(self)
 
     self.el.savebtn.click(function(){
-      debug('save')
+      var user = {
+        email:self.el.email.val(),
+        name:self.el.name.val(),
+        pwd:self.el.pwd.val(),
+        pwd2:self.el.pwd2.val()
+      }
+      
+      if( ''==user.email ) {
+        self.el.msg.text(app.text.enteremail)
+      }
+      else if( ''==user.name ) {
+        self.el.msg.text(app.text.entername)
+      }
+      else if( user.pwd != user.pwd2 ) {
+        self.el.msg.text(app.text.pwdnomatch)
+      }
+      else {
+        app.updateuser(user,function(){
+          self.el.box.hide()
+        })
+      }
     })
   }
 }
