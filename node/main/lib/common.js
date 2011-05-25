@@ -35,6 +35,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 var util     = exports.util     = require('util')
 var url      = exports.url      = require('url')
+var fs       = exports.fs       = require('fs')
 
 var connect  = exports.connect   = require('connect')
 var uuid     = exports.uuid      = require('node-uuid')
@@ -46,7 +47,8 @@ var eyes     = exports.eyes      = require('eyes')
 var cookies  = exports.cookies   = require('cookies')
 var _        = exports._         = require('underscore')
 var url      = exports.url       = require('url')
-
+var form     = exports.form      = require('connect-form')
+var know     = exports.knox      = require('knox')
 
 var oauth    = exports.oauth     = require('../../support/node-oauth')
 

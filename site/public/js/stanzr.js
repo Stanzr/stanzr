@@ -1,5 +1,8 @@
 
 
+
+try {
+
 function enterkey(cb) {
   return function(event) {
     if( 13 == event.keyCode ) {
@@ -157,6 +160,12 @@ var app = {
     ,pwdnomatch: 'Your passwords do not match'
   },
 
+
+  dump: function(where) {
+    return JSON.stringify({
+      where:where,mode:app.mode,topic:app.topic,nick:nick,chat:app.chat,nickmap:app.nickmap,joinmap:app.joinmap
+    })
+  },
 
   reloadpage: function(chatalias) {
     window.location.href = '/api/bounce/'+(chatalias||alias||'member')+'?'+Math.random()
@@ -355,7 +364,7 @@ var app = {
   updateuser: function(data,cb) {
     http.post(
       '/api/user/'+page.user.nick,
-      {email:data.email,name:data.name,pwd:data.pwd,pwd2:data.pwd2},
+      {email:data.email,name:data.name,pwd:data.pwd,pwd2:data.pwd2,avimg:data.avimg},
       RE(function(res){
         cb && cb(res)
       }))
@@ -1090,6 +1099,8 @@ $(function(){
               app.rightbar.box.agree.load()
               app.rightbar.box.reply.set(res)
               app.rightbar.box.dm.load()
+
+              $('#appdump').text(app.dump('live-chat-loaded'))
             }
           })
         }
@@ -1097,6 +1108,7 @@ $(function(){
         // chat done
         else {
           app.formatpublishedchat()
+          $('#appdump').text(app.dump('done-chat-loaded'))
         }
       }
     })
@@ -1109,7 +1121,9 @@ $(function(){
 
     $('#rally_members').hide()
   }
-  
+
+
+  $('#appdump').text(app.dump('init-done'))
 });
 
 
@@ -2255,7 +2269,6 @@ function ProfileBox() {
     ,invitebtn: $('#profile_invitebtn')
     ,sendbtn: $('#profile_sendbtn')
     ,body: $('#profile_body')
-
   }
 
   self.cnick
@@ -2286,6 +2299,9 @@ function ProfileBox() {
     },
     moderator: function() {
       return app.chat.modnicks[self.cnick]
+    },
+    image: function() {
+      return 
     }
   })
 
@@ -2317,7 +2333,7 @@ function ProfileBox() {
           'linkedin'==sn ?'http://www.linkedin.com/in/'+user.nick:
           '';
         if( url ) {
-          self.el.smlink.text(url).attr('href',url)
+          self.el.smlink.text(user.nick).attr('href',url)
         }
       }
     }
@@ -2498,12 +2514,16 @@ function SettingsBox() {
     dummy: null
 
     ,box: $('#settings_box')
+    ,heading: $('#settings_heading')
 
     ,name: $('#settings_name')
     ,email: $('#settings_email')
 
     ,pwd: $('#settings_pwd')
     ,pwd2: $('#settings_pwd2')
+
+    ,image: $('#settings_image')
+    ,upload: $('#settings_upload')
 
     ,savebtn: $('#settings_savebtn')
 
@@ -2512,13 +2532,42 @@ function SettingsBox() {
 
   
   showif(self,{
+    upload: function() {
+      return true //self.user && self.user.avimg;
+    },
+    image: function() {
+      return false //self.user && self.user.avimg;
+    }
   })
+
+
+  function fiximg(img) {
+    if( 64 < img.width() ) {
+      img.css({width:64})
+    }
+    else if( 64 < img.height() ) {
+      img.css({height:64})
+    }
+  }
 
 
   self.render = function() {
     self.el.box.show()
 
+    self.el.heading.click(function(){
+      debug(app.dump('manual'))
+    })
+
     app.getuser(function(user){
+      self.user = user
+
+      self.user.avimg = self.user.avimg || ''
+
+      var img = self.el.image.find('img')
+
+      img[0].onload = function(){fiximg(img)}
+      //img.attr('src',self.user.avimg)
+
       ui.text(self.el.box,{
         '#settings_username':user.nick
       })
@@ -2535,7 +2584,8 @@ function SettingsBox() {
         email:self.el.email.val(),
         name:self.el.name.val(),
         pwd:self.el.pwd.val(),
-        pwd2:self.el.pwd2.val()
+        pwd2:self.el.pwd2.val(),
+        avimg:self.user.avimg
       }
       
       if( ''==user.email ) {
@@ -2549,11 +2599,28 @@ function SettingsBox() {
       }
       else {
         app.updateuser(user,function(){
-          self.el.box.hide()
+          app.reloadpage()
         })
       }
     })
+  },
+
+
+  self.uploadstatus = function(done,percent,info) {
+    debug(done,percent,info)
+    self.el.upload.hide()
+    self.el.image.show()
+    self.el.image.find('div').animate({width:(Math.floor(250*(percent/100)))})
+
+    if( 100 == percent ) {
+      self.el.image.find('div').animate({width:250}).fadeOut(function(){
+        self.user.avimg = info.url
+        var img = self.el.image.find('img')
+        img.attr('src',self.user.avimg).fadeIn()
+      })
+    }
   }
+
 }
 
 
@@ -2607,12 +2674,13 @@ function ShareBox() {
     self.el.box.show()
 
     self.msg = app.msgcache[msgid]
-    var text =  ('RT @'+self.msg.f+' '+self.msg.t).replace(/\n/g,'')
+    var text =  ('RT: @'+self.msg.f+' '+self.msg.t).replace(/\n/g,'')
     self.el.text.text(text).keydown()
 
     showif(self)
   }
 }
+
 
 
 function TermsBox() {
@@ -2963,4 +3031,9 @@ window.restartchat = function() {
   now.name = nick
   app.inituser()
   setTimeout(app.joinchat,1000)
+}
+
+}
+catch( e ) {
+  logerror(e)
 }

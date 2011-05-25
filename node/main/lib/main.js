@@ -15,10 +15,12 @@ var uuid    = common.uuid
 var conf    = common.conf
 var twitter = common.twitter
 var oauth   = common.oauth
+var form    = common.form
 
 var log     = common.log
 
 var TweetSearch = require('./tweetsearch')
+var imageupload = require('./imageupload')
 
 var main = {}
 
@@ -595,6 +597,11 @@ main.view = {
                     }
                   }})
               }
+             else if( 'upload' == req.params.chatid ) {
+                res.render(
+                  'upload', 
+                  { locals: {txt:{},val:{user:{},chat:{}}} } )
+             }
               else {
                 res.writeHead(302,{'Location':'/'})
                 res.end()
@@ -1253,8 +1260,9 @@ main.api.user.post = function(req,res) {
       user.load$({nick:nick},RE(res,function(user){
         if( !user ) return lost(res);
 
-        user.name  = req.json$.name || ''
-        user.email = req.json$.email || ''
+        user.name  = req.json$.name || user.name || ''
+        user.email = req.json$.email || user.email || ''
+        user.avimg = req.json$.avimg || user.avimg || ''
 
         if( pwdupdate ) {
           user.salt = pwdupdate.salt
@@ -1636,6 +1644,33 @@ Seneca.init(
 
     var app = main.app = express.createServer()
 
+    app.use( function(req,res,next){
+      console.log(req.url)
+      if( '/api/log/error?desc=' == req.url.substring(0,20) ) {
+        console.log('ERRORLOG '+new Date()+' '+JSON.stringify(req.headers))
+        console.dir(JSON.parse(unescape(req.url.substring(20))))
+        res.writeHead(200)
+        res.end()
+      }
+      else {
+        next()
+      }
+    })
+
+    app.use( connect.logger() )
+
+    app.use(form({ keepExtensions: true }))
+
+    app.use( imageupload.service({
+      callback: ';parent.app.popup.box.settings.uploadstatus',
+      uploadpath: '/api/upload/avatar',
+      s3folder: '/img/avatar',
+      s3bucket: 'c1.stanzr.com',
+      error: ';(function(em){parent.app.popup.box.settings.uploadstatus(true,100,{url:"",err:em})})'
+    }))
+
+
+
     app.use(function(req,res,next){
       var host = req.headers.host
       if( 'localhost' == host ||
@@ -1700,7 +1735,7 @@ Seneca.init(
 
     
 
-    app.use( connect.logger() )
+
     app.use( connect.static( __dirname + '/../../../site/public') )
 
     app.use( initsocial() )    
@@ -1753,6 +1788,7 @@ Seneca.init(
         capp.post('/api/chat/:chatid/msg/:msgid/tweet', main.api.chat.msg.tweet)
       })
     )
+
 
 
     app.use( chatmustbeopen )

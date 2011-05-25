@@ -27,10 +27,14 @@ module.exports = {
           key: '286375722-ArBDn9KfpYa3MAXxL9bN49BeWDv3nkQp6H4Btuzo',
           secret: 'GGCNKmiYsnkQ6T3iIDYVaWbsFaJM2wZ2nU8R5ZT4Z0w' 
         }
-     },
+      },
       facebook: {
         key:'0190c50506a037b02a70fb5beafd6c54',
         secret:'cd7aaec2cfeb61335cc2274c007a2329',
+      },
+      amazon: {
+        key: 'AKIAILYJ4OHQKFQHZAVQ',
+        secret: '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'
       }
     }
   }

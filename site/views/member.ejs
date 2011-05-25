@@ -606,7 +606,7 @@ if( 'done' == val.chat.state ) {
 <div id="settings_box" class="modalbox hide">
   <div class="modal_close"><a onclick="$('#settings_box').hide()" class="textbtn">&times;</a></div>
 
-  <h2>Your Details:</h2>
+  <h2 id="settings_heading">Your Details:</h2>
   
   <label for="settings_username">Username</label>
   <p id="settings_username"></p>
@@ -621,11 +621,23 @@ if( 'done' == val.chat.state ) {
   <input type="password" id="settings_pwd">
 
   <label for="settings_repeat">Repeat Password</label>
-  <input type="password" id="settings_pwd2"><br />
-  
+  <input type="password" id="settings_pwd2">
+ 
+  <div id="settings_upload">
+  <label for="settings_repeat">Upload Image (optional)</label>
+  <iframe border="0" src="/upload" style="margin:0px;padding:0px;width:250px;height:80px;overflow:hidden" scrolling="no"></iframe>
+  </div>
+
+  <div id="settings_image" class="hide" style="margin:0px;padding:0px;width:250px;height:80px;overflow:hidden">
+    <div style="background-color:#00a;height:20px;width:2px;"></div>
+    <img class="hide" style="display:block;margin: 10px auto;">
+  </div>
+
   <a id="settings_savebtn" class="textbtn">save</a>
   
   <p id="settings_msg"></p>
+
+ 
 
 </div>
 
