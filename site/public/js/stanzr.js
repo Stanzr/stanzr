@@ -504,7 +504,33 @@ var app = {
       var ht = app.formatmsgtext( p.text() )
       p.html(ht)
     })
+  },
 
+
+  uploadimage: function(done,percent,info) {
+    if( info ) {
+      if( info.err ) {
+        debug('upload',done,percent,info)
+      }
+      else {
+        if( 'settings' == info.tag ) {
+          app.popup.box.settings.uploadstatus(done,percent,info)
+        }
+        else if( 'hostchat' == info.tag ) {
+          app.popup.box.hostchat.uploadstatus(done,percent,info)
+        }
+      }
+    }
+  },
+
+
+  fiximg: function(img,maxsize) {
+    if( maxsize < img.width() ) {
+      img.css({width:maxsize})
+    }
+    else if( maxsize < img.height() ) {
+      img.css({height:maxsize})
+    }
   },
 
 
@@ -1429,16 +1455,10 @@ function ChatDetailsBox() {
       }
     })
 
-    if( chat.logo ) {
-      var imgurl = 'http://c1.stanzr.com/img/logo/'+chat.logo
-      var imgobj = new Image()
-      imgobj.src = imgurl
-      imgobj.onload = function() {
-        var width = 200 < imgobj.width ? 200 : imgobj.width
-        self.el.img.css({width:width}).attr('src',imgurl).show()
-        self.el.logo.show()
-      }
-    }
+    var img = self.el.img
+    img[0].onload = function(){app.fiximg(img,200)}
+
+    self.setlogo(chat.logo)
 
     self.el.modmsgbtn.click(function(){
       for( var modnick in app.chat.modnicks ) break;
@@ -1453,6 +1473,21 @@ function ChatDetailsBox() {
     })
 
     return self
+  }
+
+
+  self.setlogo = function(logo) {
+    if( logo ) {
+      var imgurl = logo;//'http://c1.stanzr.com/img/logo/'+chat.logo
+      var imgobj = new Image()
+      imgobj.src = imgurl
+      imgobj.onload = function() {
+        //var width = 200 < imgobj.width ? 200 : imgobj.width
+        //self.el.img.css({width:width})
+        self.el.img.attr('src',imgurl).show()
+        self.el.logo.show()
+      }
+    }
   }
 
 
@@ -2049,9 +2084,16 @@ function HostChatBox() {
     ,details:    $('#hostchat_details')
     ,topics:     $('#hostchat_topics')
 
+    ,upload:    $('#hostchat_upload')
+    ,image:     $('#hostchat_image')
+
     ,topiclist:    $('#hostchat_topiclist')
     ,topicitem_tm: $('#hostchat_topicitem_tm')
   }
+
+
+  var img = self.el.image.find('img')
+  img[0].onload = function(){app.fiximg(img,200)}
 
 
   function newchat() {
@@ -2158,6 +2200,8 @@ function HostChatBox() {
 
           chatid:     app.chat.chatid,
           moderator:  nick,
+          
+          logo:       self.logo,
 
           title:      title,
           modname:    self.el.modname.val(),
@@ -2177,6 +2221,22 @@ function HostChatBox() {
             $('#hostchat_msg').text('Unable to create chat session')
           }
         }
+      })
+    }
+  }
+
+
+  self.uploadstatus = function(done,percent,info) {
+    debug(done,percent,info)
+    self.el.upload.hide()
+    self.el.image.show()
+    self.el.image.find('div').animate({width:(Math.floor(250*(percent/100)))})
+
+    if( 100 == percent ) {
+      self.el.image.find('div').animate({width:250}).fadeOut(function(){
+        self.logo = info.url
+        var img = self.el.image.find('img')
+        img.attr('src',self.logo).fadeIn()
       })
     }
   }
@@ -2541,16 +2601,6 @@ function SettingsBox() {
   })
 
 
-  function fiximg(img) {
-    if( 64 < img.width() ) {
-      img.css({width:64})
-    }
-    else if( 64 < img.height() ) {
-      img.css({height:64})
-    }
-  }
-
-
   self.render = function() {
     self.el.box.show()
 
@@ -2564,9 +2614,7 @@ function SettingsBox() {
       self.user.avimg = self.user.avimg || ''
 
       var img = self.el.image.find('img')
-
-      img[0].onload = function(){fiximg(img)}
-      //img.attr('src',self.user.avimg)
+      img[0].onload = function(){app.fiximg(img,64)}
 
       ui.text(self.el.box,{
         '#settings_username':user.nick

@@ -867,6 +867,7 @@ main.api = {
             chat.whenstr  = json.whenstr || ''
             chat.hashtag  = json.hashtag || ''
             chat.desc     = json.desc || ''
+            chat.logo     = json.logo || ''
         
             main.chat.save(chat,RE(res,function(chat){
               main.util.tweetsearch(chat.chatid,chat.hashtag)
@@ -1662,11 +1663,11 @@ Seneca.init(
     app.use(form({ keepExtensions: true }))
 
     app.use( imageupload.service({
-      callback: ';parent.app.popup.box.settings.uploadstatus',
-      uploadpath: '/api/upload/avatar',
+      callback: 'parent.app.uploadimage',
+      uploadpath: '/api/upload/image',
       s3folder: '/img/avatar',
       s3bucket: 'c1.stanzr.com',
-      error: ';(function(em){parent.app.popup.box.settings.uploadstatus(true,100,{url:"",err:em})})'
+      error: 'parent.app.uploadimage'
     }))
 
 

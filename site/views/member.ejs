@@ -523,6 +523,18 @@ if( 'done' == val.chat.state ) {
   <label for="hostchat_desc">Description</label>
   <textarea id="hostchat_desc"></textarea>
 
+
+  <div id="hostchat_upload">
+  <label for="hostchat_repeat">Upload Image (optional)</label>
+  <iframe border="0" src="/upload?tag=hostchat" style="margin:0px;padding:0px;width:250px;height:80px;overflow:hidden" scrolling="no"></iframe>
+  </div>
+
+  <div id="hostchat_image" class="hide" style="margin:0px;padding:0px;width:250px;height:80px;overflow:hidden">
+    <div style="background-color:#00a;height:20px;width:2px;"></div>
+    <img class="hide" style="display:block;margin: 10px auto;">
+  </div>
+
+
   <a id="hostchat_createbtn" class="textbtn">Next</a>
   </div>
 
@@ -625,7 +637,7 @@ if( 'done' == val.chat.state ) {
  
   <div id="settings_upload">
   <label for="settings_repeat">Upload Image (optional)</label>
-  <iframe border="0" src="/upload" style="margin:0px;padding:0px;width:250px;height:80px;overflow:hidden" scrolling="no"></iframe>
+  <iframe border="0" src="/upload?tag=settings" style="margin:0px;padding:0px;width:250px;height:80px;overflow:hidden" scrolling="no"></iframe>
   </div>
 
   <div id="settings_image" class="hide" style="margin:0px;padding:0px;width:250px;height:80px;overflow:hidden">
