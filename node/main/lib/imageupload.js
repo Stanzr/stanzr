@@ -63,7 +63,7 @@ exports.service = function( conf ) {
 
 
   return function(req, res, next){
-    console.log('========================= '+req.url+' '+conf.uploadpath.length)
+    //console.log('========================= '+req.url+' '+conf.uploadpath.length)
 
     if( 0 == req.url.indexOf(conf.uploadpath) ) {
       var info = {tag:req.url.substring(5+conf.uploadpath.length)}

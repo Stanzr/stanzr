@@ -158,6 +158,11 @@ var app = {
     ,entername: 'Please enter your name.'
 
     ,pwdnomatch: 'Your passwords do not match'
+
+    ,registernick: 'Please enter a username'
+    ,registeremail: 'Please enter an email address'
+    ,registerpwd:  'Please enter a password'
+    ,registerpwdnomatch: 'Your passwords do not match'
   },
 
 
@@ -516,6 +521,9 @@ var app = {
         if( 'settings' == info.tag ) {
           app.popup.box.settings.uploadstatus(done,percent,info)
         }
+        else if( 'signup' == info.tag ) {
+          app.popup.box.signup.uploadstatus(done,percent,info)
+        }
         else if( 'hostchat' == info.tag ) {
           app.popup.box.hostchat.uploadstatus(done,percent,info)
         }
@@ -854,43 +862,64 @@ $(function(){
 
 
   function signupbox(next) {
-    $('#signup_box').show()
+    app.popup.box.signup.render()
+    //$('#signup_box').show()
     app.signupbox_next = next
   }
   
   var registrationProcess = function() {
-    $.ajax({
-      url:'/api/auth/register',
-      type:'POST',
-      dataType:'json',
-      contentType:'application/json',
-      data:JSON.stringify({
-        nick:$('#register_username').val(),
-        password:$('#register_password').val(),
-        email:$('#register_email').val()
-      }),
-      success:function(res){
-        if( res.ok ) {
-          window.nick = res.nick
-          if( app.signupbox_next ) {
-            var next = app.signupbox_next
-            delete app.signupbox_next
-            next()
+    var regmsg = $('#register_msg')
+
+    var regdata = {
+      nick:$('#register_username').val(),
+      password:$('#register_password').val(),
+      email:$('#register_email').val(),
+      avimg:app.popup.box.signup.user.avimg
+    }
+
+    if( '' == regdata.nick ) {
+      regmsg.text(app.text.registernick)
+    }
+    else if( '' == regdata.email ) {
+      regmsg.text(app.text.registeremail)
+    }
+    else if( '' == regdata.password ) {
+      regmsg.text(app.text.registerpwd)
+    }
+    else if( $('#register_repeat').val() != regdata.password ) {
+      regmsg.text(app.text.registerpwdnomatch)
+    }
+    else {
+      $.ajax({
+        url:'/api/auth/register',
+        type:'POST',
+        dataType:'json',
+        contentType:'application/json',
+        data:JSON.stringify(regdata),
+        success:function(res){
+          if( res.ok ) {
+            window.nick = res.nick
+            if( app.signupbox_next ) {
+              var next = app.signupbox_next
+              delete app.signupbox_next
+              next()
+            }
+            else {
+              app.reloadpage()
+            }
           }
           else {
-            app.reloadpage()
+            regmsg.text(app.text.registerfail)
           }
         }
-        else {
-          $('#register_msg').text(app.text.registerfail)
-        }
-      }
-    })
-  };
+      })
+    }
+  }
   
   var registrationOnEnter = function(e){ 
-    if (e.keyCode == 13) 
-    registrationProcess() 
+    if (e.keyCode == 13) {
+      registrationProcess() 
+    }
   };
   
   
@@ -985,6 +1014,7 @@ $(function(){
   app.popup.box.hostchat  = new HostChatBox()
   app.popup.box.profile   = new ProfileBox()
   app.popup.box.settings  = new SettingsBox()
+  app.popup.box.signup    = new SignUpBox()
   app.popup.box.history   = new HistoryBox()
   app.popup.box.terms     = new TermsBox()
 
@@ -2580,6 +2610,7 @@ var ui = {
 
 }
 
+
 function SettingsBox() {
   var self = this
 
@@ -2683,6 +2714,63 @@ function SettingsBox() {
   }
 
 }
+
+
+
+function SignUpBox() {
+  var self = this
+
+  self.user = {}
+
+  self.el = {
+    dummy: null
+
+    ,box: $('#signup_box')
+
+    ,image: $('#signup_image')
+    ,upload: $('#signup_upload')
+
+  }
+
+  
+  showif(self,{
+    upload: function() {
+      return true
+    },
+    image: function() {
+      return false
+    }
+  })
+
+
+  self.render = function() {
+    self.el.box.show()
+
+    var img = self.el.image.find('img')
+    img[0].onload = function(){app.fiximg(img,64)}
+
+    showif(self)
+  },
+
+
+  self.uploadstatus = function(done,percent,info) {
+    debug(done,percent,info)
+    self.el.upload.hide()
+    self.el.image.show()
+    self.el.image.find('div').animate({width:(Math.floor(250*(percent/100)))})
+
+    if( 100 == percent ) {
+      self.el.image.find('div').animate({width:250}).fadeOut(function(){
+        self.user.avimg = info.url
+        var img = self.el.image.find('img')
+        img.attr('src',self.user.avimg).fadeIn()
+      })
+    }
+  }
+
+}
+
+
 
 
 function ShareBox() {

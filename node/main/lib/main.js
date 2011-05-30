@@ -705,26 +705,31 @@ main.api = {
               active:true
             }, 
             RE(res,function(out){
-              eyes.inspect(out)
+              console.dir(out)
 
               if( out.ok ) {
-                main.seneca.act(
-                  {
-                    tenant:'stanzr',
-                    on:'user',
-                    cmd:'login',
-                    nick:json.nick,
-                    auto:true
-                  }, 
-                  RE(res,function(out){
-                    eyes.inspect(out)
+                var user = out.user
+                user.avimg = json.avimg
 
-                    if( out.pass ) {
-                      setlogincookie(out.login.token)
-                      common.sendjson(res,{ok:out.pass,nick:out.user.nick,email:out.user.email})
-                    }
-                  })
-                )
+                user.save$(RE(res,function(){
+                  main.seneca.act(
+                    {
+                      tenant:'stanzr',
+                      on:'user',
+                      cmd:'login',
+                      nick:json.nick,
+                      auto:true
+                    }, 
+                    RE(res,function(out){
+                      console.dir(out)
+
+                      if( out.pass ) {
+                        setlogincookie(out.login.token)
+                        common.sendjson(res,{ok:out.pass,nick:out.user.nick,email:out.user.email})
+                      }
+                    })
+                  )
+                }))
               }
             })
           )

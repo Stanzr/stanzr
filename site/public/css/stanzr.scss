@@ -584,13 +584,6 @@ div.modalbox {
   color: #fff !important;
 }
 
-#login_box {
-/*   height: 250px; */
-}
-
-#signup_box {
-/*   height: 350px; */
-}
 
 .auth_vertlist {
   margin: 10px 0 15px 0;
@@ -628,8 +621,16 @@ div.modalbox {
   }
 }
 
+#login_box {
+
+}
+
+#signup_box {
+  width:  250px;
+}
+
 #profile_box {
-  xheight: 150px;
+
 }
 
 #settings_box {

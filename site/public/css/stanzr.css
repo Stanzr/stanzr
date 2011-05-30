@@ -391,12 +391,6 @@ div.modalbox {
   border-color: #595959 !important;
   color: #fff !important; }
 
-#login_box {
-  /*   height: 250px; */ }
-
-#signup_box {
-  /*   height: 350px; */ }
-
 .auth_vertlist {
   margin: 10px 0 15px 0; }
   .auth_vertlist div {
@@ -424,8 +418,8 @@ div.modalbox {
   #hostchat_box #hostchat_topicitem_tm {
     display: none; }
 
-#profile_box {
-  xheight: 150px; }
+#signup_box {
+  width: 250px; }
 
 #settings_box {
   height: 400px;

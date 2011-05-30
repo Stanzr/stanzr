@@ -486,6 +486,16 @@ if( 'done' == val.chat.state ) {
     <label for="register_repeat">Repeat Password</label>
     <input type="password" id="register_repeat"><br />
     
+    <div id="signup_upload">
+      <label for="signup_repeat">Upload Image (optional)</label>
+      <iframe border="0" src="/upload?tag=signup" style="margin:0px;padding:0px;width:250px;height:80px;overflow:hidden" scrolling="no"></iframe>
+    </div>
+
+    <div id="signup_image" class="hide" style="margin:0px;padding:0px;width:250px;height:80px;overflow:hidden">
+      <div style="background-color:#00a;height:20px;width:2px;"></div>
+      <img class="hide" style="display:block;margin: 10px auto;">
+    </div>
+
     <a id="register_registerbtn" class="textbtn">Register</a>
     
     <p id="register_msg"></p>
