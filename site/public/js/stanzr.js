@@ -573,12 +573,18 @@ var app = {
       }
     })
 
-    if( !msg.x ) {
+
+    var share = post.find('a.share')
+    var reply = post.find('a.sprite-at-reply')
+    var approve = post.find('a.sprite-approve')
+
+
+    if( !msg.x && nick ) {
       if( 0 < msg.a ) {
         post.find('.agrees').text('x'+msg.a)
       }
 
-      post.find('a.sprite-at-reply').click(function(){
+      reply.click(function(){
         var txt = $('#post_text').val()
         if( -1 == txt.indexOf( msg.f ) ) {
           var replywith = '@'+msg.f+' '+txt
@@ -588,7 +594,6 @@ var app = {
         $('#post_text').focus()
       })
 
-      var approve = post.find('a.sprite-approve')
       if( (msg.an && _.include(msg.an,nick)) || nick == msg.f ) {
         approve.css({background:'transparent'})
       }
@@ -609,8 +614,6 @@ var app = {
         })
       }
 
-      var share = post.find('a.share')
-
       if( 'twitter' == page.user.service ) {
         share.click(function(){
           app.popup.box.share.render(msg.i)
@@ -619,6 +622,11 @@ var app = {
       else {
         share.hide()
       }
+    }
+    else {
+      share.hide()
+      reply.hide()
+      approve.hide()
     }
 
     
@@ -1452,6 +1460,9 @@ function ChatDetailsBox() {
       },
       analyticsbtn: function(){
         return page.user.admin
+      },
+      modmsgbtn: function() {
+        return !!nick
       }
     })
 
@@ -1968,22 +1979,24 @@ function AvatarBox() {
 
 
   function buildpopup(avatar,avnick,avimg) {
-    avatar.click(function(){
-      app.popup.box.profile.render(avnick,avimg,externals[avnick]);
-      app.popup.box.profile.el.box.show()
-    })
+    if( nick ) {
+      avatar.click(function(){
+        app.popup.box.profile.render(avnick,avimg,externals[avnick]);
+        app.popup.box.profile.el.box.show()
+      })
     
-    avatar.mouseenter(function(){
-      app.popup.box.profile.render(avnick,avimg,externals[avnick]);
-      app.popup.box.profile.el.box.css({
-        top:20+(avatar.offset().top),
-        left:(avatar.offset().left)-220
-      }).show()
-    })
+      avatar.mouseenter(function(){
+        app.popup.box.profile.render(avnick,avimg,externals[avnick]);
+        app.popup.box.profile.el.box.css({
+          top:20+(avatar.offset().top),
+          left:(avatar.offset().left)-220
+        }).show()
+      })
 
-    avatar.mouseleave(function(){
-      app.popup.box.profile.checkmouse()
-    })
+      avatar.mouseleave(function(){
+        app.popup.box.profile.checkmouse()
+      })
+    }
   }
 
 
@@ -2722,7 +2735,7 @@ function ShareBox() {
     self.el.box.show()
 
     self.msg = app.msgcache[msgid]
-    var text =  ('RT: @'+self.msg.f+' '+self.msg.t).replace(/\n/g,'')
+    var text =  ('RT @'+self.msg.f+': '+self.msg.t).replace(/\n/g,'')
     self.el.text.text(text).keydown()
 
     showif(self)

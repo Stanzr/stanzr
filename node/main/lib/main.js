@@ -1563,9 +1563,7 @@ function initsocial(){
         function saveavimg(user,avimg,service){
           user.avimg = avimg
           user.save$(function(err,user){
-            if( err ) {
-              log('error','saveavimg',{error:err,social:service,kind:'avatar',user:user})
-            }
+            log('saveavimg',{error:err,social:service,kind:'avatar',user:user})
           })
         }
 
@@ -1601,7 +1599,7 @@ function initsocial(){
             
             var geturl = 'https://graph.facebook.com/me/picture'
             facebook.getProtectedResource( geturl, user.social.key, function (error, data, response) {
-              log('error',{service:'facebook',error:error,data:data,headers:response.headers})
+              log('error','facebook-avimg',{service:'facebook',error:error,data:data,headers:response.headers})
 
               if( error ) {
 	        if( 302 != error.statusCode ) {
