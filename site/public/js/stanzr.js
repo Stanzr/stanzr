@@ -484,7 +484,9 @@ var app = {
 
   formatmsgtext: function( text ) {
     var t = $('#escaper').text(text).html()
-    return linkify( t )
+    t = linkify( t )
+    t = t.replace(/(@\w+)/g,'<b>$1</b>')
+    return t
   },
 
   
@@ -594,11 +596,11 @@ var app = {
 
       reply.click(function(){
         var txt = $('#post_text').val()
-        if( -1 == txt.indexOf( msg.f ) ) {
-          var replywith = '@'+msg.f+' '+txt
-          $('#post_text').val( replywith ) 
-          setCaretPosition($('#post_text')[0],replywith.length)
-        }
+        //if( -1 == txt.indexOf( msg.f ) ) {
+        var replywith = '@'+msg.f+': '+msg.t
+        $('#post_text').val( replywith ) 
+        setCaretPosition($('#post_text')[0],replywith.length)
+        //}
         $('#post_text').focus()
       })
 

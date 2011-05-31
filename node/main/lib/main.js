@@ -260,8 +260,14 @@ main.util = {
             access_token_secret: user.social.secret
           });
           
+
+          var tweet = msg.t 
+          if( -1 == tweet.indexOf('#'+hashtag) ) {
+            tweet += ' #'+hashtag
+          }
+
           twit.updateStatus(
-            msg.t + ' #'+hashtag,
+            tweet,
             function (data) {
             }
           )
