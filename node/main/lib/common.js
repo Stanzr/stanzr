@@ -124,14 +124,15 @@ exports.log = function() {
 // JSON functions
 
 exports.readjson = function(req,res,win,fail) {
-  var MAX = 65535
+  var MAX = 10*65535
   var size = 0;
   var bodyarr = []
 
   req.on('data',function(chunk){
     size += chunk.length
     if( MAX < size ) {
-      bad(res)
+      res.writeHead(200)
+      res.end()
     }
     else {
       bodyarr.push(chunk);
