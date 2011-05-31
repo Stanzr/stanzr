@@ -1381,7 +1381,7 @@ main.api.chat.admin.alias.del = function(req,res) {
   main.util.findalias(oldname,RE(res,function(oldalias){
     if( !oldalias ) return bad(res);
     
-    oldalias.remove(RE(res,function(){
+    oldalias.remove$(null,RE(res,function(){
     common.sendjson(res,{text:oldname})
     }))
   }))
