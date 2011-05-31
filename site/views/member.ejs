@@ -577,30 +577,29 @@ if( 'done' == val.chat.state ) {
 
 
 
-<div id="profile_box" class="modalbox">
+<div id="profile_box" class="modalbox clearfix">
   <div class="modal_close"><a onclick="$('#profile_box').hide()" class="textbtn">&times;</a></div>
 
-  <div id="profile_nick"></div>
-  <div id="profile_name"></div>
 
   <div id="profile_avimg" class="miniavatar sprite-silhouette32"></div>  
-  <a id="profile_smlink"></a>
-  <p id="profile_you" class="hide">(you)</p>
-  <p id="profile_moderator" class="hide">moderator</p>
-  <br /><br />
-  
-  <a id="profile_messagebtn" class="textbtn">message</a>
+  <div id="profile_details">
+    <div class="profile_identifier">
+      <span id="profile_nick"></span>
+      <!-- <span id="profile_name"></span> -->
+      <span id="profile_you" class="hide descr">(you)</span>
+      <span id="profile_moderator" class="hide descr">moderator</span>
+    </div>
 
-  
-  <a id="profile_banbtn" class="textbtn hide">&nbsp;&nbsp;&nbsp;ban</a>
-  <a id="profile_unbanbtn" class="textbtn hide">&nbsp;&nbsp;&nbsp;unban</a>
-
-  
-  <a id="profile_invitebtn" class="textbtn">invite</a>
-  <textarea id="profile_body" style="width:180px;height:100px"></textarea><br />
-
-  <a id="profile_sendbtn" class="textbtn">send</a>
-
+    <div>
+      <a id="profile_smlink"></a>
+      <a id="profile_messagebtn" class="textbtn">message</a>
+      <a id="profile_banbtn" class="textbtn hide">&nbsp;&nbsp;&nbsp;ban</a>
+      <a id="profile_unbanbtn" class="textbtn hide">&nbsp;&nbsp;&nbsp;unban</a>
+      <a id="profile_invitebtn" class="textbtn">invite</a>
+    </div>
+  </div>
+    <textarea id="profile_body" style="width:180px;height:100px"></textarea><br />
+    <a id="profile_sendbtn" class="textbtn">send</a>
 </div>
 
 

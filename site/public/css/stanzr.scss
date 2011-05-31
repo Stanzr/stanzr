@@ -569,7 +569,8 @@ div.modalbox {
   
   input, textarea {display: block; clear: both; width: 95%;}
   
-  p.descr {color: $fontmetaC; margin-bottom: 10px;}
+  p.descr {margin-bottom: 10px;}
+  .descr {color: $fontmetaC;}
   
   h2 {font-size: 18px;}
   
@@ -630,7 +631,11 @@ div.modalbox {
 }
 
 #profile_box {
-
+  padding: 5px 20px 5px 5px;
+  #profile_details {float: left; padding-left: 10px; width: 133px;}
+  #profile_avimg {float: left; width: 32px;}
+  #profile_identifier span {margin-right: 8px;}
+  
 }
 
 #settings_box {
