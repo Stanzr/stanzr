@@ -20,7 +20,6 @@ types {
     image/x-icon                          ico;
     image/x-jng                           jng;
     image/x-ms-bmp                        bmp;
-    image/svg+xml                         svg svgz;
 
     application/java-archive              jar war ear;
     application/mac-binhex40              hqx;
@@ -32,7 +31,6 @@ types {
     application/vnd.ms-powerpoint         ppt;
     application/vnd.wap.wmlc              wmlc;
     application/vnd.wap.xhtml+xml         xhtml;
-    application/x-7z-compressed           7z;
     application/x-cocoa                   cco;
     application/x-java-archive-diff       jardiff;
     application/x-java-jnlp-file          jnlp;
