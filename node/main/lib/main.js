@@ -17,6 +17,7 @@ var twitter = common.twitter
 var oauth   = common.oauth
 var form    = common.form
 
+var office  = common.office
 var log     = common.log
 
 var TweetSearch = require('./tweetsearch')
@@ -497,6 +498,54 @@ main.msg = {
 }
 
 
+main.msg.post = function(msg,cb) {
+  // required
+  var hashtag = msg.g
+  var chatid  = msg.c
+  var nick    = msg.f
+  var topic   = msg.p
+  var text    = msg.t
+  var tweet   = msg.w
+
+
+  if( !nick ) {
+    log('error',{nowjs:'no-name',on:'distmsg',msg:msgjson})
+    return cb('no-nick',null)
+  }
+
+  main.cache.get('chat.'+chatid,LE(function(chat){
+    if( chat ) {
+
+      var group = now.getGroup(chatid)
+
+      msg.r = main.util.parsereply(msg.t)
+      
+      msg.i = uuid().toLowerCase()
+      var msgdata = {i:msg.i,f:nick,c:chatid,p:msg.p,t:msg.t,r:msg.r,w:msg.w}
+
+      var sendmsg = chat.modnicks[nick] ||
+        ('open' == chat.state && !(chat.bans && chat.bans[nick])) 
+
+      if( sendmsg ) {
+        var unsavedmsgent = main.msg.save(msgdata)
+        var msgdata = unsavedmsgent.data$()
+        delete msgdata.$
+        cb(msgdata)
+
+        log('message',msgdata)
+        main.util.tweet(msgdata,hashtag)
+        main.util.sendtogroup(group,'message',msgdata)
+      }
+      else {
+        cb(null,msgdata)
+      }
+    }
+  }))
+
+
+}
+
+
 
 main.view = {
 
@@ -871,14 +920,14 @@ main.api = {
 
         function savechat(chat) {
           main.util.mustbemod( req, res, chat.modnicks, function() {
-            chat.title    = json.title || 'Chat session'
-            chat.modname  = json.modname || ''
-            chat.modtitle = json.modtitle || ''
-            chat.modorg   = json.modorg || ''
-            chat.whenstr  = json.whenstr || ''
-            chat.hashtag  = json.hashtag || ''
-            chat.desc     = json.desc || ''
-            chat.logo     = json.logo || ''
+            chat.title    = json.title || chat.logo || 'Chat session'
+            chat.modname  = json.modname || chat.logo || ''
+            chat.modtitle = json.modtitle || chat.logo || ''
+            chat.modorg   = json.modorg || chat.logo || ''
+            chat.whenstr  = json.whenstr || chat.logo || ''
+            chat.hashtag  = json.hashtag || chat.logo || ''
+            chat.desc     = json.desc || chat.logo || ''
+            chat.logo     = json.logo || chat.logo || ''
         
             main.chat.save(chat,RE(res,function(chat){
               main.util.tweetsearch(chat.chatid,chat.hashtag)
@@ -1037,7 +1086,28 @@ main.api = {
         req.chat$.state = 'done'
       
         main.chat.save(req.chat$,RE(res,function(out){
-          common.sendjson(res,{ok:true})
+
+          
+          var alias = main.ent.make$('app','alias')
+          var pubalias = office.chat.makepublishalias(req.chat$.hashtag,req.chat$.whenstr,req.chat$.topics[0].title)
+
+          alias.load$({c:chatid,a:pubalias},RE(res,function(foundalias){
+            if( !foundalias ) {
+              alias.c = chatid
+              alias.a = pubalias
+
+              alias.save$(RE(res,function(){
+                done()
+              }))
+            }
+            else {
+              done()
+            }
+          }))
+
+          function done() {
+            common.sendjson(res,{ok:true,pubalias:pubalias})
+          }
         }))
       }
 
@@ -1225,7 +1295,7 @@ main.api.user.post_terms = function( req, res ) {
 }
 
 
-main.api.chat.msg.tweet = function(req,res) {
+main.api.chat.msg.share = function(req,res) {
   var msg = main.ent.make$('app','msg')
   main.msg.load(req.params.chatid,req.params.msgid,RE(res,function(msg){
     if( !msg ) return lost(res);
@@ -1238,6 +1308,17 @@ main.api.chat.msg.tweet = function(req,res) {
       msg.rt = msg.rg ? 1+msg.rt : 1;
       msg.save$(sendok(res))
     }
+
+    var rtmsg = {
+      g: msg.g,
+      c: msg.c,
+      f: req.user$.nick,
+      p: msg.p,
+      t: text,
+      w: false,
+      rt: msg.rt
+    }
+    main.msg.post(rtmsg,sendjson(res))
   }))
 }
 
@@ -1392,6 +1473,15 @@ main.api.chat.admin.alias.del = function(req,res) {
     }))
   }))
 }
+
+
+main.api.chat.msg.post = function(req,res) {
+  var msg = req.json$
+  msg.f = req.user$.nick
+  main.msg.post(msg,sendjson(res))
+}
+
+
 
 
 
@@ -1795,7 +1885,7 @@ Seneca.init(
         capp.get('/api/chat/:chatid/dm/:dmid?', main.api.chat.dm.get)
         capp.get('/api/chat/:chatid/dm', main.api.chat.dm.get)
 
-        capp.post('/api/chat/:chatid/msg/:msgid/tweet', main.api.chat.msg.tweet)
+        capp.post('/api/chat/:chatid/msg/:msgid/share', main.api.chat.msg.share)
       })
     )
 
@@ -1806,6 +1896,7 @@ Seneca.init(
     app.use( 
       connect.router(function(capp){
         capp.post('/api/chat/:chatid/msg/:msgid/agree', main.api.chat.msg.post_agree)
+        capp.post('/api/chat/:chatid/msg', main.api.chat.msg.post)
 
         capp.put('/api/chat/:chatid/user/:nick/dm', main.api.chat.dm.put)
 
@@ -1895,45 +1986,9 @@ Seneca.init(
       log('msg',msgjson)
 
       var msg = JSON.parse(msgjson)
-      var hashtag = msg.g
-      var chatid = msg.c
-      var nick = this.now.name
+      msg.f = this.now.name
 
-      if( !nick ) {
-        log('error',{nowjs:'no-name',on:'distmsg',msg:msgjson})
-        return
-      }
-
-      msg.f = nick
-
-      main.cache.get('chat.'+chatid,LE(function(chat){
-        if( chat ) {
-
-          var group = now.getGroup(chatid)
-
-          msg.r = main.util.parsereply(msg.t)
-          
-          msg.i = uuid().toLowerCase()
-          var msgdata = {i:msg.i,f:nick,c:chatid,p:msg.p,t:msg.t,r:msg.r,w:msg.w}
-
-          var sendmsg = chat.modnicks[nick] ||
-            ('open' == chat.state && !(chat.bans && chat.bans[nick])) 
-
-          if( sendmsg ) {
-            var unsavedmsgent = main.msg.save(msgdata)
-            var msgdata = unsavedmsgent.data$()
-            delete msgdata.$
-            cb(msgdata)
-
-            log('message',msgdata)
-            main.util.tweet(msgdata,hashtag)
-            main.util.sendtogroup(group,'message',msgdata)
-          }
-          else {
-            cb(msgdata)
-          }
-        }
-      }))
+      main.msg.post(msg,cb)
     }
   }
 )

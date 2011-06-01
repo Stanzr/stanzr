@@ -485,13 +485,18 @@ var app = {
   formatmsgtext: function( text ) {
     var t = $('#escaper').text(text).html()
     t = linkify( t )
-    t = t.replace(/(@\w+)/g,'<b>$1</b>')
+    //t = t.replace(/(@\w+)/g,'<b>$1</b>')
+
+    if( -1 != t.indexOf('@'+nick) ) {
+      t = '<b>'+t+'</b>'
+    }
+
     return t
   },
 
   
   share: function(msgid,text,cb) {
-    http.post( '/api/chat/'+app.chat.chatid+'/msg/'+msgid+'/tweet',
+    http.post( '/api/chat/'+app.chat.chatid+'/msg/'+msgid+'/share',
                {text:text}, 
                RE(function(data){
                  cb && 'function'==typeof(cb) && cb()
@@ -597,7 +602,7 @@ var app = {
       reply.click(function(){
         var txt = $('#post_text').val()
         //if( -1 == txt.indexOf( msg.f ) ) {
-        var replywith = '@'+msg.f+': '+msg.t
+        var replywith = '@'+msg.f+': '//+msg.t
         $('#post_text').val( replywith ) 
         setCaretPosition($('#post_text')[0],replywith.length)
         //}
@@ -1396,13 +1401,11 @@ function SendBox() {
     showif(self)
   }
 
+
   self.post = function() {
     var tweet = self.el.tweet.attr('checked')
     var text  = self.el.text.val().replace(/\n/g,'')
     
-    // Make sure we have text before sending, minimum text length
-    // should be set here, and include logic for commands with no text,
-    // such as '@someone' and '#hashtag' with nothing after
     if (!text) return false;
     
     var msg = {c:chatid,t:text,type:'message',p:app.topic,w:tweet,g:app.chat.hashtag}
@@ -1411,7 +1414,9 @@ function SendBox() {
     setTimeout(function(){self.el.text.val('').text('')},200);
     self.el.text.focus();
     
-    now.distributeMessage(JSON.stringify(msg),function(msg){
+    now.distributeMessage(JSON.stringify(msg),function(err,msg){
+      if( err ) return debug(err);
+
       app.msgcache[msg.i] = msg
       app.displaymsg(msg)
       app.msgcache[msg.i] = msg
@@ -3171,8 +3176,9 @@ function Curate() {
     }
     
     if( 0 < entries.length ) {
-      http.post('/api/chat/'+app.chat.chatid+'/publish',{entries:entries},function(){
-        app.reloadpage()
+      http.post('/api/chat/'+app.chat.chatid+'/publish',{entries:entries},function(err,res){
+        if( err ) return debug(err);
+        app.reloadpage(res.pubalias)
       })
     }
   })

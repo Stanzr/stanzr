@@ -48,7 +48,9 @@ var cookies  = exports.cookies   = require('cookies')
 var _        = exports._         = require('underscore')
 var url      = exports.url       = require('url')
 var form     = exports.form      = require('connect-form')
-var know     = exports.knox      = require('knox')
+var knox     = exports.knox      = require('knox')
+
+var office   = exports.office    = require('./office')
 
 var oauth    = exports.oauth     = require('../../support/node-oauth')
 
