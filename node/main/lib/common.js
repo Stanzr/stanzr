@@ -70,6 +70,7 @@ var conf = exports.conf = config('conf',{
   env: 'dev',
   hosturl:'http://localhost:8080',
   tweetsearch:false,
+  quickcodelen:12,
   web: {
     port: 8080
   },

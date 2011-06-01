@@ -968,7 +968,7 @@ main.api = {
 
           chat.state = 'closed'
 
-          main.seneca.act({on:'util',cmd:'quickcode',len:6},RE(res,function(quickcode){
+          main.seneca.act({on:'util',cmd:'quickcode',len:conf.quickcodelen},RE(res,function(quickcode){
             chat.chatid = quickcode
             savechat(chat)
           }))
@@ -1055,6 +1055,9 @@ main.api = {
     },
 
     publish: function(req,res) {
+      console.dir('=================================')
+      console.dir(req.chat$)
+
       var chatid = req.chat$.chatid
       var pub = main.ent.make$('app','pub')
       var entries = req.json$.entries
@@ -1083,32 +1086,89 @@ main.api = {
           p.save$()
         }
 
-        req.chat$.state = 'done'
-      
-        main.chat.save(req.chat$,RE(res,function(out){
+        
+        var newchat = req.chat$.make$(req.chat$.data$())
 
-          
+        
+        main.seneca.act({on:'util',cmd:'quickcode',len:conf.quickcodelen},RE(res,function(quickcode){
+          newchat.chatid = quickcode
+          newchat.topic = 0
+          newchat.nicks = []
+          newchat.topics = [{title:'General',desc:'Discussion'}]
+          newchat.whenstr = 'Next week'
+          newchat.parent = req.chat$.parent || req.chat$.chatid
+          delete newchat.id 
+          console.dir(newchat)
+
+          newchat.save$(RE(res,function(){
+            publisholdchat(newchat)
+          }))
+        }))
+
+        
+        function publisholdchat(newchat) {
           var alias = main.ent.make$('app','alias')
-          var pubalias = office.chat.makepublishalias(req.chat$.hashtag,req.chat$.whenstr,req.chat$.topics[0].title)
+          var vanity = null
 
-          alias.load$({c:chatid,a:pubalias},RE(res,function(foundalias){
-            if( !foundalias ) {
-              alias.c = chatid
-              alias.a = pubalias
-
-              alias.save$(RE(res,function(){
-                done()
-              }))
+          alias.list$({c:chatid},RE(res,function(list){
+            for( var i = 0; i < list.length; i++ ) {
+              if( -1 == list[i].a.indexOf('-') ) {
+                vanity = list[i].a
+                break
+              }
             }
-            else {
-              done()
-            }
+            saveoldchat()
           }))
 
-          function done() {
-            common.sendjson(res,{ok:true,pubalias:pubalias})
+
+          function saveoldchat() {
+            req.chat$.state = 'done'
+            req.chat$.followon = newchat.chatid
+            req.chat$.followvanity = vanity
+
+            main.chat.save(req.chat$,RE(res,function(out){
+
+              var pubalias = office.chat.makepublishalias(req.chat$.hashtag,req.chat$.whenstr,req.chat$.topics[0].title)
+
+              alias.load$({c:chatid,a:pubalias},RE(res,function(foundalias){
+                console.log(foundalias)
+                if( !foundalias ) {
+                  alias.c = chatid
+                  alias.a = pubalias
+
+                  alias.save$(RE(res,function(){
+                    makenewalias()
+                  }))
+                }
+                else {
+                  makenewalias()
+                }
+              }))
+
+              function makenewalias() {
+                console.log('makenewalias')
+
+                if( vanity ) {
+                  alias.load$({a:vanity},RE(res,function(vanityalias){
+                    vanityalias.c = newchat.chatid
+
+                    vanityalias.save$(RE(res,function(){
+                      sendpublishresult(vanity)
+                    }))
+                  }))
+                }
+                else {
+                  sendpublishresult()
+                }
+
+                function sendpublishresult(vanity) {
+                  common.sendjson(res,{ok:true,pubalias:pubalias,newchatid:newchat.chatid,vanity:vanity})
+                }
+              }
+
+            }))
           }
-        }))
+        }
       }
 
     },

@@ -1444,8 +1444,11 @@ function ChatDetailsBox() {
     ,modmsgbtn: $('#rally_modmsgbtn')
     ,modname: $('#rally_modname')
     
+    ,followon: $('#rally_followon')
+
     ,editbtn: $('#rally_editbtn')
     ,curatebtn: $('#rally_curatebtn')
+    ,unpublishbtn: $('#rally_unpublishbtn')
     ,unpublishbtn: $('#rally_unpublishbtn')
 
     ,aliasesbtn: $('#rally_aliasesbtn')
@@ -1470,6 +1473,9 @@ function ChatDetailsBox() {
       self.el.unpublishbtn.click(killpopups(function(){app.closechat(function(){
         app.reloadpage(alias)
       })}))
+      self.el.followon.click(function(){
+        app.reloadpage(app.chat.followvanity || app.chat.followon)
+      })
     }
 
 
@@ -1500,6 +1506,9 @@ function ChatDetailsBox() {
       },
       modmsgbtn: function() {
         return !!nick
+      },
+      followon: function() {
+        return app.ismod && app.chat.followon 
       }
     })
 
