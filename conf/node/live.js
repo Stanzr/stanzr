@@ -14,7 +14,7 @@ module.exports = {
         name:'stanzrlive',
         username:'stanzrlive',
         password:'WDcc4tt1zw'
-      }
+      },
       log: {
         server:'flame.mongohq.com',
         port:27059,
