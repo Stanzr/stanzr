@@ -12,28 +12,44 @@ function enterkey(cb) {
 }
 
 
-function debug() {
-/*
+function jsonify(args) {
   try {
-    var p = $('<p>')
-    p.text(JSON.stringify(Array.prototype.slice.call(arguments)))
-    $('#log').append(p)
+    return JSON.stringify(args)
   }
-  catch( e ) {
-    var p = $('<p>')
-    p.text(''+e)
-    $('#log').append(p)
-  }
-*/
+  catch(e) {
+    var sb = ['[']
+    for(var i = 0; i < args.length; i++ ) {
 
+      try {
+        sb.push( JSON.stringify(args[i]))
+      }
+      catch( e ) {
+        sb.push('"'+args[i]+'"')
+      }
+      sb.push(',')
+    }
+    sb.push(']')
+
+    return sb.join(' ')
+  }
+}
+
+
+function debug() {
   if( app && app.debug && 'undefined' != typeof(console) ) {
     if( console.log.apply ) {
       console.log.apply(console,arguments)
     }
     else {
-      console.log(JSON.stringify(Array.prototype.slice.call(arguments)))
+      console.log(jsonify(Array.prototype.slice.call(arguments)))
     }
   }
+
+  /*
+  if( app && ( page.user.admin || app.ismod ) ) {
+    logerror('debug',jsonify(Array.prototype.slice.call(arguments)))
+  }
+  */
 }
 
 
@@ -167,9 +183,9 @@ var app = {
 
 
   dump: function(where) {
-    return JSON.stringify({
+    return {
       where:where,mode:app.mode,topic:app.topic,nick:nick,chat:app.chat,nickmap:app.nickmap,joinmap:app.joinmap
-    })
+    }
   },
 
   reloadpage: function(chatalias) {
@@ -487,7 +503,7 @@ var app = {
     t = linkify( t )
     //t = t.replace(/(@\w+)/g,'<b>$1</b>')
 
-    if( -1 != t.indexOf('@'+nick) ) {
+    if( 'done' != app.chat.state && -1 != t.indexOf('@'+nick) ) {
       t = '<b>'+t+'</b>'
     }
 
@@ -511,11 +527,12 @@ var app = {
     app.rightbar.box.reply.set(app.chat)
     app.rightbar.box.dm.render()
 
-    $('p.post').each(function(index,post){
+    $('p').each(function(index,post){
       var p = $(post)
       var ht = app.formatmsgtext( p.text() )
       p.html(ht)
     })
+
   },
 
 
@@ -601,11 +618,11 @@ var app = {
 
       reply.click(function(){
         var txt = $('#post_text').val()
-        //if( -1 == txt.indexOf( msg.f ) ) {
-        var replywith = '@'+msg.f+': '//+msg.t
-        $('#post_text').val( replywith ) 
-        setCaretPosition($('#post_text')[0],replywith.length)
-        //}
+        if( -1 == txt.indexOf( msg.f ) ) {
+          var replywith = '@'+msg.f+' '+txt
+          $('#post_text').val( replywith ) 
+          setCaretPosition($('#post_text')[0],replywith.length)
+        }
         $('#post_text').focus()
       })
 
@@ -2580,19 +2597,6 @@ function HistoryBox() {
   }
 }
 
-/**
-    Icon selector reference
-
-    #avatar_drilldown
-    #agree_drilldown
-    #reply_drilldown
-    #dm_drilldown
-    
-    .sprite-approve
-    .agrees.count
-    .sprite-at-reply
-    .replies.count
-**/
 
 $('.imgbtn[title]:visible, .agrees.count, .replies.count').livequery(function() {
   $(this)
@@ -2822,6 +2826,7 @@ function ShareBox() {
       on_negative: 'overmax',
       on_positive: 'undermax',
       on_update: function(t_obj, char_area, c_settings, char_rem){
+        debug(t_obj,char_area,c_settings,char_rem)
         if( char_rem < 0 ) {
           self.el.postbtn.hide()
         }
@@ -3201,5 +3206,5 @@ window.restartchat = function() {
 
 }
 catch( e ) {
-  logerror(e)
+  logerror('error',e)
 }

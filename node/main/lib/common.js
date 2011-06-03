@@ -50,10 +50,15 @@ var url      = exports.url       = require('url')
 var form     = exports.form      = require('connect-form')
 var knox     = exports.knox      = require('knox')
 
+
+// winston pollutes namespace by inject config
+var configx = require('config')
+
+
 var office   = exports.office    = require('./office')
 
 var oauth    = exports.oauth     = require('../../support/node-oauth')
-
+var winston  = exports.winston   = require('../../support/winston')
 
 var twitter  = exports.twitter   = require('twitter')
 //var twitter  = exports.twitter   = require('../../support/node-twitter')
@@ -65,8 +70,8 @@ var seneca   = exports.seneca    = require('../../support/seneca')
 var now      = exports.now   = require('../../support/now')
 
 
-var config = require('config')
-var conf = exports.conf = config('conf',{
+
+var conf = exports.conf = configx('conf',{
   env: 'dev',
   hosturl:'http://localhost:8080',
   tweetsearch:false,
@@ -102,10 +107,30 @@ var conf = exports.conf = config('conf',{
       port: 27017,
       username: '',
       password: ''
+    },
+    log: {
+      name: 'stanzrdev',
+      server: 'localhost',
+      port: 27017,
+      username: '',
+      password: ''
     }
   }
 })
+
 eyes.inspect(conf)
+
+
+
+winston.add(winston.transports.MongoDB, {
+  db: conf.mongo.log.name,
+  host: conf.mongo.log.server,
+  port: conf.mongo.log.port,
+  username: conf.mongo.log.username,
+  password: conf.mongo.log.password
+});
+winston.remove(winston.transports.Console);
+winston.log('info','winston')
 
 
 exports.log = function() {

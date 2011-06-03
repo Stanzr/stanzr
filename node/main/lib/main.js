@@ -20,6 +20,8 @@ var form    = common.form
 var office  = common.office
 var log     = common.log
 
+var winston     = common.winston
+
 var TweetSearch = require('./tweetsearch')
 var imageupload = require('./imageupload')
 
@@ -30,7 +32,7 @@ var MAX_INFO_LIST = 30
 
 
 process.on('uncaughtException', function (err) {
-  log('error','uncaught',err)
+  //log('error','uncaught',err)
 });
 
 
@@ -530,14 +532,14 @@ main.msg.post = function(msg,cb) {
         var unsavedmsgent = main.msg.save(msgdata)
         var msgdata = unsavedmsgent.data$()
         delete msgdata.$
-        cb(msgdata)
+        cb && cb(msgdata)
 
         log('message',msgdata)
         main.util.tweet(msgdata,hashtag)
         main.util.sendtogroup(group,'message',msgdata)
       }
       else {
-        cb(null,msgdata)
+        cb && cb(null,msgdata)
       }
     }
   }))
@@ -1804,18 +1806,37 @@ Seneca.init(
 
     var app = main.app = express.createServer()
 
+
     app.use( function(req,res,next){
-      console.log(req.url)
       if( '/api/log/error?desc=' == req.url.substring(0,20) ) {
-        console.log('ERRORLOG '+new Date()+' '+JSON.stringify(req.headers))
-        console.dir(JSON.parse(unescape(req.url.substring(20))))
         res.writeHead(200)
         res.end()
+
+        var desc = {}
+
+        var report = JSON.parse(unescape(req.url.substring(20)))
+        console.dir(report)
+
+        desc.args = report.args
+        desc.app = {nick:report.app.nick,chatid:report.app.chat.chatid}
+        desc.headers = req.headers
+        desc.when = new Date()
+
+        console.dir(desc)
+
+        try {
+          console.log('winston')
+          winston.log('error','client',desc)
+        }
+        catch( e ) {
+          console.dir(e)
+        }
       }
       else {
         next()
       }
     })
+
 
     app.use( connect.logger() )
 
@@ -2043,6 +2064,9 @@ Seneca.init(
 
 
     main.everyone.now.distributeMessage = function(msgjson,cb){
+      console.dir(msgjson)
+      console.dir(cb)
+
       log('msg',msgjson)
 
       var msg = JSON.parse(msgjson)

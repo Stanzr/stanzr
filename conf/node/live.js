@@ -15,6 +15,13 @@ module.exports = {
         username:'stanzrlive',
         password:'WDcc4tt1zw'
       }
+      log: {
+        server:'flame.mongohq.com',
+        port:27059,
+        name:'stanzr01',
+        username:'design',
+        password:'w1ckl0w1'
+      }
     },
     keys: {
       linkedin: {
