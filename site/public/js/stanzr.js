@@ -1,5 +1,8 @@
 
 
+
+try {
+
 function enterkey(cb) {
   return function(event) {
     if( 13 == event.keyCode ) {
@@ -9,28 +12,44 @@ function enterkey(cb) {
 }
 
 
-function debug() {
-/*
+function jsonify(args) {
   try {
-    var p = $('<p>')
-    p.text(JSON.stringify(Array.prototype.slice.call(arguments)))
-    $('#log').append(p)
+    return JSON.stringify(args)
   }
-  catch( e ) {
-    var p = $('<p>')
-    p.text(''+e)
-    $('#log').append(p)
-  }
-*/
+  catch(e) {
+    var sb = ['[']
+    for(var i = 0; i < args.length; i++ ) {
 
+      try {
+        sb.push( JSON.stringify(args[i]))
+      }
+      catch( e ) {
+        sb.push('"'+args[i]+'"')
+      }
+      sb.push(',')
+    }
+    sb.push(']')
+
+    return sb.join(' ')
+  }
+}
+
+
+function debug() {
   if( app && app.debug && 'undefined' != typeof(console) ) {
     if( console.log.apply ) {
       console.log.apply(console,arguments)
     }
     else {
-      console.log(JSON.stringify(Array.prototype.slice.call(arguments)))
+      console.log(jsonify(Array.prototype.slice.call(arguments)))
     }
   }
+
+  /*
+  if( app && ( page.user.admin || app.ismod ) ) {
+    logerror('debug',jsonify(Array.prototype.slice.call(arguments)))
+  }
+  */
 }
 
 
@@ -155,8 +174,19 @@ var app = {
     ,entername: 'Please enter your name.'
 
     ,pwdnomatch: 'Your passwords do not match'
+
+    ,registernick: 'Please enter a username'
+    ,registeremail: 'Please enter an email address'
+    ,registerpwd:  'Please enter a password'
+    ,registerpwdnomatch: 'Your passwords do not match'
   },
 
+
+  dump: function(where) {
+    return {
+      where:where,mode:app.mode,topic:app.topic,nick:nick,chat:app.chat,nickmap:app.nickmap,joinmap:app.joinmap
+    }
+  },
 
   reloadpage: function(chatalias) {
     window.location.href = '/api/bounce/'+(chatalias||alias||'member')+'?'+Math.random()
@@ -355,7 +385,7 @@ var app = {
   updateuser: function(data,cb) {
     http.post(
       '/api/user/'+page.user.nick,
-      {email:data.email,name:data.name,pwd:data.pwd,pwd2:data.pwd2},
+      {email:data.email,name:data.name,pwd:data.pwd,pwd2:data.pwd2,avimg:data.avimg},
       RE(function(res){
         cb && cb(res)
       }))
@@ -470,12 +500,19 @@ var app = {
 
   formatmsgtext: function( text ) {
     var t = $('#escaper').text(text).html()
-    return linkify( t )
+    t = linkify( t )
+    //t = t.replace(/(@\w+)/g,'<b>$1</b>')
+
+    if( 'done' != app.chat.state && -1 != t.indexOf('@'+nick) ) {
+      t = '<b>'+t+'</b>'
+    }
+
+    return t
   },
 
   
   share: function(msgid,text,cb) {
-    http.post( '/api/chat/'+app.chat.chatid+'/msg/'+msgid+'/tweet',
+    http.post( '/api/chat/'+app.chat.chatid+'/msg/'+msgid+'/share',
                {text:text}, 
                RE(function(data){
                  cb && 'function'==typeof(cb) && cb()
@@ -490,12 +527,42 @@ var app = {
     app.rightbar.box.reply.set(app.chat)
     app.rightbar.box.dm.render()
 
-    $('p.post').each(function(index,post){
+    $('p').each(function(index,post){
       var p = $(post)
       var ht = app.formatmsgtext( p.text() )
       p.html(ht)
     })
 
+  },
+
+
+  uploadimage: function(done,percent,info) {
+    if( info ) {
+      if( info.err ) {
+        debug('upload',done,percent,info)
+      }
+      else {
+        if( 'settings' == info.tag ) {
+          app.popup.box.settings.uploadstatus(done,percent,info)
+        }
+        else if( 'signup' == info.tag ) {
+          app.popup.box.signup.uploadstatus(done,percent,info)
+        }
+        else if( 'hostchat' == info.tag ) {
+          app.popup.box.hostchat.uploadstatus(done,percent,info)
+        }
+      }
+    }
+  },
+
+
+  fiximg: function(img,maxsize) {
+    if( maxsize < img.width() ) {
+      img.css({width:maxsize})
+    }
+    else if( maxsize < img.height() ) {
+      img.css({height:maxsize})
+    }
   },
 
 
@@ -538,12 +605,18 @@ var app = {
       }
     })
 
-    if( !msg.x ) {
+
+    var share = post.find('a.share')
+    var reply = post.find('a.sprite-at-reply')
+    var approve = post.find('a.sprite-approve')
+
+
+    if( !msg.x && nick ) {
       if( 0 < msg.a ) {
         post.find('.agrees').text('x'+msg.a)
       }
 
-      post.find('a.sprite-at-reply').click(function(){
+      reply.click(function(){
         var txt = $('#post_text').val()
         if( -1 == txt.indexOf( msg.f ) ) {
           var replywith = '@'+msg.f+' '+txt
@@ -553,7 +626,6 @@ var app = {
         $('#post_text').focus()
       })
 
-      var approve = post.find('a.sprite-approve')
       if( (msg.an && _.include(msg.an,nick)) || nick == msg.f ) {
         approve.css({background:'transparent'})
       }
@@ -574,8 +646,6 @@ var app = {
         })
       }
 
-      var share = post.find('a.share')
-
       if( 'twitter' == page.user.service ) {
         share.click(function(){
           app.popup.box.share.render(msg.i)
@@ -584,6 +654,11 @@ var app = {
       else {
         share.hide()
       }
+    }
+    else {
+      share.hide()
+      reply.hide()
+      approve.hide()
     }
 
     
@@ -811,43 +886,64 @@ $(function(){
 
 
   function signupbox(next) {
-    $('#signup_box').show()
+    app.popup.box.signup.render()
+    //$('#signup_box').show()
     app.signupbox_next = next
   }
   
   var registrationProcess = function() {
-    $.ajax({
-      url:'/api/auth/register',
-      type:'POST',
-      dataType:'json',
-      contentType:'application/json',
-      data:JSON.stringify({
-        nick:$('#register_username').val(),
-        password:$('#register_password').val(),
-        email:$('#register_email').val()
-      }),
-      success:function(res){
-        if( res.ok ) {
-          window.nick = res.nick
-          if( app.signupbox_next ) {
-            var next = app.signupbox_next
-            delete app.signupbox_next
-            next()
+    var regmsg = $('#register_msg')
+
+    var regdata = {
+      nick:$('#register_username').val(),
+      password:$('#register_password').val(),
+      email:$('#register_email').val(),
+      avimg:app.popup.box.signup.user.avimg
+    }
+
+    if( '' == regdata.nick ) {
+      regmsg.text(app.text.registernick)
+    }
+    else if( '' == regdata.email ) {
+      regmsg.text(app.text.registeremail)
+    }
+    else if( '' == regdata.password ) {
+      regmsg.text(app.text.registerpwd)
+    }
+    else if( $('#register_repeat').val() != regdata.password ) {
+      regmsg.text(app.text.registerpwdnomatch)
+    }
+    else {
+      $.ajax({
+        url:'/api/auth/register',
+        type:'POST',
+        dataType:'json',
+        contentType:'application/json',
+        data:JSON.stringify(regdata),
+        success:function(res){
+          if( res.ok ) {
+            window.nick = res.nick
+            if( app.signupbox_next ) {
+              var next = app.signupbox_next
+              delete app.signupbox_next
+              next()
+            }
+            else {
+              app.reloadpage()
+            }
           }
           else {
-            app.reloadpage()
+            regmsg.text(app.text.registerfail)
           }
         }
-        else {
-          $('#register_msg').text(app.text.registerfail)
-        }
-      }
-    })
-  };
+      })
+    }
+  }
   
   var registrationOnEnter = function(e){ 
-    if (e.keyCode == 13) 
-    registrationProcess() 
+    if (e.keyCode == 13) {
+      registrationProcess() 
+    }
   };
   
   
@@ -942,6 +1038,7 @@ $(function(){
   app.popup.box.hostchat  = new HostChatBox()
   app.popup.box.profile   = new ProfileBox()
   app.popup.box.settings  = new SettingsBox()
+  app.popup.box.signup    = new SignUpBox()
   app.popup.box.history   = new HistoryBox()
   app.popup.box.terms     = new TermsBox()
 
@@ -1090,6 +1187,8 @@ $(function(){
               app.rightbar.box.agree.load()
               app.rightbar.box.reply.set(res)
               app.rightbar.box.dm.load()
+
+              $('#appdump').text(app.dump('live-chat-loaded'))
             }
           })
         }
@@ -1097,6 +1196,7 @@ $(function(){
         // chat done
         else {
           app.formatpublishedchat()
+          $('#appdump').text(app.dump('done-chat-loaded'))
         }
       }
     })
@@ -1109,7 +1209,9 @@ $(function(){
 
     $('#rally_members').hide()
   }
-  
+
+
+  $('#appdump').text(app.dump('init-done'))
 });
 
 
@@ -1316,13 +1418,11 @@ function SendBox() {
     showif(self)
   }
 
+
   self.post = function() {
     var tweet = self.el.tweet.attr('checked')
     var text  = self.el.text.val().replace(/\n/g,'')
     
-    // Make sure we have text before sending, minimum text length
-    // should be set here, and include logic for commands with no text,
-    // such as '@someone' and '#hashtag' with nothing after
     if (!text) return false;
     
     var msg = {c:chatid,t:text,type:'message',p:app.topic,w:tweet,g:app.chat.hashtag}
@@ -1331,7 +1431,9 @@ function SendBox() {
     setTimeout(function(){self.el.text.val('').text('')},200);
     self.el.text.focus();
     
-    now.distributeMessage(JSON.stringify(msg),function(msg){
+    now.distributeMessage(JSON.stringify(msg),function(err,msg){
+      if( err ) return debug(err);
+
       app.msgcache[msg.i] = msg
       app.displaymsg(msg)
       app.msgcache[msg.i] = msg
@@ -1359,8 +1461,11 @@ function ChatDetailsBox() {
     ,modmsgbtn: $('#rally_modmsgbtn')
     ,modname: $('#rally_modname')
     
+    ,followon: $('#rally_followon')
+
     ,editbtn: $('#rally_editbtn')
     ,curatebtn: $('#rally_curatebtn')
+    ,unpublishbtn: $('#rally_unpublishbtn')
     ,unpublishbtn: $('#rally_unpublishbtn')
 
     ,aliasesbtn: $('#rally_aliasesbtn')
@@ -1385,6 +1490,9 @@ function ChatDetailsBox() {
       self.el.unpublishbtn.click(killpopups(function(){app.closechat(function(){
         app.reloadpage(alias)
       })}))
+      self.el.followon.click(function(){
+        app.reloadpage(app.chat.followvanity || app.chat.followon)
+      })
     }
 
 
@@ -1412,19 +1520,19 @@ function ChatDetailsBox() {
       },
       analyticsbtn: function(){
         return page.user.admin
+      },
+      modmsgbtn: function() {
+        return !!nick
+      },
+      followon: function() {
+        return app.ismod && app.chat.followon 
       }
     })
 
-    if( chat.logo ) {
-      var imgurl = 'http://c1.stanzr.com/img/logo/'+chat.logo
-      var imgobj = new Image()
-      imgobj.src = imgurl
-      imgobj.onload = function() {
-        var width = 200 < imgobj.width ? 200 : imgobj.width
-        self.el.img.css({width:width}).attr('src',imgurl).show()
-        self.el.logo.show()
-      }
-    }
+    var img = self.el.img
+    img[0].onload = function(){app.fiximg(img,200)}
+
+    self.setlogo(chat.logo)
 
     self.el.modmsgbtn.click(function(){
       for( var modnick in app.chat.modnicks ) break;
@@ -1439,6 +1547,21 @@ function ChatDetailsBox() {
     })
 
     return self
+  }
+
+
+  self.setlogo = function(logo) {
+    if( logo ) {
+      var imgurl = logo;//'http://c1.stanzr.com/img/logo/'+chat.logo
+      var imgobj = new Image()
+      imgobj.src = imgurl
+      imgobj.onload = function() {
+        //var width = 200 < imgobj.width ? 200 : imgobj.width
+        //self.el.img.css({width:width})
+        self.el.img.attr('src',imgurl).show()
+        self.el.logo.show()
+      }
+    }
   }
 
 
@@ -1919,22 +2042,24 @@ function AvatarBox() {
 
 
   function buildpopup(avatar,avnick,avimg) {
-    avatar.click(function(){
-      app.popup.box.profile.render(avnick,avimg,externals[avnick]);
-      app.popup.box.profile.el.box.show()
-    })
+    if( nick ) {
+      avatar.click(function(){
+        app.popup.box.profile.render(avnick,avimg,externals[avnick]);
+        app.popup.box.profile.el.box.show()
+      })
     
-    avatar.mouseenter(function(){
-      app.popup.box.profile.render(avnick,avimg,externals[avnick]);
-      app.popup.box.profile.el.box.css({
-        top:20+(avatar.offset().top),
-        left:(avatar.offset().left)-220
-      }).show()
-    })
+      avatar.mouseenter(function(){
+        app.popup.box.profile.render(avnick,avimg,externals[avnick]);
+        app.popup.box.profile.el.box.css({
+          top:20+(avatar.offset().top),
+          left:(avatar.offset().left)-220
+        }).show()
+      })
 
-    avatar.mouseleave(function(){
-      app.popup.box.profile.checkmouse()
-    })
+      avatar.mouseleave(function(){
+        app.popup.box.profile.checkmouse()
+      })
+    }
   }
 
 
@@ -2035,9 +2160,16 @@ function HostChatBox() {
     ,details:    $('#hostchat_details')
     ,topics:     $('#hostchat_topics')
 
+    ,upload:    $('#hostchat_upload')
+    ,image:     $('#hostchat_image')
+
     ,topiclist:    $('#hostchat_topiclist')
     ,topicitem_tm: $('#hostchat_topicitem_tm')
   }
+
+
+  var img = self.el.image.find('img')
+  img[0].onload = function(){app.fiximg(img,200)}
 
 
   function newchat() {
@@ -2144,6 +2276,8 @@ function HostChatBox() {
 
           chatid:     app.chat.chatid,
           moderator:  nick,
+          
+          logo:       self.logo,
 
           title:      title,
           modname:    self.el.modname.val(),
@@ -2163,6 +2297,22 @@ function HostChatBox() {
             $('#hostchat_msg').text('Unable to create chat session')
           }
         }
+      })
+    }
+  }
+
+
+  self.uploadstatus = function(done,percent,info) {
+    debug(done,percent,info)
+    self.el.upload.hide()
+    self.el.image.show()
+    self.el.image.find('div').animate({width:(Math.floor(250*(percent/100)))})
+
+    if( 100 == percent ) {
+      self.el.image.find('div').animate({width:250}).fadeOut(function(){
+        self.logo = info.url
+        var img = self.el.image.find('img')
+        img.attr('src',self.logo).fadeIn()
       })
     }
   }
@@ -2240,6 +2390,9 @@ function ProfileBox() {
 
     ,box: $('#profile_box')
 
+    ,nick: $('#profile_nick')
+    ,name: $('#profile_name')
+
     ,messagebtn: $('#profile_messagebtn')
     ,banbtn: $('#profile_banbtn')
     ,unbanbtn: $('#profile_unbanbtn')
@@ -2252,10 +2405,7 @@ function ProfileBox() {
     ,invitebtn: $('#profile_invitebtn')
     ,sendbtn: $('#profile_sendbtn')
     ,body: $('#profile_body')
-
   }
-  self.el.nick = self.el.box.find('h2')
-  self.el.name = self.el.box.find('h3')
 
   self.cnick
   self.avimg
@@ -2285,6 +2435,9 @@ function ProfileBox() {
     },
     moderator: function() {
       return app.chat.modnicks[self.cnick]
+    },
+    image: function() {
+      return 
     }
   })
 
@@ -2316,7 +2469,7 @@ function ProfileBox() {
           'linkedin'==sn ?'http://www.linkedin.com/in/'+user.nick:
           '';
         if( url ) {
-          self.el.smlink.text(url).attr('href',url)
+          self.el.smlink.text(user.nick).attr('href',url)
         }
       }
     }
@@ -2444,19 +2597,6 @@ function HistoryBox() {
   }
 }
 
-/**
-    Icon selector reference
-
-    #avatar_drilldown
-    #agree_drilldown
-    #reply_drilldown
-    #dm_drilldown
-    
-    .sprite-approve
-    .agrees.count
-    .sprite-at-reply
-    .replies.count
-**/
 
 $('.imgbtn[title]:visible, .agrees.count, .replies.count').livequery(function() {
   $(this)
@@ -2490,6 +2630,7 @@ var ui = {
 
 }
 
+
 function SettingsBox() {
   var self = this
 
@@ -2497,12 +2638,16 @@ function SettingsBox() {
     dummy: null
 
     ,box: $('#settings_box')
+    ,heading: $('#settings_heading')
 
     ,name: $('#settings_name')
     ,email: $('#settings_email')
 
     ,pwd: $('#settings_pwd')
     ,pwd2: $('#settings_pwd2')
+
+    ,image: $('#settings_image')
+    ,upload: $('#settings_upload')
 
     ,savebtn: $('#settings_savebtn')
 
@@ -2511,13 +2656,30 @@ function SettingsBox() {
 
   
   showif(self,{
+    upload: function() {
+      return true //self.user && self.user.avimg;
+    },
+    image: function() {
+      return false //self.user && self.user.avimg;
+    }
   })
 
 
   self.render = function() {
     self.el.box.show()
 
+    self.el.heading.click(function(){
+      debug(app.dump('manual'))
+    })
+
     app.getuser(function(user){
+      self.user = user
+
+      self.user.avimg = self.user.avimg || ''
+
+      var img = self.el.image.find('img')
+      img[0].onload = function(){app.fiximg(img,64)}
+
       ui.text(self.el.box,{
         '#settings_username':user.nick
       })
@@ -2534,7 +2696,8 @@ function SettingsBox() {
         email:self.el.email.val(),
         name:self.el.name.val(),
         pwd:self.el.pwd.val(),
-        pwd2:self.el.pwd2.val()
+        pwd2:self.el.pwd2.val(),
+        avimg:self.user.avimg
       }
       
       if( ''==user.email ) {
@@ -2548,12 +2711,86 @@ function SettingsBox() {
       }
       else {
         app.updateuser(user,function(){
-          self.el.box.hide()
+          app.reloadpage()
         })
       }
     })
+  },
+
+
+  self.uploadstatus = function(done,percent,info) {
+    debug(done,percent,info)
+    self.el.upload.hide()
+    self.el.image.show()
+    self.el.image.find('div').animate({width:(Math.floor(250*(percent/100)))})
+
+    if( 100 == percent ) {
+      self.el.image.find('div').animate({width:250}).fadeOut(function(){
+        self.user.avimg = info.url
+        var img = self.el.image.find('img')
+        img.attr('src',self.user.avimg).fadeIn()
+      })
+    }
   }
+
 }
+
+
+
+function SignUpBox() {
+  var self = this
+
+  self.user = {}
+
+  self.el = {
+    dummy: null
+
+    ,box: $('#signup_box')
+
+    ,image: $('#signup_image')
+    ,upload: $('#signup_upload')
+
+  }
+
+  
+  showif(self,{
+    upload: function() {
+      return true
+    },
+    image: function() {
+      return false
+    }
+  })
+
+
+  self.render = function() {
+    self.el.box.show()
+
+    var img = self.el.image.find('img')
+    img[0].onload = function(){app.fiximg(img,64)}
+
+    showif(self)
+  },
+
+
+  self.uploadstatus = function(done,percent,info) {
+    debug(done,percent,info)
+    self.el.upload.hide()
+    self.el.image.show()
+    self.el.image.find('div').animate({width:(Math.floor(250*(percent/100)))})
+
+    if( 100 == percent ) {
+      self.el.image.find('div').animate({width:250}).fadeOut(function(){
+        self.user.avimg = info.url
+        var img = self.el.image.find('img')
+        img.attr('src',self.user.avimg).fadeIn()
+      })
+    }
+  }
+
+}
+
+
 
 
 function ShareBox() {
@@ -2578,9 +2815,11 @@ function ShareBox() {
   self.init = function() {
     self.el.postbtn.click(function(){
       var text = self.el.text.val()
+      //self.el.text.text('')
+      self.el.text.val('')
+      self.el.box.hide()
+
       app.share(self.msg.i,text,function(){
-        self.el.text.text('')
-        self.el.box.hide()
       })
     })
 
@@ -2589,6 +2828,7 @@ function ShareBox() {
       on_negative: 'overmax',
       on_positive: 'undermax',
       on_update: function(t_obj, char_area, c_settings, char_rem){
+        debug(t_obj,char_area,c_settings,char_rem)
         if( char_rem < 0 ) {
           self.el.postbtn.hide()
         }
@@ -2606,12 +2846,15 @@ function ShareBox() {
     self.el.box.show()
 
     self.msg = app.msgcache[msgid]
-    var text =  ('RT @'+self.msg.f+' '+self.msg.t).replace(/\n/g,'')
-    self.el.text.text(text).keydown()
+    var text =  ('RT @'+self.msg.f+': '+self.msg.t).replace(/\n/g,'')
+    //self.el.text.text(text)
+    self.el.text.val(text)
+    self.el.text.keydown()
 
     showif(self)
   }
 }
+
 
 
 function TermsBox() {
@@ -2951,15 +3194,23 @@ function Curate() {
     }
     
     if( 0 < entries.length ) {
-      http.post('/api/chat/'+app.chat.chatid+'/publish',{entries:entries},function(){
-        app.reloadpage()
+      http.post('/api/chat/'+app.chat.chatid+'/publish',{entries:entries},function(err,res){
+        if( err ) return debug(err);
+        app.reloadpage(res.pubalias)
       })
     }
   })
 }
 
+var restartdelay = 1000
+
 window.restartchat = function() {
   now.name = nick
   app.inituser()
-  setTimeout(app.joinchat,1000)
+  setTimeout(app.joinchat, restartdelay = 1.5 * restartdelay )
+}
+
+}
+catch( e ) {
+  logerror('error',e)
 }

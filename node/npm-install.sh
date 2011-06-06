@@ -16,6 +16,12 @@ npm install xml2js
 npm install twitter
 npm install node-proxy
 npm install mongodb
+npm install knox
+npm install connect-form
+npm install colors
+npm install loggly
+npm install riak-js
+
 
 
 

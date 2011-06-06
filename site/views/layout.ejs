@@ -12,6 +12,16 @@
   <link rel="stylesheet" href="/img/sprites.css">
 
   <script>
+    var logerror = window.onerror = function() {
+      try {
+        var desc = JSON.stringify({page:page,app:app&&app.dump(),args:Array.prototype.slice.call(arguments)})
+        new Image().src = '/api/log/error?desc='+escape(desc)
+      }
+      catch( e ) {
+        debug && debug(e)
+      }
+    }
+
     var chatid = '<%=val.chatid||'member'%>'
     var alias  = '<%=val.alias||val.chatid||'member'%>'
     var nick   = '<%=val.nick||''%>'
@@ -23,6 +33,7 @@
   </script>
 
 <% if( val.chatid || val.nick ) { %>
+
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script> 
   <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.12/jquery-ui.min.js"></script> 
   <script src="/js/es5-shim.js"></script>
@@ -56,6 +67,7 @@
   <img src="/img/sprites.png" style="display:none" />
 <div id="timeago" class="hide"></div>
 <div id="escaper" class="hide"></div>
+<div id="appdump" class="hide"></div>
 <script type="text/javascript">
  
   var _gaq = _gaq || [];
@@ -68,7 +80,7 @@
    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
   })();
- 
+
 </script>
 </body>
 </html>

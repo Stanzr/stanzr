@@ -35,6 +35,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 var util     = exports.util     = require('util')
 var url      = exports.url      = require('url')
+var fs       = exports.fs       = require('fs')
 
 var connect  = exports.connect   = require('connect')
 var uuid     = exports.uuid      = require('node-uuid')
@@ -46,10 +47,18 @@ var eyes     = exports.eyes      = require('eyes')
 var cookies  = exports.cookies   = require('cookies')
 var _        = exports._         = require('underscore')
 var url      = exports.url       = require('url')
+var form     = exports.form      = require('connect-form')
+var knox     = exports.knox      = require('knox')
 
+
+// winston pollutes namespace by inject config
+var configx = require('config')
+
+
+var office   = exports.office    = require('./office')
 
 var oauth    = exports.oauth     = require('../../support/node-oauth')
-
+var winston  = exports.winston   = require('../../support/winston')
 
 var twitter  = exports.twitter   = require('twitter')
 //var twitter  = exports.twitter   = require('../../support/node-twitter')
@@ -61,11 +70,12 @@ var seneca   = exports.seneca    = require('../../support/seneca')
 var now      = exports.now   = require('../../support/now')
 
 
-var config = require('config')
-var conf = exports.conf = config('conf',{
+
+var conf = exports.conf = configx('conf',{
   env: 'dev',
   hosturl:'http://localhost:8080',
   tweetsearch:false,
+  quickcodelen:12,
   web: {
     port: 8080
   },
@@ -97,10 +107,30 @@ var conf = exports.conf = config('conf',{
       port: 27017,
       username: '',
       password: ''
+    },
+    log: {
+      name: 'stanzrdev',
+      server: 'localhost',
+      port: 27017,
+      username: '',
+      password: ''
     }
   }
 })
+
 eyes.inspect(conf)
+
+
+
+winston.add(winston.transports.MongoDB, {
+  db: conf.mongo.log.name,
+  host: conf.mongo.log.server,
+  port: conf.mongo.log.port,
+  username: conf.mongo.log.username,
+  password: conf.mongo.log.password
+});
+winston.remove(winston.transports.Console);
+winston.log('info','winston')
 
 
 exports.log = function() {
@@ -122,14 +152,15 @@ exports.log = function() {
 // JSON functions
 
 exports.readjson = function(req,res,win,fail) {
-  var MAX = 65535
+  var MAX = 10*65535
   var size = 0;
   var bodyarr = []
 
   req.on('data',function(chunk){
     size += chunk.length
     if( MAX < size ) {
-      bad(res)
+      res.writeHead(200)
+      res.end()
     }
     else {
       bodyarr.push(chunk);

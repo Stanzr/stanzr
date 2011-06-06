@@ -15,10 +15,15 @@ var uuid    = common.uuid
 var conf    = common.conf
 var twitter = common.twitter
 var oauth   = common.oauth
+var form    = common.form
 
+var office  = common.office
 var log     = common.log
 
+var winston     = common.winston
+
 var TweetSearch = require('./tweetsearch')
+var imageupload = require('./imageupload')
 
 var main = {}
 
@@ -27,7 +32,7 @@ var MAX_INFO_LIST = 30
 
 
 process.on('uncaughtException', function (err) {
-  log('error','uncaught',err)
+  //log('error','uncaught',err)
 });
 
 
@@ -258,8 +263,14 @@ main.util = {
             access_token_secret: user.social.secret
           });
           
+
+          var tweet = msg.t 
+          if( -1 == tweet.indexOf('#'+hashtag) ) {
+            tweet += ' #'+hashtag
+          }
+
           twit.updateStatus(
-            msg.t + ' #'+hashtag,
+            tweet,
             function (data) {
             }
           )
@@ -489,6 +500,54 @@ main.msg = {
 }
 
 
+main.msg.post = function(msg,cb) {
+  // required
+  var hashtag = msg.g
+  var chatid  = msg.c
+  var nick    = msg.f
+  var topic   = msg.p
+  var text    = msg.t
+  var tweet   = msg.w
+
+
+  if( !nick ) {
+    log('error',{nowjs:'no-name',on:'distmsg',msg:msgjson})
+    return cb('no-nick',null)
+  }
+
+  main.cache.get('chat.'+chatid,LE(function(chat){
+    if( chat ) {
+
+      var group = now.getGroup(chatid)
+
+      msg.r = main.util.parsereply(msg.t)
+      
+      msg.i = uuid().toLowerCase()
+      var msgdata = {i:msg.i,f:nick,c:chatid,p:msg.p,t:msg.t,r:msg.r,w:msg.w}
+
+      var sendmsg = chat.modnicks[nick] ||
+        ('open' == chat.state && !(chat.bans && chat.bans[nick])) 
+
+      if( sendmsg ) {
+        var unsavedmsgent = main.msg.save(msgdata)
+        var msgdata = unsavedmsgent.data$()
+        delete msgdata.$
+        cb && cb(msgdata)
+
+        log('message',msgdata)
+        main.util.tweet(msgdata,hashtag)
+        main.util.sendtogroup(group,'message',msgdata)
+      }
+      else {
+        cb && cb(null,msgdata)
+      }
+    }
+  }))
+
+
+}
+
+
 
 main.view = {
 
@@ -595,6 +654,11 @@ main.view = {
                     }
                   }})
               }
+             else if( 'upload' == req.params.chatid ) {
+                res.render(
+                  'upload', 
+                  { locals: {txt:{},val:{user:{},chat:{}}} } )
+             }
               else {
                 res.writeHead(302,{'Location':'/'})
                 res.end()
@@ -698,26 +762,31 @@ main.api = {
               active:true
             }, 
             RE(res,function(out){
-              eyes.inspect(out)
+              console.dir(out)
 
               if( out.ok ) {
-                main.seneca.act(
-                  {
-                    tenant:'stanzr',
-                    on:'user',
-                    cmd:'login',
-                    nick:json.nick,
-                    auto:true
-                  }, 
-                  RE(res,function(out){
-                    eyes.inspect(out)
+                var user = out.user
+                user.avimg = json.avimg
 
-                    if( out.pass ) {
-                      setlogincookie(out.login.token)
-                      common.sendjson(res,{ok:out.pass,nick:out.user.nick,email:out.user.email})
-                    }
-                  })
-                )
+                user.save$(RE(res,function(){
+                  main.seneca.act(
+                    {
+                      tenant:'stanzr',
+                      on:'user',
+                      cmd:'login',
+                      nick:json.nick,
+                      auto:true
+                    }, 
+                    RE(res,function(out){
+                      console.dir(out)
+
+                      if( out.pass ) {
+                        setlogincookie(out.login.token)
+                        common.sendjson(res,{ok:out.pass,nick:out.user.nick,email:out.user.email})
+                      }
+                    })
+                  )
+                }))
               }
             })
           )
@@ -853,13 +922,14 @@ main.api = {
 
         function savechat(chat) {
           main.util.mustbemod( req, res, chat.modnicks, function() {
-            chat.title    = json.title || 'Chat session'
-            chat.modname  = json.modname || ''
-            chat.modtitle = json.modtitle || ''
-            chat.modorg   = json.modorg || ''
-            chat.whenstr  = json.whenstr || ''
-            chat.hashtag  = json.hashtag || ''
-            chat.desc     = json.desc || ''
+            chat.title    = json.title || chat.logo || 'Chat session'
+            chat.modname  = json.modname || chat.logo || ''
+            chat.modtitle = json.modtitle || chat.logo || ''
+            chat.modorg   = json.modorg || chat.logo || ''
+            chat.whenstr  = json.whenstr || chat.logo || ''
+            chat.hashtag  = json.hashtag || chat.logo || ''
+            chat.desc     = json.desc || chat.logo || ''
+            chat.logo     = json.logo || chat.logo || ''
         
             main.chat.save(chat,RE(res,function(chat){
               main.util.tweetsearch(chat.chatid,chat.hashtag)
@@ -900,7 +970,7 @@ main.api = {
 
           chat.state = 'closed'
 
-          main.seneca.act({on:'util',cmd:'quickcode',len:6},RE(res,function(quickcode){
+          main.seneca.act({on:'util',cmd:'quickcode',len:conf.quickcodelen},RE(res,function(quickcode){
             chat.chatid = quickcode
             savechat(chat)
           }))
@@ -987,6 +1057,9 @@ main.api = {
     },
 
     publish: function(req,res) {
+      console.dir('=================================')
+      console.dir(req.chat$)
+
       var chatid = req.chat$.chatid
       var pub = main.ent.make$('app','pub')
       var entries = req.json$.entries
@@ -1015,11 +1088,89 @@ main.api = {
           p.save$()
         }
 
-        req.chat$.state = 'done'
-      
-        main.chat.save(req.chat$,RE(res,function(out){
-          common.sendjson(res,{ok:true})
+        
+        var newchat = req.chat$.make$(req.chat$.data$())
+
+        
+        main.seneca.act({on:'util',cmd:'quickcode',len:conf.quickcodelen},RE(res,function(quickcode){
+          newchat.chatid = quickcode
+          newchat.topic = 0
+          newchat.nicks = []
+          newchat.topics = [{title:'General',desc:'Discussion'}]
+          newchat.whenstr = 'Next week'
+          newchat.parent = req.chat$.parent || req.chat$.chatid
+          delete newchat.id 
+          console.dir(newchat)
+
+          newchat.save$(RE(res,function(){
+            publisholdchat(newchat)
+          }))
         }))
+
+        
+        function publisholdchat(newchat) {
+          var alias = main.ent.make$('app','alias')
+          var vanity = null
+
+          alias.list$({c:chatid},RE(res,function(list){
+            for( var i = 0; i < list.length; i++ ) {
+              if( -1 == list[i].a.indexOf('-') ) {
+                vanity = list[i].a
+                break
+              }
+            }
+            saveoldchat()
+          }))
+
+
+          function saveoldchat() {
+            req.chat$.state = 'done'
+            req.chat$.followon = newchat.chatid
+            req.chat$.followvanity = vanity
+
+            main.chat.save(req.chat$,RE(res,function(out){
+
+              var pubalias = office.chat.makepublishalias(req.chat$.hashtag,req.chat$.whenstr,req.chat$.topics[0].title)
+
+              alias.load$({c:chatid,a:pubalias},RE(res,function(foundalias){
+                console.log(foundalias)
+                if( !foundalias ) {
+                  alias.c = chatid
+                  alias.a = pubalias
+
+                  alias.save$(RE(res,function(){
+                    makenewalias()
+                  }))
+                }
+                else {
+                  makenewalias()
+                }
+              }))
+
+              function makenewalias() {
+                console.log('makenewalias')
+
+                if( vanity ) {
+                  alias.load$({a:vanity},RE(res,function(vanityalias){
+                    vanityalias.c = newchat.chatid
+
+                    vanityalias.save$(RE(res,function(){
+                      sendpublishresult(vanity)
+                    }))
+                  }))
+                }
+                else {
+                  sendpublishresult()
+                }
+
+                function sendpublishresult(vanity) {
+                  common.sendjson(res,{ok:true,pubalias:pubalias,newchatid:newchat.chatid,vanity:vanity})
+                }
+              }
+
+            }))
+          }
+        }
       }
 
     },
@@ -1206,7 +1357,7 @@ main.api.user.post_terms = function( req, res ) {
 }
 
 
-main.api.chat.msg.tweet = function(req,res) {
+main.api.chat.msg.share = function(req,res) {
   var msg = main.ent.make$('app','msg')
   main.msg.load(req.params.chatid,req.params.msgid,RE(res,function(msg){
     if( !msg ) return lost(res);
@@ -1219,6 +1370,17 @@ main.api.chat.msg.tweet = function(req,res) {
       msg.rt = msg.rg ? 1+msg.rt : 1;
       msg.save$(sendok(res))
     }
+
+    var rtmsg = {
+      g: msg.g,
+      c: msg.c,
+      f: req.user$.nick,
+      p: msg.p,
+      t: text,
+      w: false,
+      rt: msg.rt
+    }
+    main.msg.post(rtmsg,sendjson(res))
   }))
 }
 
@@ -1253,8 +1415,9 @@ main.api.user.post = function(req,res) {
       user.load$({nick:nick},RE(res,function(user){
         if( !user ) return lost(res);
 
-        user.name  = req.json$.name || ''
-        user.email = req.json$.email || ''
+        user.name  = req.json$.name || user.name || ''
+        user.email = req.json$.email || user.email || ''
+        user.avimg = req.json$.avimg || user.avimg || ''
 
         if( pwdupdate ) {
           user.salt = pwdupdate.salt
@@ -1367,11 +1530,20 @@ main.api.chat.admin.alias.del = function(req,res) {
   main.util.findalias(oldname,RE(res,function(oldalias){
     if( !oldalias ) return bad(res);
     
-    oldalias.remove(RE(res,function(){
+    oldalias.remove$(null,RE(res,function(){
     common.sendjson(res,{text:oldname})
     }))
   }))
 }
+
+
+main.api.chat.msg.post = function(req,res) {
+  var msg = req.json$
+  msg.f = req.user$.nick
+  main.msg.post(msg,sendjson(res))
+}
+
+
 
 
 
@@ -1554,9 +1726,7 @@ function initsocial(){
         function saveavimg(user,avimg,service){
           user.avimg = avimg
           user.save$(function(err,user){
-            if( err ) {
-              log('error','saveavimg',{error:err,social:service,kind:'avatar',user:user})
-            }
+            log('saveavimg',{error:err,social:service,kind:'avatar',user:user})
           })
         }
 
@@ -1592,7 +1762,7 @@ function initsocial(){
             
             var geturl = 'https://graph.facebook.com/me/picture'
             facebook.getProtectedResource( geturl, user.social.key, function (error, data, response) {
-              log('error',{service:'facebook',error:error,data:data,headers:response.headers})
+              log('error','facebook-avimg',{service:'facebook',error:error,data:data,headers:response.headers})
 
               if( error ) {
 	        if( 302 != error.statusCode ) {
@@ -1635,6 +1805,52 @@ Seneca.init(
     initseneca(seneca)
 
     var app = main.app = express.createServer()
+
+
+    app.use( function(req,res,next){
+      if( '/api/log/error?desc=' == req.url.substring(0,20) ) {
+        res.writeHead(200)
+        res.end()
+
+        var desc = {}
+
+        var report = JSON.parse(unescape(req.url.substring(20)))
+        console.dir(report)
+
+        desc.args = report.args
+        desc.app = {nick:report.app.nick,chatid:report.app.chat.chatid}
+        desc.headers = req.headers
+        desc.when = new Date()
+
+        console.dir(desc)
+
+        try {
+          console.log('winston')
+          winston.log('error','client',desc)
+        }
+        catch( e ) {
+          console.dir(e)
+        }
+      }
+      else {
+        next()
+      }
+    })
+
+
+    app.use( connect.logger() )
+
+    app.use(form({ keepExtensions: true }))
+
+    app.use( imageupload.service({
+      callback: 'parent.app.uploadimage',
+      uploadpath: '/api/upload/image',
+      s3folder: '/img/avatar',
+      s3bucket: 'c1.stanzr.com',
+      error: 'parent.app.uploadimage'
+    }))
+
+
 
     app.use(function(req,res,next){
       var host = req.headers.host
@@ -1702,7 +1918,7 @@ Seneca.init(
 
     
 
-    app.use( connect.logger() )
+
     app.use( connect.static( __dirname + '/../../../site/public') )
 
     app.use( initsocial() )    
@@ -1752,9 +1968,10 @@ Seneca.init(
         capp.get('/api/chat/:chatid/dm/:dmid?', main.api.chat.dm.get)
         capp.get('/api/chat/:chatid/dm', main.api.chat.dm.get)
 
-        capp.post('/api/chat/:chatid/msg/:msgid/tweet', main.api.chat.msg.tweet)
+        capp.post('/api/chat/:chatid/msg/:msgid/share', main.api.chat.msg.share)
       })
     )
+
 
 
     app.use( chatmustbeopen )
@@ -1762,6 +1979,7 @@ Seneca.init(
     app.use( 
       connect.router(function(capp){
         capp.post('/api/chat/:chatid/msg/:msgid/agree', main.api.chat.msg.post_agree)
+        capp.post('/api/chat/:chatid/msg', main.api.chat.msg.post)
 
         capp.put('/api/chat/:chatid/user/:nick/dm', main.api.chat.dm.put)
 
@@ -1848,48 +2066,15 @@ Seneca.init(
 
 
     main.everyone.now.distributeMessage = function(msgjson,cb){
+      console.dir(msgjson)
+      console.dir(cb)
+
       log('msg',msgjson)
 
       var msg = JSON.parse(msgjson)
-      var hashtag = msg.g
-      var chatid = msg.c
-      var nick = this.now.name
+      msg.f = this.now.name
 
-      if( !nick ) {
-        log('error',{nowjs:'no-name',on:'distmsg',msg:msgjson})
-        return
-      }
-
-      msg.f = nick
-
-      main.cache.get('chat.'+chatid,LE(function(chat){
-        if( chat ) {
-
-          var group = now.getGroup(chatid)
-
-          msg.r = main.util.parsereply(msg.t)
-          
-          msg.i = uuid().toLowerCase()
-          var msgdata = {i:msg.i,f:nick,c:chatid,p:msg.p,t:msg.t,r:msg.r,w:msg.w}
-
-          var sendmsg = chat.modnicks[nick] ||
-            ('open' == chat.state && !(chat.bans && chat.bans[nick])) 
-
-          if( sendmsg ) {
-            var unsavedmsgent = main.msg.save(msgdata)
-            var msgdata = unsavedmsgent.data$()
-            delete msgdata.$
-            cb(msgdata)
-
-            log('message',msgdata)
-            main.util.tweet(msgdata,hashtag)
-            main.util.sendtogroup(group,'message',msgdata)
-          }
-          else {
-            cb(msgdata)
-          }
-        }
-      }))
+      main.msg.post(msg,cb)
     }
   }
 )

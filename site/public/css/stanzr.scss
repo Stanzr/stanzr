@@ -569,7 +569,8 @@ div.modalbox {
   
   input, textarea {display: block; clear: both; width: 95%;}
   
-  p.descr {color: $fontmetaC; margin-bottom: 10px;}
+  p.descr {margin-bottom: 10px;}
+  .descr {color: $fontmetaC;}
   
   h2 {font-size: 18px;}
   
@@ -584,13 +585,6 @@ div.modalbox {
   color: #fff !important;
 }
 
-#login_box {
-/*   height: 250px; */
-}
-
-#signup_box {
-/*   height: 350px; */
-}
 
 .auth_vertlist {
   margin: 10px 0 15px 0;
@@ -628,8 +622,20 @@ div.modalbox {
   }
 }
 
+#login_box {
+
+}
+
+#signup_box {
+  width:  250px;
+}
+
 #profile_box {
-  height: 150px;
+  padding: 5px 20px 5px 5px;
+  #profile_details {float: left; padding-left: 10px; width: 133px;}
+  #profile_avimg {float: left; width: 32px;}
+  #profile_identifier span {margin-right: 8px;}
+  
 }
 
 #settings_box {

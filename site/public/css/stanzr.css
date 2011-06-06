@@ -379,8 +379,9 @@ div.modalbox {
     clear: both;
     width: 95%; }
   div.modalbox p.descr {
-    color: #999999;
     margin-bottom: 10px; }
+  div.modalbox .descr {
+    color: #999999; }
   div.modalbox h2 {
     font-size: 18px; }
   div.modalbox #head_twitter, div.modalbox #head_linkedin, div.modalbox #head_facebook {
@@ -390,12 +391,6 @@ div.modalbox {
   background-color: #666666 !important;
   border-color: #595959 !important;
   color: #fff !important; }
-
-#login_box {
-  /*   height: 250px; */ }
-
-#signup_box {
-  /*   height: 350px; */ }
 
 .auth_vertlist {
   margin: 10px 0 15px 0; }
@@ -424,8 +419,20 @@ div.modalbox {
   #hostchat_box #hostchat_topicitem_tm {
     display: none; }
 
+#signup_box {
+  width: 250px; }
+
 #profile_box {
-  height: 150px; }
+  padding: 5px 20px 5px 5px; }
+  #profile_box #profile_details {
+    float: left;
+    padding-left: 10px;
+    width: 133px; }
+  #profile_box #profile_avimg {
+    float: left;
+    width: 32px; }
+  #profile_box #profile_identifier span {
+    margin-right: 8px; }
 
 #settings_box {
   height: 400px;
