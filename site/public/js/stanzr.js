@@ -2815,7 +2815,8 @@ function ShareBox() {
   self.init = function() {
     self.el.postbtn.click(function(){
       var text = self.el.text.val()
-      self.el.text.text('')
+      //self.el.text.text('')
+      self.el.text.val('')
       self.el.box.hide()
 
       app.share(self.msg.i,text,function(){
@@ -2846,7 +2847,8 @@ function ShareBox() {
 
     self.msg = app.msgcache[msgid]
     var text =  ('RT @'+self.msg.f+': '+self.msg.t).replace(/\n/g,'')
-    self.el.text.text(text)
+    //self.el.text.text(text)
+    self.el.text.val(text)
     self.el.text.keydown()
 
     showif(self)
