@@ -1638,7 +1638,8 @@ Seneca.init(
 
     app.use(function(req,res,next){
       var host = req.headers.host
-      if( 'localhost' == host ||
+      if( conf.hosturl == 'http://'+host ||
+	  'localhost' == host ||
           'localhost:8080' == host ||
           'stanzr.com' == host ||
           'stanzr.test' == host ||
@@ -1647,6 +1648,7 @@ Seneca.init(
         next()
       }
       else {
+	  console.log('redirect: '+host+' -> '+conf.hosturl+req.url)
         res.writeHead(301,{'Location':conf.hosturl+req.url})
         res.end()
       }
