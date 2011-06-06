@@ -2815,9 +2815,10 @@ function ShareBox() {
   self.init = function() {
     self.el.postbtn.click(function(){
       var text = self.el.text.val()
+      self.el.text.text('')
+      self.el.box.hide()
+
       app.share(self.msg.i,text,function(){
-        self.el.text.text('')
-        self.el.box.hide()
       })
     })
 
@@ -2845,7 +2846,8 @@ function ShareBox() {
 
     self.msg = app.msgcache[msgid]
     var text =  ('RT @'+self.msg.f+': '+self.msg.t).replace(/\n/g,'')
-    self.el.text.text(text).keydown()
+    self.el.text.text(text)
+    self.el.text.keydown()
 
     showif(self)
   }
@@ -3198,10 +3200,12 @@ function Curate() {
   })
 }
 
+var restartdelay = 1000
+
 window.restartchat = function() {
   now.name = nick
   app.inituser()
-  setTimeout(app.joinchat,1000)
+  setTimeout(app.joinchat, restartdelay = 1.5 * restartdelay )
 }
 
 }
