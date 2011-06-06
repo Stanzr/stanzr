@@ -1762,7 +1762,7 @@ function initsocial(){
             
             var geturl = 'https://graph.facebook.com/me/picture'
             facebook.getProtectedResource( geturl, user.social.key, function (error, data, response) {
-              log('error','facebook-avimg',{service:'facebook',error:error,data:data,headers:response.headers})
+              log('error','facebook-avimg',{service:'facebook',error:error,data:data,headers:response&&response.headers})
 
               if( error ) {
 	        if( 302 != error.statusCode ) {
