@@ -1057,40 +1057,60 @@ main.api = {
     },
 
     publish: function(req,res) {
-      console.dir('=================================')
-      console.dir(req.chat$)
-
       var chatid = req.chat$.chatid
       var pub = main.ent.make$('app','pub')
       var entries = req.json$.entries
+      var vanity = null
+      var newchat = null
+      var pubalias = null
 
-      pub.list$({c:chatid},RE(res,function(oldentries){
-        function removeoldentry(i) {
-          if( i < oldentries.length ) {
-            var entry = oldentries[i]
-            pub.remove$({id:entry.id},RE(res,function(){
-              removeoldentry(i+1)
-            }))
+      
+      function removeoldentries(cb) {
+        pub.list$({c:chatid},RE(res,function(oldentries){
+          function removeoldentry(i) {
+            if( i < oldentries.length ) {
+              var entry = oldentries[i]
+              pub.remove$({id:entry.id},RE(res,function(){
+                removeoldentry(i+1)
+              }))
+            }
+            else {
+              cb()
+            }
           }
-          else {
-            insertnewentries()
-          }
-        }
-        removeoldentry(0)
-
-      }))
+          removeoldentry(0)
+        }))
+      }
 
 
-      function insertnewentries() {
+      function insertnewentries(cb) {
         for(var i = 0; i < entries.length; i++ ){
           var entry = entries[i]
           var p = pub.make$({t:entry.t,o:entry.o,b:entry.b,c:chatid,a:entry.a})
           p.save$()
         }
+        cb()
+      }
 
+
+      function getvanityalias(cb) {
+        var alias = main.ent.make$('app','alias')
+
+        alias.list$({c:chatid},RE(res,function(list){
+          for( var i = 0; i < list.length; i++ ) {
+            if( -1 == list[i].a.indexOf('-') ) {
+              vanity = list[i].a
+                break
+            }
+          }
+          cb()
+        }))
+      }
         
-        var newchat = req.chat$.make$(req.chat$.data$())
 
+      function makenewchat(cb) {
+        newchat = req.chat$.make$(req.chat$.data$())
+        delete newchat.id 
         
         main.seneca.act({on:'util',cmd:'quickcode',len:conf.quickcodelen},RE(res,function(quickcode){
           newchat.chatid = quickcode
@@ -1099,80 +1119,78 @@ main.api = {
           newchat.topics = [{title:'General',desc:'Discussion'}]
           newchat.whenstr = 'Next week'
           newchat.parent = req.chat$.parent || req.chat$.chatid
-          delete newchat.id 
+          newchat.vanity = vanity
+
+
           console.dir(newchat)
 
           newchat.save$(RE(res,function(){
-            publisholdchat(newchat)
+            cb()
           }))
         }))
-
-        
-        function publisholdchat(newchat) {
-          var alias = main.ent.make$('app','alias')
-          var vanity = null
-
-          alias.list$({c:chatid},RE(res,function(list){
-            for( var i = 0; i < list.length; i++ ) {
-              if( -1 == list[i].a.indexOf('-') ) {
-                vanity = list[i].a
-                break
-              }
-            }
-            saveoldchat()
-          }))
-
-
-          function saveoldchat() {
-            req.chat$.state = 'done'
-            req.chat$.followon = newchat.chatid
-            req.chat$.followvanity = vanity
-
-            main.chat.save(req.chat$,RE(res,function(out){
-
-              var pubalias = office.chat.makepublishalias(req.chat$.hashtag,req.chat$.whenstr,req.chat$.topics[0].title)
-
-              alias.load$({c:chatid,a:pubalias},RE(res,function(foundalias){
-                console.log(foundalias)
-                if( !foundalias ) {
-                  alias.c = chatid
-                  alias.a = pubalias
-
-                  alias.save$(RE(res,function(){
-                    makenewalias()
-                  }))
-                }
-                else {
-                  makenewalias()
-                }
-              }))
-
-              function makenewalias() {
-                console.log('makenewalias')
-
-                if( vanity ) {
-                  alias.load$({a:vanity},RE(res,function(vanityalias){
-                    vanityalias.c = newchat.chatid
-
-                    vanityalias.save$(RE(res,function(){
-                      sendpublishresult(vanity)
-                    }))
-                  }))
-                }
-                else {
-                  sendpublishresult()
-                }
-
-                function sendpublishresult(vanity) {
-                  common.sendjson(res,{ok:true,pubalias:pubalias,newchatid:newchat.chatid,vanity:vanity})
-                }
-              }
-
-            }))
-          }
-        }
       }
 
+        
+
+      function publisholdchat(cb) {
+        req.chat$.state = 'done'
+        req.chat$.followon = newchat.chatid
+        req.chat$.followvanity = vanity
+        
+        main.chat.save(req.chat$,RE(res,function(out){
+          pubalias = office.chat.makepublishalias(req.chat$.hashtag,req.chat$.whenstr,req.chat$.topics[0].title)
+          var alias = main.ent.make$('app','alias')
+          
+          alias.load$({c:chatid,a:pubalias},RE(res,function(foundalias){
+            console.log(foundalias)
+            if( !foundalias ) {
+              alias.c = chatid
+              alias.a = pubalias
+
+              alias.save$(RE(res,function(){
+                cb()
+              }))
+            }
+            else {
+              cb()
+            }
+          }))
+        }))
+      }
+
+
+      function sendpublishresult() {
+        common.sendjson(res,{ok:true,pubalias:pubalias,newchatid:newchat.chatid,vanity:vanity})
+      }
+
+
+      (
+        function(){ removeoldentries(
+          function(){ insertnewentries(
+            function(){ getvanityalias(
+              function(){ makenewchat(
+                function(){ publisholdchat(
+                  function(){ sendpublishresult(
+                  )})})})})}) } )()
+
+    },
+
+
+    movevanity: function(req,res) {
+      var vanity = req.chat$.vanity
+      if( vanity ) {
+        var alias = main.ent.make$('app','alias')
+        alias.load$({a:vanity},RE(res,function(vanityalias){
+          vanityalias.c = req.chat$.chatid
+
+          vanityalias.save$(RE(res,function(){
+            common.sendjson(res,{chatname:vanity})
+          }))
+        }))
+      }
+      else {
+        common.sendjson(res,{chatname:req.chat$.chatid})
+      }
     },
 
 
@@ -1723,10 +1741,11 @@ function initsocial(){
 
       if( user.social ) {
 
-        function saveavimg(user,avimg,service){
+        function saveuser(user,username,avimg,service){
           user.avimg = avimg
+          user.nick = username
           user.save$(function(err,user){
-            log('saveavimg',{error:err,social:service,kind:'avatar',user:user})
+            log('saveuser',{error:err,social:service,kind:'avatar',user:user})
           })
         }
 
@@ -1742,7 +1761,7 @@ function initsocial(){
           twit.showUser(ctxt.username,function(data){
 
             if( 'Error' != data.name ) {
-              saveavimg(user,data.profile_image_url,'twitter')
+              saveuser(user,ctxt.username,data.profile_image_url,'twitter')
             }
             else {
               if( err ) {
@@ -1752,7 +1771,7 @@ function initsocial(){
           })
 
         }
-        else {
+        else if( 'facebook' == user.social.service ) {
           try {
             var facebook = new oauth.OAuth2(
               conf.keys.facebook.key,
@@ -1769,7 +1788,7 @@ function initsocial(){
                   log('error','avimg',{error:error,social:'facebook',kind:'showUser',user:user})
                 }
                 else {
-                  saveavimg(user,error.headers['location'],'facebook')
+                  saveuser(user,ctxt.username,error.headers['location'],'facebook')
                 }
               }
             })
@@ -1777,6 +1796,36 @@ function initsocial(){
           catch( ex ) {
             log('error',ex)
           }
+        }
+        else if( 'linkedin' == user.social.service ) {
+          var client = new oauth.OAuth(
+            '--',
+            '--',
+            conf.keys.linkedin.key,
+            conf.keys.linkedin.secret,
+            '1.0',
+            '--',
+            'HMAC-SHA1',
+            null,
+            {'Accept': '*/*', 'Connection': 'close', 'User-Agent': 'seneca'}
+          )
+
+          var geturl = 'http://api.linkedin.com/v1/people/~:(picture-url)'
+
+          client.get(
+            geturl, user.social.key, user.social.secret, function(error,data,response){
+              ctxt.responsedata = data
+
+              console.dir(data)
+              if( error ) {
+                saveuser(user,ctxt.username,'linkedin',error)
+              }
+              else {
+                var oneline = data.replace(/\n/g,'')
+                var m = /<picture-url>([^<]+)<\/picture-url>/.exec(oneline)
+                saveuser(user,ctxt.username,m?m[1]:'','linkedin')
+              }
+            })
         }
       }
 
@@ -2002,6 +2051,8 @@ Seneca.init(
 
         capp.post('/api/chat/:chatid/state', main.api.chat.state)
         capp.post('/api/chat/:chatid/publish', main.api.chat.publish)
+
+        capp.post('/api/chat/:chatid/movevanity', main.api.chat.movevanity)
       })
     )
 

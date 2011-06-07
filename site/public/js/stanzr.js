@@ -490,6 +490,17 @@ var app = {
   },
 
 
+  movevanity: function() {
+    if( app.ismod && 'done' == app.chat.state && app.chat.followon ) {
+      http.post( '/api/chat/'+app.chat.followon+'/movevanity',
+                 {}, 
+                 RE(function(data){
+                   app.reloadpage(data.chatname)
+                 }))
+    }
+  },
+
+
   updatetopics: function() {
     debug('updatetopics',app.topicheads)
     for( var i = 0; i < app.topicheads.length; i++ ) {
@@ -1491,7 +1502,7 @@ function ChatDetailsBox() {
         app.reloadpage(alias)
       })}))
       self.el.followon.click(function(){
-        app.reloadpage(app.chat.followvanity || app.chat.followon)
+        app.movevanity(app.chat.followon)
       })
     }
 
@@ -1525,7 +1536,7 @@ function ChatDetailsBox() {
         return !!nick
       },
       followon: function() {
-        return app.ismod && app.chat.followon 
+        return app.ismod && 'done'==app.chat.state && app.chat.followon 
       }
     })
 
