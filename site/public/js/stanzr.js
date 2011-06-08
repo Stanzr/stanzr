@@ -113,7 +113,7 @@ var http = {
 
   error:function(cb){
     return function(jqXHR, textStatus, errorThrown){
-      cb && cb({jqXHR:jqXHR, textStatus:textStatus, errorThrown:errorThrown},null)
+      cb && cb({hasError:true,status:jqXHR.status, jqXHR:jqXHR, textStatus:textStatus, errorThrown:errorThrown},null)
     }
   },
 
@@ -137,7 +137,8 @@ var http = {
       dataType:'json',
       success:function(res){
         cb && cb(res)
-      }
+      },
+      error:http.error(cb)
     })
   }
   
@@ -398,8 +399,14 @@ var app = {
     }
     else {
       http.get('/api/user/'+avnick+'/avatar',function(res){
-        app.avimg[avnick] = res.avimg || null
-        cb && cb(res.avimg)
+        if( res.hasError ) {
+          app.avimg[avnick] = null
+        }
+        else {
+          app.avimg[avnick] = res.avimg
+        }
+        
+        cb && cb(app.avimg[avnick])
       })
     }
   },
@@ -3213,12 +3220,13 @@ function Curate() {
   })
 }
 
-var restartdelay = 1000
+var restartdelay = 500
 
 window.restartchat = function() {
   now.name = nick
   app.inituser()
-  setTimeout(app.joinchat, restartdelay = 1.5 * restartdelay )
+  restartdelay = 2 * restartdelay
+  setTimeout(app.joinchat, restartdelay )
 }
 
 }
