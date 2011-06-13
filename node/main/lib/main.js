@@ -1121,9 +1121,6 @@ main.api = {
           newchat.parent = req.chat$.parent || req.chat$.chatid
           newchat.vanity = vanity
 
-
-          console.dir(newchat)
-
           newchat.save$(RE(res,function(){
             cb()
           }))
@@ -1142,7 +1139,6 @@ main.api = {
           var alias = main.ent.make$('app','alias')
           
           alias.load$({c:chatid,a:pubalias},RE(res,function(foundalias){
-            console.log(foundalias)
             if( !foundalias ) {
               alias.c = chatid
               alias.a = pubalias
@@ -1839,9 +1835,20 @@ function initsocial(){
 }
 
 
+function senecalogger() {
+  var args = Array.prototype.slice.call(arguments)
+  if( 'user' == args[2] ) {
+    var sb = ['---------------------USER:']
+    for( var i = 0; i < args.length; i++ ) {
+      sb.push( JSON.stringify(args[i]) )
+    }
+    console.log( sb.join(' ') )
+  }
+}
+
 
 Seneca.init(
-  {logger:null,
+  {logger:senecalogger,
    entity:mongourl,
    plugins:['util','user','echo']
   },
@@ -1913,7 +1920,6 @@ Seneca.init(
         next()
       }
       else {
-	  console.log('redirect: '+host+' -> '+conf.hosturl+req.url)
         res.writeHead(301,{'Location':conf.hosturl+req.url})
         res.end()
       }
@@ -2075,7 +2081,7 @@ Seneca.init(
 
 
 
-    console.__debug__ = true
+    //console.__debug__ = true
 
     main.everyone = now.initialize(
       app, 
@@ -2117,9 +2123,6 @@ Seneca.init(
 
 
     main.everyone.now.distributeMessage = function(msgjson,cb){
-      console.dir(msgjson)
-      console.dir(cb)
-
       log('msg',msgjson)
 
       var msg = JSON.parse(msgjson)

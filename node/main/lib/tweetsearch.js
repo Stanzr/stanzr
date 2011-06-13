@@ -53,7 +53,6 @@ var TweetSearch = function(term,maxresults) {
       })
 
       stream.on('error', function(error) {
-        console.dir(error)
         log('error',error)
       })
 
@@ -88,11 +87,9 @@ var TweetSearch = function(term,maxresults) {
 
 
   self.updateStatus = function(body) {
-    console.log('tweeting: '+body)
     twit.updateStatus(
       body,
       function (data) {
-        console.log(data)
       }
     )
   }

@@ -63,12 +63,8 @@ exports.service = function( conf ) {
 
 
   return function(req, res, next){
-    //console.log('========================= '+req.url+' '+conf.uploadpath.length)
-
     if( 0 == req.url.indexOf(conf.uploadpath) ) {
       var info = {tag:req.url.substring(5+conf.uploadpath.length)}
-      console.dir(info)
-
       var max = 10240
 
       res.writeHead(200,{'Content-Type':'text/html','Content-Length':max})
@@ -85,14 +81,12 @@ exports.service = function( conf ) {
       req.form.complete(function(err, fields, files){
         if( err ) return err.tag = info.tag, reserr(res,err);
 
-        console.log('\nuploaded %s to %s',files.image.filename,files.image.path);
         var s3name = files.image.path.substring(files.image.path.lastIndexOf('/')+1)
 
         s3upload(res,tag,files.image.path,s3name,conf.s3folder,conf.s3bucket,function(out) {
           if( 200 == out.statusCode ) {
             info.url = 'http://'+conf.s3bucket+conf.s3folder+'/'+s3name
             var s = '<script>'+conf.callback+'(true,100,'+JSON.stringify(info)+')</script></body></html>'
-            console.log(s)
             var pad = new Array(max).join(' ')
             res.end(s+pad)
           }
@@ -133,24 +127,20 @@ function s3upload(res,tag,filepath,s3name,s3folder,s3bucket,cb) {
     })
 
     instream.on('data',function(chunk){
-      console.log('sending: '+chunk.length)
       s3req.write(chunk)
       percent(res,50+Math.floor(chunk.length/filesize),{tag:tag})
     })
 
     instream.on('end',function(){
       s3req.end()
-      console.log('waiting for amazon...')
     })
 
     s3req.on('error',function(err){
-      console.log('error: '+err)
       err.tag = tag
       reserr(res,err)
     })
 
     s3req.on('response',function(res){
-      console.log('response: '+res.statusCode)
       cb(res)
     })
   })

@@ -51,7 +51,7 @@ var form     = exports.form      = require('connect-form')
 var knox     = exports.knox      = require('knox')
 
 
-// winston pollutes namespace by inject config
+// winston pollutes namespace by injecting config
 var configx = require('config')
 
 
