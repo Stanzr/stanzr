@@ -1,11 +1,14 @@
 
 var common = require('./common')
 
+var util    = common.util
+var fs      = common.fs
+
+
 var connect = common.connect
 var express = common.express
 var mongo   = common.mongo
 var now     = common.now
-var util    = common.util
 var eyes    = common.eyes
 var assert  = common.assert
 var Seneca  = common.seneca
@@ -1838,7 +1841,7 @@ function initsocial(){
 function senecalogger() {
   var args = Array.prototype.slice.call(arguments)
   if( 'user' == args[2] ) {
-    var sb = ['---------------------USER:']
+    var sb = ['======================USER:']
     for( var i = 0; i < args.length; i++ ) {
       sb.push( JSON.stringify(args[i]) )
     }
@@ -1894,7 +1897,7 @@ Seneca.init(
     })
 
 
-    app.use( connect.logger() )
+    app.use( connect.logger( {stream:fs.createWriteStream(conf.accesslog)} ) )
 
     app.use(form({ keepExtensions: true }))
 

@@ -4,6 +4,7 @@ module.exports = {
     env:'demo',
     hosturl:'http://stanzr.com',
     tweetsearch:true,
+    accesslog:'/var/log/stanzr/access.log',
     web: {
       port: 80
     },

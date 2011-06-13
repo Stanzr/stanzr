@@ -76,6 +76,7 @@ var conf = exports.conf = configx('conf',{
   hosturl:'http://localhost:8080',
   tweetsearch:false,
   quickcodelen:12,
+  accesslog:'/tmp/stanzr-access.log',
   web: {
     port: 8080
   },
@@ -170,7 +171,7 @@ exports.readjson = function(req,res,win,fail) {
   req.on('end',function(){
     if( size < MAX ) {
       var bodystr = bodyarr.join('');
-      util.debug('READJSON:'+req.url+':'+bodystr);
+      //util.debug('READJSON:'+req.url+':'+bodystr);
       try {
         var body = JSON.parse(bodystr);
         win && win(body);
@@ -188,7 +189,7 @@ exports.sendjson = function(res,obj){
     'Cache-Control': 'private, max-age=0, no-cache, no-store'
   });
   var objstr = JSON.stringify(obj);
-  util.debug('SENDJSON:'+objstr);
+  //util.debug('SENDJSON:'+objstr);
   res.end( objstr );
 }
 
