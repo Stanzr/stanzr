@@ -2842,7 +2842,7 @@ function ShareBox() {
       self.el.text.val('')
       self.el.box.hide()
 
-      var tweet = self.el.tweet.val()
+      var tweet = self.el.tweet.attr('checked')
 
       app.share(self.msg.i,text,tweet,function(){
       })
