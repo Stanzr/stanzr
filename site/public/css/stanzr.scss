@@ -727,7 +727,7 @@ div.modalbox {
 
 #share_box {
   width:  400px;
-  height: 100px;
+  height: 120px;
 }
 
 #share_text {
@@ -746,6 +746,12 @@ div.modalbox {
   &.overmax {
     color: red;
   }
+}
+
+#share_tweetout {
+  float: left;
+  width: 300px;
+  font-size: 0.8em;
 }
 
 #send_count {

@@ -1380,7 +1380,7 @@ main.api.chat.msg.share = function(req,res) {
     if( !msg ) return lost(res);
 
     var text = req.json$.text
-    if( text.length <= 140 ) {
+    if( text.length <= 140 && req.json$.tweet ) {
       var tweetmsg = {w:1,f:req.user$.nick,t:text}
       main.util.tweet(tweetmsg,req.chat$.hashtag)
 

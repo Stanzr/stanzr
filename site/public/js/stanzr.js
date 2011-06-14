@@ -529,9 +529,9 @@ var app = {
   },
 
   
-  share: function(msgid,text,cb) {
+  share: function(msgid,text,tweet,cb) {
     http.post( '/api/chat/'+app.chat.chatid+'/msg/'+msgid+'/share',
-               {text:text}, 
+               {text:text,tweet:tweet}, 
                RE(function(data){
                  cb && 'function'==typeof(cb) && cb()
                }))
@@ -2820,6 +2820,8 @@ function ShareBox() {
     ,box: $('#share_box')
 
     ,text: $('#share_text')
+    ,tweetout: $('#share_tweetout')
+    ,tweet: $('#share_tweet')
     ,count: $('#share_count')
 
     ,postbtn: $('#share_postbtn')
@@ -2827,6 +2829,9 @@ function ShareBox() {
 
   
   showif(self,{
+    tweetout: function() {
+      return page && page.user && 'twitter' == page.user.service
+    }
   })
 
 
@@ -2837,7 +2842,9 @@ function ShareBox() {
       self.el.text.val('')
       self.el.box.hide()
 
-      app.share(self.msg.i,text,function(){
+      var tweet = self.el.tweet.val()
+
+      app.share(self.msg.i,text,tweet,function(){
       })
     })
 

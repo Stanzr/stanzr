@@ -672,7 +672,14 @@ if( 'done' == val.chat.state ) {
   <h2>Post to Twitter</h2>
   
   <textarea id="share_text"></textarea>
-  <a id="share_postbtn" class="textbtn">post</a>
+  <div style="float:left; width:50px">
+    <a id="share_postbtn" class="textbtn">post</a>
+  </div>
+
+  <div id="share_tweetout">
+    <input id="share_tweet" type="checkbox" checked="yes" style="width:20px;margin:4px;display:inline;"> Also post on Twitter - appends <span id="rally_hash">#<%=val.hashtag%></span> 
+  </div>
+
   <p id="share_count" class="green"></p>
 
 </div>
