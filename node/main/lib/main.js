@@ -35,7 +35,7 @@ var MAX_INFO_LIST = 30
 
 
 process.on('uncaughtException', function (err) {
-  //log('error','uncaught',err)
+  log('error','uncaught',err)
 });
 
 
@@ -1380,13 +1380,14 @@ main.api.chat.msg.share = function(req,res) {
     if( !msg ) return lost(res);
 
     var text = req.json$.text
-    if( text.length <= 140 && req.json$.tweet ) {
+    //var tweet = req.json$.tweet
+    if( text.length <= 140 ) {
       var tweetmsg = {w:1,f:req.user$.nick,t:text}
       main.util.tweet(tweetmsg,req.chat$.hashtag)
-
-      msg.rt = msg.rg ? 1+msg.rt : 1;
-      msg.save$(sendok(res))
     }
+
+    msg.rt = msg.rg ? 1+msg.rt : 1;
+    msg.save$()
 
     var rtmsg = {
       g: msg.g,
@@ -1397,7 +1398,14 @@ main.api.chat.msg.share = function(req,res) {
       w: false,
       rt: msg.rt
     }
-    main.msg.post(rtmsg,sendjson(res))
+
+    // FIX: main.msg.post does not follow err,data cb pattern properly
+    main.msg.post(rtmsg,function(msg){
+      console.dir(msg)
+      if( msg ) {
+        common.sendjson(res,msg)
+      }
+    })
   }))
 }
 
