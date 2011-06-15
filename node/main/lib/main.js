@@ -923,16 +923,27 @@ main.api = {
 
       chat.load$({chatid:req.params.chatid},RE(res,function(chat){
 
+        function fixval() {
+          val = ''
+          for( var i = 0; i < arguments.length; i++ ) {
+            val = arguments[i]
+            if( undefined != typeof(val) && null != val ) {
+              return val
+            }
+          }
+          return val
+        }
+
         function savechat(chat) {
           main.util.mustbemod( req, res, chat.modnicks, function() {
-            chat.title    = json.title || chat.logo || 'Chat session'
-            chat.modname  = json.modname || chat.logo || ''
-            chat.modtitle = json.modtitle || chat.logo || ''
-            chat.modorg   = json.modorg || chat.logo || ''
-            chat.whenstr  = json.whenstr || chat.logo || ''
-            chat.hashtag  = json.hashtag || chat.logo || ''
-            chat.desc     = json.desc || chat.logo || ''
-            chat.logo     = json.logo || chat.logo || ''
+            chat.title    = fixval( json.title    , chat.title , 'Chat session' )
+            chat.modname  = fixval( json.modname  , chat.modname , '' )
+            chat.modtitle = fixval( json.modtitle , chat.modtitle , '' )
+            chat.modorg   = fixval( json.modorg   , chat.modorg , '' )
+            chat.whenstr  = fixval( json.whenstr  , chat.whenstr , '' )
+            chat.hashtag  = fixval( json.hashtag  , chat.hashtag , '' )
+            chat.desc     = fixval( json.desc     , chat.desc , '' )
+            chat.logo     = fixval( json.logo     , chat.logo , '' )
         
             main.chat.save(chat,RE(res,function(chat){
               main.util.tweetsearch(chat.chatid,chat.hashtag)
