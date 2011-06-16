@@ -8,6 +8,9 @@
   <!--[if lt IE 8]>
     <link rel="stylesheet" href="css/blueprint/ie.css" type="text/css" media="screen, projection" />
   <![endif]-->
+
+  <link rel="stylesheet" href="/css/overcast/jquery-ui-1.8.13.custom.css" />
+  <link rel="stylesheet" href="/css/jquery-ui-timepicker-addon.css" />
   <link rel="stylesheet" href="/css/stanzr.css?<%=Math.random()%>">
   <link rel="stylesheet" href="/img/sprites.css">
 
@@ -35,7 +38,8 @@
 <% if( val.chatid || val.nick ) { %>
 
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script> 
-  <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.12/jquery-ui.min.js"></script> 
+  <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/jquery-ui.js"></script> 
+  <script src="/js/jquery-ui-timepicker-addon.js"></script> 
   <script src="/js/es5-shim.js"></script>
 
   <script src="http://c1.chartaca.com/1.1.1/chartaca.js"></script>
@@ -63,6 +67,7 @@
 
 <body>
   <%- body %>
+
 
   <img src="/img/sprites.png" style="display:none" />
 <div id="timeago" class="hide"></div>
