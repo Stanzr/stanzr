@@ -677,7 +677,7 @@ $.extend(Timepicker.prototype, {
 				.replace(/ss/g, ((time.second < 10) ? '0' : '') + time.second)
 				.replace(/s/g, time.second)
 				.replace(/z/g, time.timezone);
-			tmptime = $.trim(tmptime.replace(/t/gi, ''));
+			tmptime = $.trim(tmptime.replace(/\st\s/gi, ''));
 		}
 
 		if (arguments.length) return tmptime;
