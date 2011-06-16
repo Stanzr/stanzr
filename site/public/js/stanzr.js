@@ -214,12 +214,24 @@ var app = {
   },
 
 
-  postbottom: function() {
+  postsareascrolltop: function(){
     var postsarea = $('div.postsarea')
     var h  = postsarea.height()
+
     if( postsarea[0] ) {
       var sh = postsarea[0].scrollHeight
-      postsarea.scrollTop( sh - h  )
+      //return sh - h;
+      return sh;
+    }
+  },
+
+  postbottom: function() {
+    var postsarea = $('div.postsarea')
+    if( postsarea[0] ) {
+      var past = app.postsareascrolltop()
+      if( 100+postsarea.scrollTop() > (past - postsarea.innerHeight()) ) {
+        postsarea.scrollTop( past )
+      }
     }
   },
 
@@ -588,18 +600,25 @@ var app = {
 
 
   infomsg: function(text) {
-    var post = $('#posts_tm li.infomsg').clone()
-    post.find('p').text(text)
-    var topicposts = $('#topic_posts_'+app.topic)
-    topicposts.append(post)
-    post.animate({opacity:1},500)
-    app.postbottom()
+    app.displaymsg({type:'info',text:text})
   },
 
 
   displaymsg: function(msg) {
     debug(msg)
     if( msg.h ) return;
+
+    if( 'info' == msg.type ) {
+      var text = msg.text
+      var post = $('#posts_tm li.infomsg').clone()
+      post.find('p').text(text)
+      var topicposts = $('#topic_posts_'+app.topic)
+      topicposts.append(post)
+      post.animate({opacity:1},500)
+      app.postbottom()
+      return
+    }
+
 
     app.nickmap[msg.f] = true
 
