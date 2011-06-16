@@ -2201,7 +2201,6 @@ function HostChatBox() {
     dateFormat:'d M yy',
     timeFormat:'hh:mm z',
     showTimezone:true,
-    ampm:true,
     timezoneList:['A','ADT','AFT','AKDT','AKST','ALMT','AMST','AMT','ANAST','ANAT','AQTT','ART','AST','AZOST','AZOT','AZST','AZT','B','BNT','BOT','BRST','BRT','BST','BTT','C','CAST','CAT','CCT','CDT','CEST','CET','CHADT','CHAST','CKT','CLST','CLT','COT','CST','CVT','CXT','ChST','D','DAVT','E','EASST','EAST','EAT','ECT','EDT','EEST','EET','EGST','EGT','EST','ET','F','FJST','FJT','FKST','FKT','FNT','G','GALT','GAMT','GET','GFT','GILT','GMT','GST','GYT','H','HAA','HAC','HADT','HAE','HAP','HAR','HAST','HAT','HAY','HKT','HLV','HNA','HNC','HNE','HNP','HNR','HNT','HNY','HOVT','I','ICT','IDT','IOT','IRDT','IRKST','IRKT','IRST','IST','JST','K','KGT','KRAST','KRAT','KST','KUYT','L','LHDT','LHST','LINT','M','MAGST','MAGT','MART','MAWT','MDT','MHT','MMT','MSD','MSK','MST','MUT','MVT','MYT','N','NCT','NDT','NFT','NOVST','NOVT','NPT','NST','NUT','NZDT','NZST','O','OMSST','OMST','P','PDT','PET','PETST','PETT','PGT','PHOT','PHT','PKT','PMDT','PMST','PONT','PST','PT','PWT','PYST','PYT','Q','R','RET','S','SAMT','SAST','SBT','SCT','SGT','SRT','SST','T','TAHT','TFT','TJT','TKT','TLT','TMT','TVT','U','ULAT','UYST','UYT','UZT','V','VET','VLAST','VLAT','VUT','W','WAST','WAT','WDT','WEST','WET','WFT','WGST','WGT','WIB','WIT','WITA','WST','WT','X','Y','YAKST','YAKT','YAPT','YEKST','YEKT','Z'],
     timezone:'GMT'
   })
