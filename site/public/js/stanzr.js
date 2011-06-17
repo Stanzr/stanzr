@@ -1498,6 +1498,8 @@ function ChatDetailsBox() {
     
     ,followon: $('#rally_followon')
 
+    ,addtocalbtn: $('#rally_addtocalbtn')
+
     ,editbtn: $('#rally_editbtn')
     ,curatebtn: $('#rally_curatebtn')
     ,unpublishbtn: $('#rally_unpublishbtn')
@@ -1509,6 +1511,28 @@ function ChatDetailsBox() {
 
 
   self.init = function(chat) {
+
+    self.el.addtocalbtn.AddToCal({
+      icalEnabled:false,
+      vcalEnabled:false,
+        
+      getEventDetails: function( element ) {
+        var start = Date.parseExact( app.chat.whenstr, 'd MMM yyyy HH:mm zzz' )
+        var end = new Date(start.getTime()+(60*60*1000))
+
+        return { 
+          webcalurl: null,
+          icalurl: null,
+          vcalurl: null, 
+          start: start, 
+          end: end, 
+          title: app.chat.title, 
+          details: app.chat.desc, 
+          location: null, 
+          url: "http://stanzr.com/"+(app.chat.vanity?app.chat.vanity:app.chat.chatid)
+          };
+      },
+    });
 
     $('#rally_title').text(chat.title||'')
     $('#rally_modname').text(chat.modname||'')
