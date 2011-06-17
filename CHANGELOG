@@ -49,5 +49,11 @@
   cd node/support
   git clone git@github.com:rjrodger/winston.git
 
+2011-06-17:
+  - seneca update
+  cd node/support/seneca
+  git pull
+
+
 
 

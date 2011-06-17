@@ -767,7 +767,10 @@ main.api = {
             RE(res,function(out){
               console.dir(out)
 
-              if( out.ok ) {
+              if( !out.ok ) {
+                common.sendjson(res,{ok:false})
+              }
+              else {
                 var user = out.user
                 user.avimg = json.avimg
 

@@ -81,6 +81,11 @@ function setCaretPosition(ctrl, pos){
 }
 
 
+function validateEmail(email) { 
+ var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/ 
+ return email.match(re) 
+}
+
 /*
 function ct(cb) {
   return function(event){
@@ -175,6 +180,7 @@ var app = {
     ,chatclosedmsg: 'chat closed'
 
     ,enteremail: 'Please enter your email address.'
+    ,validemail: 'Please enter a valid email address.'
     ,entername: 'Please enter your name.'
 
     ,pwdnomatch: 'Your passwords do not match'
@@ -930,6 +936,9 @@ $(function(){
     }
     else if( '' == regdata.email ) {
       regmsg.text(app.text.registeremail)
+    }
+    else if( !validateEmail(regdata.email) ) {
+      regmsg.text(app.text.validemail)
     }
     else if( '' == regdata.password ) {
       regmsg.text(app.text.registerpwd)
@@ -2739,6 +2748,9 @@ function SettingsBox() {
       if( ''==user.email ) {
         self.el.msg.text(app.text.enteremail)
       }
+      else if( !validateEmail(user.email) ) {
+        self.el.msg.text(app.text.validemail)
+      }
       else if( ''==user.name ) {
         self.el.msg.text(app.text.entername)
       }
@@ -2940,6 +2952,9 @@ function TermsBox() {
     self.el.okbtn.click(function(){
       if( !self.el.email.val() ) {
         self.el.msg.text(app.text.enteremail).show()
+      }
+      else if( !validateEmail( self.el.email.val() ) ) {
+        self.el.msg.text(app.text.validemail).show()
       }
       else if( !self.el.name.val() ) {
         self.el.msg.text(app.text.entername).show()
