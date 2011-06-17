@@ -1191,8 +1191,12 @@ main.api = {
       if( vanity ) {
         var alias = main.ent.make$('app','alias')
         alias.load$({a:vanity},RE(res,function(vanityalias){
-          vanityalias.c = req.chat$.chatid
+          if( !vanityalias ) {
+            common.sendjson(res,{chatname:req.chat$.chatid})
+            return
+          }
 
+          vanityalias.c = req.chat$.chatid
           vanityalias.save$(RE(res,function(){
             common.sendjson(res,{chatname:vanity})
           }))

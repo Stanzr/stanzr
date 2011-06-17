@@ -236,22 +236,6 @@ var app = {
   },
 
 
-  /*
-  sendbox: function() {
-    if( 'open'==page.chat.state ) {
-      // show or hide on topix
-      $('#post_text').removeAttr("disabled").removeClass('logged-out').focus();
-      $('#post_send').removeAttr("disabled").removeClass('logged-out');
-      $('.topicsend .join-in').removeClass('logged-out').hide();
-      $('.topicsend .tweetout').removeClass('logged-out').fadeIn();
-      app.midbar.box.send.render()
-    }
-    else {
-      $('div.topicsend').hide()
-    }
-  },
-  */
-
   resize: function( chop ) {
     chop = 'undefined'==typeof(chop)?0:_.isNumber(chop)?chop:0;
     var published = 'done'==(app.chat.state||page.chat.state)?100:0
@@ -1507,7 +1491,6 @@ function ChatDetailsBox() {
 
     ,editbtn: $('#rally_editbtn')
     ,curatebtn: $('#rally_curatebtn')
-    ,unpublishbtn: $('#rally_unpublishbtn')
     ,unpublishbtn: $('#rally_unpublishbtn')
 
     ,aliasesbtn: $('#rally_aliasesbtn')
