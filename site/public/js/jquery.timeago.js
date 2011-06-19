@@ -93,10 +93,11 @@
       s = s.replace(/-/,"/").replace(/-/,"/");
       s = s.replace(/T/," ").replace(/Z/," UTC");
       s = s.replace(/([\+\-]\d\d)\:?(\d\d)/," $1$2"); // -04:00 -> -0400
-      //console.log(s)
-      var d = new Date(s);
+      //console.log('['+s+']')
+      //var d = new Date(s)
+      var d = Date.parseExact(s,'yyyy/MM/dd HH:mm:ss zzz')
       //console.log(d)
-      return d
+      return d || new Date()
     },
     datetime: function(elem) {
       // jQuery's `is()` doesn't play well with HTML5 in IE
