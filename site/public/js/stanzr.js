@@ -66,8 +66,8 @@ function RE(win) {
 
 
 function setCaretPosition(ctrl, pos){
-  if(ctrl.setSelectionRange)
-  {
+  try {
+  if(ctrl.setSelectionRange) {
     ctrl.focus();
     ctrl.setSelectionRange(pos,pos);
   }
@@ -77,6 +77,10 @@ function setCaretPosition(ctrl, pos){
     range.moveEnd('character', pos);
     range.moveStart('character', pos);
     range.select();
+  }
+  }
+  catch ( e) {
+    logerror('error',e)
   }
 }
 
@@ -2046,9 +2050,36 @@ function ReplyBox() {
         msgdiv.find('.post').text(msg.t)
         self.el.msgs.append(msgdiv)
 
+        var origmsg = $('#msg_'+msg.i)
+
+        var share = msgdiv.find('a.share')
+        var reply = msgdiv.find('a.sprite-at-reply')
+        var approve = msgdiv.find('a.sprite-approve')
+
+
+        if( 'twitter' == page.user.service ) {
+          share.click(function(){
+            origmsg.find('a.share').click()
+          })
+        }
+        else {
+          share.hide()
+        }
+
+        reply.click(function(){
+          origmsg.find('a.sprite-at-reply').click()
+        })
+
+        approve.click(function(){
+          origmsg.find('a.sprite-approve').click()
+        })
+
+
+
         if( !msg.h ) {
           msgdiv.fadeIn()
         }
+
 
         if( 'up' == self.drill && 100 < self.el.msgs.height() ) {
           i = replies.length
