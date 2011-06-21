@@ -284,7 +284,7 @@ main.util = {
   },
 
   sendtogroup: function(group,type,msg) {
-    waitfor( group.now, 'receiveMessage', JSON.stringify([group,type,msg]), function() {
+    waitfor( group.now, 'receiveMessage', JSON.stringify([group.groupName,type,msg]), function() {
       group.now.receiveMessage(
         msg.f, 
         JSON.stringify(
