@@ -21,7 +21,7 @@
        */
       calendars : [
         {value: 1,
-          label:"Add to Google Calendar",
+          label:"Add to Google",
           enabled : function(addtocal) { return true; },
           formatlink : function(eventDetails) {
             return "http://www.google.com/calendar/event?action=TEMPLATE&trp=false" +
@@ -32,7 +32,7 @@
             "&details=" + eventDetails.details +
             "&sprop=" + eventDetails.url;
           } },
-        {value: 2, label:"Add to Live Calendar",
+        {value: 2, label:"Add to MSN Live",
           enabled : function(addtocal) { return true; },
           formatlink : function(eventDetails) {
             return "http://calendar.live.com/calendar/calendar.aspx?rru=addevent" +
@@ -41,7 +41,7 @@
             "&summary=" + eventDetails.title +
             "&location=" + eventDetails.location;
           } },
-        {value: 3, label:"Add to Yahoo! Calendar",
+        {value: 3, label:"Add to Yahoo!",
           enabled : function(addtocal) { return true; },
           formatlink : function(eventDetails) {
             var minsDuration = ( Date.parse(eventDetails.end) - Date.parse(eventDetails.start) ) / 60 / 1000;
