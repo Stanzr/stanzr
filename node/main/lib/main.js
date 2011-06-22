@@ -1509,7 +1509,7 @@ main.api.chat.ical = function( req, res ) {
     ]
 
     var icalstr = ical.join('\r\n')
-    res.writeHead(200)
+    res.writeHead(200, {'Content-Type':'text/calendar'})
     res.end( icalstr  )
   }
   else {
