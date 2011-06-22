@@ -1517,16 +1517,16 @@ function ChatDetailsBox() {
   self.init = function(chat) {
 
     self.el.addtocalbtn.AddToCal({
-      icalEnabled:false,
+      icalEnabled:true,
       vcalEnabled:false,
         
       getEventDetails: function( element ) {
         var start = Date.parseExact( app.chat.whenstr, 'd MMM yyyy HH:mm zzz' )
         var end = new Date(start.getTime()+(60*60*1000))
 
-        return { 
+        var out = { 
           webcalurl: null,
-          icalurl: null,
+          icalurl: "http://stanzr.com/api/chat/"+app.chat.chatid+"/ical/"+start.getTime(),
           vcalurl: null, 
           start: start, 
           end: end, 
@@ -1534,7 +1534,9 @@ function ChatDetailsBox() {
           details: app.chat.desc, 
           location: null, 
           url: "http://stanzr.com/"+(app.chat.vanity?app.chat.vanity:app.chat.chatid)
-          };
+        };
+
+        return out;
       },
     });
 

@@ -12,4 +12,13 @@ office.chat.makepublishalias = function( tag, when, desc ) {
   return alias
 }
 
+office.zpad = function(str,width) {
+  str = ''+str
+  width = width || 2
+  while( str.length < width ) {
+    str = '0'+str
+  }
+  return str
+}
+
 module.exports  = office

@@ -1392,6 +1392,7 @@ main.api.user.post_terms = function( req, res ) {
 }
 
 
+
 main.api.chat.msg.share = function(req,res) {
   var msg = main.ent.make$('app','msg')
   main.msg.load(req.params.chatid,req.params.msgid,RE(res,function(msg){
@@ -1475,6 +1476,44 @@ main.api.user.post = function(req,res) {
   }
   else {
     denied(res)
+  }
+}
+
+
+main.api.chat.ical = function( req, res ) {
+  if( req.chat$ ) {
+
+    var chaturl = conf.hosturl + '/' + (req.chat$.vanity ? req.chat$.vanity : req.chat$.chatid)
+    var start = new Date( parseInt(req.params.time,10) )
+    var end = new Date( start.getTime()+(60*60*1000) )
+
+    var zpad = office.zpad
+    var startstr = ''+start.getUTCFullYear()+zpad(start.getUTCMonth()+1)+zpad(start.getUTCDate())+'T'+zpad(start.getUTCHours())+zpad(start.getUTCMinutes())+zpad(start.getUTCSeconds()) 
+    var endstr   = ''+end.getUTCFullYear()+zpad(end.getUTCMonth()+1)+zpad(end.getUTCDay())+'T'+zpad(end.getUTCHours())+zpad(end.getUTCMinutes())+zpad(end.getUTCSeconds()) 
+
+    var ical = [
+      "BEGIN:VCALENDAR",
+      "PRODID:-//"+conf.hosturl+"//EN",
+      "VERSION:2.0",
+      "BEGIN:VEVENT",
+      "SUMMARY:"+req.chat$.title,
+      "PRIORITY:0",
+      "CATEGORIES:chat",
+      "CLASS:PUBLIC",
+      "DTSTART:"+startstr,
+      "DTEND:"+endstr,
+      "URL:"+chaturl,
+      "DESCRIPTION:"+req.chat$.desc,
+      "END:VEVENT",
+      "END:VCALENDAR",
+    ]
+
+    var icalstr = ical.join('\r\n')
+    res.writeHead(200)
+    res.end( icalstr  )
+  }
+  else {
+    lost(res)
   }
 }
 
@@ -2020,6 +2059,7 @@ Seneca.init(
         capp.post('/api/auth/:action', main.api.auth.post)
 
         capp.get('/api/chat/:chatid', main.api.chat.get)
+        capp.get('/api/chat/:chatid/ical/:time', main.api.chat.ical)
 
         capp.get('/api/chat/:chatid/msgs', main.api.chat.get)
         capp.get('/api/chat/:chatid/msgs/agrees', main.api.chat.msg.get_agrees)
