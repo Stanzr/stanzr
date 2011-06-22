@@ -54,13 +54,15 @@
             "&DESC=" + eventDetails.details +
             "&URL=" + eventDetails.url;
           } },
+        /*
         {value: 4, label:"Add to 30boxes",
           enabled : function(addtocal) { return addtocal.options.icalEnabled; },
           formatlink : function(eventDetails) {
             return ( eventDetails.webcalurl ?
             "http://30boxes.com/add.php?webcal=" + encodeURIComponent( eventDetails.webcalurl ) : null );
           } },
-        {value: 5, label:"iCal",
+          */
+        {value: 4, label:"Add to Outlook or iCal",
           enabled : function(addtocal) { return addtocal.options.icalEnabled; },
           formatlink : function(eventDetails) {
             return (eventDetails.icalurl ? eventDetails.icalurl : null);
