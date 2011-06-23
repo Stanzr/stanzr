@@ -1526,7 +1526,7 @@ function ChatDetailsBox() {
 
         var out = { 
           webcalurl: null,
-          icalurl: "/api/chat/"+app.chat.chatid+"/ical/"+start.getTime(),
+          icalurl: "/api/chat/"+app.chat.chatid+"/ical/"+start.getTime()+"/chat.ics",
           vcalurl: null, 
           start: start, 
           end: end, 

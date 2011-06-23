@@ -2059,7 +2059,7 @@ Seneca.init(
         capp.post('/api/auth/:action', main.api.auth.post)
 
         capp.get('/api/chat/:chatid', main.api.chat.get)
-        capp.get('/api/chat/:chatid/ical/:time', main.api.chat.ical)
+        capp.get('/api/chat/:chatid/ical/:time/chat.ics', main.api.chat.ical)
 
         capp.get('/api/chat/:chatid/msgs', main.api.chat.get)
         capp.get('/api/chat/:chatid/msgs/agrees', main.api.chat.msg.get_agrees)
