@@ -948,6 +948,8 @@ main.api = {
             chat.desc     = fixval( json.desc     , chat.desc , '' )
             chat.logo     = fixval( json.logo     , chat.logo , '' )
         
+            chat.when = new Date(json.when)
+
             main.chat.save(chat,RE(res,function(chat){
               main.util.tweetsearch(chat.chatid,chat.hashtag)
               common.sendjson(res,chat.data$())
@@ -1150,9 +1152,10 @@ main.api = {
         req.chat$.state = 'done'
         req.chat$.followon = newchat.chatid
         req.chat$.followvanity = vanity
+        req.chat$.vanity = vanity
         
         main.chat.save(req.chat$,RE(res,function(out){
-          pubalias = office.chat.makepublishalias(req.chat$.hashtag,req.chat$.whenstr,req.chat$.topics[0].title)
+          pubalias = office.chat.makepublishalias(req.chat$)
           var alias = main.ent.make$('app','alias')
           
           alias.load$({c:chatid,a:pubalias},RE(res,function(foundalias){

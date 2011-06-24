@@ -1,9 +1,14 @@
 
 var office = {
+  months:['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
   chat:{}
 }
 
-office.chat.makepublishalias = function( tag, when, desc ) {
+office.chat.makepublishalias = function( chat ) {
+  var tag = chat.vanity || chat.hashtag || chat.chatid
+  var when = chat.when ? ''+chat.when.getFullYear()+'-'+office.months[chat.when.getMonth()]+'-'+chat.when.getDate() : chat.whenstr;
+  var desc = chat.topics && chat.topics[0] && chat.topics[0].title
+
   tag  = tag.replace(/\W/g,'-')
   when = when.replace(/\W/g,'-')
   desc = desc.replace(/\W/g,'-')

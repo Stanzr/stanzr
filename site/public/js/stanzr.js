@@ -2368,6 +2368,9 @@ function HostChatBox() {
 
     var title = self.el.title.val()
     var valid = title
+
+    var whenstr = self.el.whenstr.val()
+    var when = Date.parseExact( whenstr, 'd MMM yyyy HH:mm zzz' )
     
     if( valid ) {
       $.ajax({
@@ -2386,7 +2389,8 @@ function HostChatBox() {
           modname:    self.el.modname.val(),
           modtitle:   self.el.modtitle.val(),
           modorg:     self.el.modorg.val(),
-          whenstr:    self.el.whenstr.val(),
+          whenstr:    whenstr,
+          when:       when.getTime(),
           hashtag:    hashtag,
           desc:       self.el.desc.val(),
           topics:     topics
