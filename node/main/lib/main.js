@@ -2030,6 +2030,11 @@ Seneca.init(
       }
     })
 
+
+    app.get('/cachetest', function(req,res){
+      common.sendjson(res,{a:1})
+    })
+
     app.get('/', main.view.chat.hash)
 
     app.get('/:chatid', main.view.chat.hash)

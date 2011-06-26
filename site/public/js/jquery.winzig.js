@@ -85,7 +85,7 @@
     }
 
     self.del = function(itemname, itemdata,cb) {
-      console.log('del',itemname)
+      //console.log('del',itemname)
       var url = self.entityurl+
         (self.settings.usequeryparam?'?name=':'/')+escape(itemname)
       $.ajax({

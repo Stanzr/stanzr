@@ -20,7 +20,12 @@
        * extend or modify this array as required in widget setup.
        */
       calendars : [
-        {value: 1,
+        {value: 1, label:"Add to Outlook or iCal",
+          enabled : function(addtocal) { return addtocal.options.icalEnabled; },
+          formatlink : function(eventDetails) {
+            return (eventDetails.icalurl ? eventDetails.icalurl : null);
+          } },
+        {value: 2,
           label:"Add to Google",
           enabled : function(addtocal) { return true; },
           formatlink : function(eventDetails) {
@@ -32,7 +37,7 @@
             "&details=" + eventDetails.details +
             "&sprop=" + eventDetails.url;
           } },
-        {value: 2, label:"Add to MSN Live",
+        {value: 3, label:"Add to MSN Live",
           enabled : function(addtocal) { return true; },
           formatlink : function(eventDetails) {
             return "http://calendar.live.com/calendar/calendar.aspx?rru=addevent" +
@@ -41,7 +46,7 @@
             "&summary=" + eventDetails.title +
             "&location=" + eventDetails.location;
           } },
-        {value: 3, label:"Add to Yahoo!",
+        {value: 4, label:"Add to Yahoo!",
           enabled : function(addtocal) { return true; },
           formatlink : function(eventDetails) {
             var minsDuration = ( Date.parse(eventDetails.end) - Date.parse(eventDetails.start) ) / 60 / 1000;
@@ -62,11 +67,6 @@
             "http://30boxes.com/add.php?webcal=" + encodeURIComponent( eventDetails.webcalurl ) : null );
           } },
           */
-        {value: 4, label:"Add to Outlook or iCal",
-          enabled : function(addtocal) { return addtocal.options.icalEnabled; },
-          formatlink : function(eventDetails) {
-            return (eventDetails.icalurl ? eventDetails.icalurl : null);
-          } },
         {value: 6, label:"vCalendar",
           enabled : function(addtocal) { return addtocal.options.vcalEnabled; },
           formatlink : function(eventDetails) {

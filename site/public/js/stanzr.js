@@ -403,18 +403,25 @@ var app = {
 
 
   getavatar: function(avnick,cb) {
-    if( app.avimg[avnick] || null === app.avimg[avnick] ) {
+    debug('getavatar:'+avnick+':'+app.avimg[avnick])
+    if( (app.avimg[avnick] && '__pending__'!=app.avimg[avnick]) || null === app.avimg[avnick] ) {
       cb && cb(app.avimg[avnick])
     }
+    else if('__pending__'==app.avimg[avnick]) {
+      setTimeout(function(){
+        app.getavatar(avnick,cb)
+      },5000)
+    }
     else {
+      app.avimg[avnick] = '__pending__'
+      debug('getavatar:HTTP GET:'+avnick)
       http.get('/api/user/'+avnick+'/avatar',function(res){
-        if( res.hasError ) {
-          app.avimg[avnick] = null
-        }
-        else {
+        if( res.avimg ) {
           app.avimg[avnick] = res.avimg
         }
-        
+        else {
+          app.avimg[avnick] = null        
+        }
         cb && cb(app.avimg[avnick])
       })
     }
@@ -723,7 +730,12 @@ var app = {
     var opacity = msg.x ? 0.5 : 1.0
 
     if( msg.p == app.topic && !msg.h ) {
-      post.animate({opacity:opacity},500)
+      if( !msg.nofadein ) {
+        post.animate({opacity:opacity},500)
+      }
+      else {
+        post.css({opacity:opacity})
+      }
       app.postbottom()
     }
     else if( !msg.h) {
@@ -1217,6 +1229,7 @@ $(function(){
               debug(res)
               for( var i = 0; i < res.length; i++ ) {
                 var msg = res[i]
+                msg.nofadein = true
                 app.msgcache[msg.i] = msg
                 app.displaymsg(msg)
               }
