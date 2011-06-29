@@ -1419,7 +1419,7 @@ function SendBox() {
       return page && page.user && 'twitter' == page.user.service
     },
     box: function() {
-      return !!nick && (app.ismod || 'open' == app.chat.state )
+      return !!nick && (app.ismod || 'open' == app.chat.state ) && 'chat' == app.mode
     }
   })
 
@@ -3115,7 +3115,7 @@ function Curate() {
       self.insert(msgitem)
     })
 
-    $('a.topic_copyall').bind('click.curate',function(){
+    $('a.topic_copyall').bind('click.curate',function(event){
       var topic = $(event.target).parents('div.topichead').attr('id').substring(11)
       debug('topic',topic)
 
