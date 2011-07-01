@@ -21,6 +21,8 @@ npm install connect-form
 npm install colors
 npm install loggly
 npm install riak-js
+npm install log
+
 
 
 

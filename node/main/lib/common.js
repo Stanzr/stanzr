@@ -66,8 +66,8 @@ var twitter  = exports.twitter   = require('twitter')
 var seneca   = exports.seneca    = require('../../support/seneca')
 //var seneca   = exports.seneca    = require('seneca')
 
-//var now      = exports.now   = require('now')
-var now      = exports.now   = require('../../support/now')
+var now      = exports.now   = require('now')
+//var now      = exports.now   = require('../../support/now')
 
 
 
@@ -77,6 +77,7 @@ var conf = exports.conf = configx('conf',{
   tweetsearch:false,
   quickcodelen:12,
   accesslog:'/tmp/stanzr-access.log',
+  twlog:'/tmp/twitter.log',
   web: {
     port: 8080
   },

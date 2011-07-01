@@ -33,10 +33,13 @@ var main = {}
 var MAX_INFO_LIST = 30
 
 
-
 process.on('uncaughtException', function (err) {
   log('error','uncaught',err)
 });
+
+
+var Log = require('log')
+var twlog = new Log(Log.DEBUG,fs.createWriteStream(conf.twlog));
 
 
 function sendcode(code,res) {
@@ -272,9 +275,13 @@ main.util = {
             tweet += ' #'+hashtag
           }
 
+          var start = new Date()
           twit.updateStatus(
             tweet,
             function (data) {
+              var end = new Date()
+              var dur = end.getTime()-start.getTime()
+              twlog.debug( dur+', '+JSON.stringify(data) )
             }
           )
           
