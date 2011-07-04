@@ -605,7 +605,7 @@ var app = {
   },
 
 
-  displaymsg: function(msg) {
+  displaymsg: function(msg,noscroll) {
     debug(msg)
     if( msg.h ) return;
 
@@ -736,7 +736,10 @@ var app = {
       else {
         post.css({opacity:opacity})
       }
-      app.postbottom()
+
+      if( !noscroll ) {
+        app.postbottom()
+      }
     }
     else if( !msg.h) {
       post.css({opacity:opacity})
@@ -1231,8 +1234,12 @@ $(function(){
                 var msg = res[i]
                 msg.nofadein = true
                 app.msgcache[msg.i] = msg
-                app.displaymsg(msg)
+                app.displaymsg(msg,true)
               }
+
+              var postsarea = $('div.postsarea')
+              var sh = postsarea[0].scrollHeight
+              postsarea.scrollTop(sh)
 
               app.rightbar.box.agree.load()
               app.rightbar.box.reply.set(res)
