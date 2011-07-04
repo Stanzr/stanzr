@@ -217,6 +217,7 @@ div.midcol {
       -moz-background-clip: padding;
       -webkit-background-clip: padding-box;
       background-clip: padding-box;
+      cursor: pointer;
       display: none;
       background-color: #575450;
       clear: both;
