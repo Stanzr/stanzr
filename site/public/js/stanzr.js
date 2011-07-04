@@ -2383,8 +2383,9 @@ function HostChatBox() {
     var valid = title
 
     var whenstr = self.el.whenstr.val()
-    var when = Date.parseExact( whenstr, 'd MMM yyyy HH:mm zzz' )
-    
+    var when = ( whenstr && 0 < whenstr.length && Date.parseExact( whenstr, 'd MMM yyyy HH:mm zzz' ) ) || new Date()
+
+
     if( valid ) {
       $.ajax({
         url:'/api/chat'+(chatid?'/'+chatid:''),
