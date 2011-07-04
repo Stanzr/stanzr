@@ -220,7 +220,7 @@ var app = {
 
     app.resize()
 
-    app.postbottom()
+    app.scrolldown()
   },
 
 
@@ -243,6 +243,12 @@ var app = {
         postsarea.scrollTop( past )
       }
     }
+  },
+
+  scrolldown: function() {
+    var postsarea = $('div.postsarea')
+    var sh = postsarea[0].scrollHeight
+    postsarea.scrollTop(sh)
   },
 
 
@@ -1237,9 +1243,7 @@ $(function(){
                 app.displaymsg(msg,true)
               }
 
-              var postsarea = $('div.postsarea')
-              var sh = postsarea[0].scrollHeight
-              postsarea.scrollTop(sh)
+              app.scrolldown()
 
               app.rightbar.box.agree.load()
               app.rightbar.box.reply.set(res)
