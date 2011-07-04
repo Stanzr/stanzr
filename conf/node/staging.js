@@ -14,6 +14,13 @@ module.exports = {
         port: 27045,
         username: 'staging',
         password: 'k1lk3nn1'  
+      },
+      log: {
+        name: 'stanzrstaging',
+        server: 'flame.mongohq.com',
+        port: 27045,
+        username: 'staging',
+        password: 'k1lk3nn1'  
       }
     },
     keys: {
