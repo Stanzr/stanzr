@@ -493,7 +493,7 @@ Markdown.dialects.Gruber = {
         if ( !m ) return undefined;
 
         function make_list( m ) {
-          var list = bullet_list( m[2] )
+          var list = bullet_list.test( m[2] )
                    ? ["bulletlist"]
                    : ["numberlist"];
 
