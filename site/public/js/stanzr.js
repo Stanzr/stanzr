@@ -220,7 +220,7 @@ var app = {
 
     app.resize()
 
-    app.postbottom()
+    app.scrolldown()
   },
 
 
@@ -243,6 +243,12 @@ var app = {
         postsarea.scrollTop( past )
       }
     }
+  },
+
+  scrolldown: function() {
+    var postsarea = $('div.postsarea')
+    var sh = postsarea[0].scrollHeight
+    postsarea.scrollTop(sh)
   },
 
 
@@ -605,7 +611,7 @@ var app = {
   },
 
 
-  displaymsg: function(msg) {
+  displaymsg: function(msg,noscroll) {
     debug(msg)
     if( msg.h ) return;
 
@@ -736,7 +742,10 @@ var app = {
       else {
         post.css({opacity:opacity})
       }
-      app.postbottom()
+
+      if( !noscroll ) {
+        app.postbottom()
+      }
     }
     else if( !msg.h) {
       post.css({opacity:opacity})
@@ -1231,8 +1240,10 @@ $(function(){
                 var msg = res[i]
                 msg.nofadein = true
                 app.msgcache[msg.i] = msg
-                app.displaymsg(msg)
+                app.displaymsg(msg,true)
               }
+
+              app.scrolldown()
 
               app.rightbar.box.agree.load()
               app.rightbar.box.reply.set(res)
@@ -2383,8 +2394,9 @@ function HostChatBox() {
     var valid = title
 
     var whenstr = self.el.whenstr.val()
-    var when = Date.parseExact( whenstr, 'd MMM yyyy HH:mm zzz' )
-    
+    var when = ( whenstr && 0 < whenstr.length && Date.parseExact( whenstr, 'd MMM yyyy HH:mm zzz' ) ) || new Date()
+
+
     if( valid ) {
       $.ajax({
         url:'/api/chat'+(chatid?'/'+chatid:''),

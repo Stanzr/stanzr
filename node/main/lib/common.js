@@ -154,7 +154,7 @@ exports.log = function() {
 // JSON functions
 
 exports.readjson = function(req,res,win,fail) {
-  var MAX = 10*65535
+  var MAX = 100*65535
   var size = 0;
   var bodyarr = []
 

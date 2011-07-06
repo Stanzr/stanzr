@@ -323,7 +323,7 @@
       head.insertBefore(cssNode,head.children[0])
     }
     catch( e ) {
-      if( console ) {
+      if( typeof console != 'undefined' ) {
         console.log(e)
       }
     }

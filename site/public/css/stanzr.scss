@@ -346,6 +346,7 @@ div {
 
       div.rally_gotoactive {
         @include box-round;
+        cursor: pointer;
         display: none;
         background-color: #575450;
         clear:both;
