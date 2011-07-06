@@ -391,9 +391,10 @@ div {
     
         li.message {
           @include messageshadow;
-          margin: 0 0 3px 0;
+          margin: 0 0 10px 0;
           padding: 5px;
           background-color: #fff;
+		  border-radius:5px;
           
         }
 
