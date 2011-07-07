@@ -205,7 +205,7 @@ div.post_content {
   
   h4 {float: left;}
   
-  .post_actions {float: right;}
+  .post_actions {float: right; position:absolute; right:5px; margin-top:10px;}
 
   div.meta {
     color: #ccc;
@@ -222,8 +222,9 @@ span.count {
 
 
 .content, .container {
-  width: 980px;
-  margin: 0 auto;
+  width: 100%;
+  margin: 0;
+  display:block;
 }
 
 div {
@@ -234,7 +235,7 @@ div {
   &.header {
     background-color: $headC;
     height: $len2;
-    width: 980px; 
+    width: 100%; 
 
     h1 {
       color: #fff;
@@ -305,9 +306,9 @@ div {
 
   &.leftcol {
     background-color: $locolC;
-    margin-right: 0px;
     width: 265px;
-    xfloat: left;
+	float:left;
+	margin: 0 0 0 -100%;	
     overflow-y: auto;
     overflow-x: hidden;
 
@@ -327,13 +328,15 @@ div {
   &.midcol {
     background-color: $hicolC;
     margin-right: 0px;
-    width: 450px;
-    xfloat: left;
+    width: 100%;
+    float: left;
+	min-width:450px;
 
     &>div {
       padding: 10px
     }
-
+	div.mid-inner { margin:0 265px; min-width:350px; }
+	div.mid-inner .inner { }
     div.topichead {
       background-color: $topicheadbgC;
       padding: 10px;
@@ -379,7 +382,7 @@ div {
     }
 
     div.postsarea {
-      overflow: auto;
+     /*overflow: auto;*/
 
       #posts_tm { 
         display: none; 
@@ -395,7 +398,7 @@ div {
           margin: 0 0 3px 0;
           padding: 5px;
           background-color: #fff;
-          
+		  position:relative;
         }
 
         li.infomsg {
@@ -409,9 +412,8 @@ div {
         }
       }
     }
-
     div.topicsend {
-      position: absolute;
+      /*position: absolute;*/
       bottom: 0;
       padding: 0px 5px 5px 10px;
       background-color: #d0c9be;
@@ -465,7 +467,8 @@ div {
   &.rightcol {
     background-color: $locolC;
     width: 265px;
-    xfloat: left;
+	float:left;
+	margin-left: -265px;
     overflow: auto;
 
     div.sidesection {
@@ -809,7 +812,7 @@ div.modalbox {
 #curate {
   overflow: hidden;
   height: 0px;
-  width: 970px;
+  width: 100%;
   color: #fff;
   background: #c9c9c9; /* Old browsers */
   background: -moz-linear-gradient(top, #c9c9c9 0%, #b5b5b5 100%); /* FF3.6+ */

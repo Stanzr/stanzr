@@ -43,61 +43,12 @@
   </div>
 
 
-  <div class="span-7 leftcol col">
-    <div>
-      <h1 id="rally_title"><%=val.chat.title%></h1>
-      <h2>#<%=val.hashtag%></h2>
-      <a id="rally_addtocalbtn" class="textbtn">add to calendar</a>
-      
-      <h3 id="rally_followon" class="textbtn hide" style="text-decoration:underline;color:red;cursor:pointer">Host another chat!</h3>
-
-      <a id="rally_editbtn" class="textbtn hide">edit</a>
-      <a id="rally_curatebtn" class="textbtn hide">curate</a>
-      <a id="rally_unpublishbtn" class="textbtn hide">unpublish</a>
-
-      <a id="rally_aliasesbtn" class="textbtn hide">aliases</a>
-      <a id="rally_moderatorsbtn" class="textbtn hide">moderators</a>
-      <a id="rally_analyticsbtn" class="textbtn hide" target="blank">analytics</a>
-    </div>
-
-    <div>
-      <h2>Moderated by <a id="rally_modname"><%=val.chat.modname%></a></h2>
-      <h3 id="rally_modtitle"><%=val.chat.modtitle%></h3>
-      <h3 id="rally_modorg"><%=val.chat.modorg%></h3>
-      <a id="rally_modmsgbtn" class="textbtn">send a message</a>
-    </div>
-
-    <div>
-      <h2>Scheduled for <span id="rally_date"></span></h2>
-      <h3 id="rally_whenstr"><%=val.chat.whenstr%></h3>
-      <br />
-
-<!-- AddThis Button BEGIN -->
-<div class="addthis_toolbox addthis_default_style " style="width:250px">
-<a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
-<a class="addthis_button_tweet"></a>
-<a class="addthis_button_linkedin"></a>
-<a class="addthis_button_email"></a>
-</div>
-<script type="text/javascript">var addthis_config = {"data_track_clickback":true};</script>
-<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid=ra-4da9f0b86183f2b2"></script>
-<!-- AddThis Button END -->
-
-    </div>
-
-    <div class="chat_description">
-      <div id="chat_logo" class="hide">
-        <img>
-      </div>
-      <div id="rally_desc" class="hide">
-<%=val.chat.desc%>
-      </div>
-    </div>
-
-  </div>
+ 
 
 
-  <div class="span-10 midcol clearfix col">
+  <div class=" midcol clearfix col">
+  	<div class="mid-inner">
+	 <div class="inner">
     <div id="topichead_tm" class="topichead clearfix">
       <div class="clearfix">
         <h4 class="rally_topictitle"></h4>
@@ -320,10 +271,62 @@ if( 'done' == val.chat.state ) {
         </div>
       </li>
     </ul>
-
+	</div>
+	</div>
   </div>
 
+ <div class="span-7 leftcol col">
+    <div>
+      <h1 id="rally_title"><%=val.chat.title%></h1>
+      <h2>#<%=val.hashtag%></h2>
+      <a id="rally_addtocalbtn" class="textbtn">add to calendar</a>
+      
+      <h3 id="rally_followon" class="textbtn hide" style="text-decoration:underline;color:red;cursor:pointer">Host another chat!</h3>
 
+      <a id="rally_editbtn" class="textbtn hide">edit</a>
+      <a id="rally_curatebtn" class="textbtn hide">curate</a>
+      <a id="rally_unpublishbtn" class="textbtn hide">unpublish</a>
+
+      <a id="rally_aliasesbtn" class="textbtn hide">aliases</a>
+      <a id="rally_moderatorsbtn" class="textbtn hide">moderators</a>
+      <a id="rally_analyticsbtn" class="textbtn hide" target="blank">analytics</a>
+    </div>
+
+    <div>
+      <h2>Moderated by <a id="rally_modname"><%=val.chat.modname%></a></h2>
+      <h3 id="rally_modtitle"><%=val.chat.modtitle%></h3>
+      <h3 id="rally_modorg"><%=val.chat.modorg%></h3>
+      <a id="rally_modmsgbtn" class="textbtn">send a message</a>
+    </div>
+
+    <div>
+      <h2>Scheduled for <span id="rally_date"></span></h2>
+      <h3 id="rally_whenstr"><%=val.chat.whenstr%></h3>
+      <br />
+
+<!-- AddThis Button BEGIN -->
+<div class="addthis_toolbox addthis_default_style " style="width:250px">
+<a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+<a class="addthis_button_tweet"></a>
+<a class="addthis_button_linkedin"></a>
+<a class="addthis_button_email"></a>
+</div>
+<script type="text/javascript">var addthis_config = {"data_track_clickback":true};</script>
+<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid=ra-4da9f0b86183f2b2"></script>
+<!-- AddThis Button END -->
+
+    </div>
+
+    <div class="chat_description">
+      <div id="chat_logo" class="hide">
+        <img>
+      </div>
+      <div id="rally_desc" class="hide">
+<%=val.chat.desc%>
+      </div>
+    </div>
+
+  </div>
   <div class="span-7 last rightcol col">
 
     <div class="sidesection clearfix rightbarbox" id="avatar_box">
