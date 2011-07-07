@@ -3360,3 +3360,12 @@ window.restartchat = function() {
 catch( e ) {
   logerror('error',e)
 }
+
+
+$('li.message').live('mouseenter', function(){
+	$('.post_actions', this).show();
+});
+
+$('li.message').live('mouseleave', function(){
+	$('.post_actions', this).hide();
+});

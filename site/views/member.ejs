@@ -121,7 +121,7 @@ if( 'done' == val.chat.state ) {
 
             <div class="clearfix">
               <h4><%=body.f%></h4>
-              <div class="post_actions">
+              <div class="post_actions" style="display:none;">
 
                 <a class="imgbtn sprite-approve">&nbsp;</a>
                 <span class="agrees count"><%=(body.a||'')%></span>
@@ -165,7 +165,7 @@ if( 'done' == val.chat.state ) {
               <h4></h4>
               <div class="moderator meta hide">moderator</div>
               <div class="when meta"></div>
-              <div class="post_actions">
+              <div class="post_actions" style="display:none;">
 
 
                 <a class="imgbtn sprite-at-reply" title="Mention or send a Reply">&nbsp;</a>
@@ -257,7 +257,7 @@ if( 'done' == val.chat.state ) {
 
           <div class="clearfix">
             <h4></h4>
-            <div class="post_actions">
+            <div class="post_actions" style="display:none;">
               
               <a class="imgbtn sprite-at-reply">&nbsp;</a>
               <span class="replies count"></span>
@@ -605,7 +605,7 @@ if( 'done' == val.chat.state ) {
     </div>
 
     <div>
-      <a id="profile_smlink"></a>
+      <a id="profile_smlink" target="_blank"></a>
       <a id="profile_messagebtn" class="textbtn">message</a>
       <a id="profile_banbtn" class="textbtn hide">&nbsp;&nbsp;&nbsp;ban</a>
       <a id="profile_unbanbtn" class="textbtn hide">&nbsp;&nbsp;&nbsp;unban</a>
