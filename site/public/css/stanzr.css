@@ -282,7 +282,7 @@ div.midcol {
       border: 0px;
       margin: 0px;
       padding: 0px;
-      width: 430px; }
+      /* width: 430px;        */ }
       div.midcol div.topicsend table td, div.midcol div.topicsend table tr {
         border: 0px;
         margin: 0px;
@@ -292,7 +292,7 @@ div.midcol {
       border: 1px solid #999;
       font-size: 13px;
       background-color: #fff;
-      width: 370px;
+      width: 100%;
       height: 35px;
       padding: 2px; }
     div.midcol div.topicsend #post_send {
