@@ -250,7 +250,8 @@ div.midcol {
       width: 50px;
       float: right; }
   div.midcol div.postsarea {
-    /*overflow: auto;*/ }
+    overflow-y: auto;
+    overflow-x: hidden; }
     div.midcol div.postsarea #posts_tm {
       display: none; }
     div.midcol div.postsarea ul.topicposts {
