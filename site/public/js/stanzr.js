@@ -2174,7 +2174,9 @@ function AvatarBox() {
       })
 
       avatar.mouseleave(function(){
-        app.popup.box.profile.checkmouse()
+			setTimeout(function(){
+		        app.popup.box.profile.checkmouse()
+			}, 200);
       })
     }
   }
@@ -2636,8 +2638,13 @@ function ProfileBox() {
 
   self.checkmouse = function() {
     if( !self.mouseoverme ) {
-      // self.el.box.hide()
+       self.el.box.hide()
+		return false;
+
     }
+	else{
+		 return true;
+	}
   }
   
   self.el.box.mouseenter(function(){
