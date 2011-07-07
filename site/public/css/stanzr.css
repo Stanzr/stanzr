@@ -257,7 +257,8 @@ div.midcol {
     div.midcol div.postsarea ul.topicposts {
       list-style-type: none;
       margin: 0px;
-      padding: 0px; }
+      padding: 0px;
+      margin-right: 10px; }
       div.midcol div.postsarea ul.topicposts li.message {
         -moz-box-shadow: 0px 1px 3px #bfbfbf;
         -webkit-box-shadow: 0px 1px 3px #bfbfbf;

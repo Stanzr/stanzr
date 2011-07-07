@@ -396,6 +396,7 @@ div {
         list-style-type: none;
         margin: 0px;
         padding: 0px;
+		margin-right:10px;
     
         li.message {
           @include messageshadow;
