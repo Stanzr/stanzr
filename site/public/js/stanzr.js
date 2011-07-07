@@ -3367,5 +3367,11 @@ $('li.message').live('mouseenter', function(){
 });
 
 $('li.message').live('mouseleave', function(){
-	$('.post_actions', this).hide();
+	if( $(this).data('shared')!==true ){
+		$('.post_actions', this).hide();
+	}
+});	
+
+$('li.message .post_actions a.sprite-reshare').live('click', function(evt){
+	$(this).parents('li.message').data('shared', true);
 });
