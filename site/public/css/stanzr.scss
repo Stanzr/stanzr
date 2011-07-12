@@ -338,7 +338,7 @@ div {
 	min-width:450px;
 
     &>div {
-      padding: 10px
+      /* padding: 10px */
     }
 	div.mid-inner { margin:0 265px; min-width:350px; }
 	div.mid-inner .inner { }
@@ -346,10 +346,15 @@ div {
       background-color: $topicheadbgC;
       padding: 10px;
       
-      h4 {width: 375px; float: left;}
+      h4 {
+		/* width: 375px; */
+		/* float: left;  */
+		padding-right:90px;
+	  }
 
       p.rally_topicdesc {
         margin: 0px;
+		margin-top:10px;
       }
 
       div.rally_gotoactive {
@@ -382,7 +387,10 @@ div {
 
       div.navbox {
         width: 50px;
-        float: right;
+        /* float: right; */
+		position:absolute;
+		right:0;
+		top:0;
       }
     }
 
@@ -397,8 +405,8 @@ div {
       ul.topicposts {
         list-style-type: none;
         margin: 0px;
-        padding: 0px;
-		margin-right:10px;
+        padding: 10px;
+		/* margin-right:10px; */
     
         li.message {
           @include messageshadow;

@@ -207,7 +207,7 @@ div.midcol {
   float: left;
   min-width: 450px; }
   div.midcol > div {
-    padding: 10px; }
+    /* padding: 10px */ }
   div.midcol div.mid-inner {
     margin: 0 265px;
     min-width: 350px; }
@@ -215,10 +215,12 @@ div.midcol {
     background-color: #d0c9be;
     padding: 10px; }
     div.midcol div.topichead h4 {
-      width: 375px;
-      float: left; }
+      /* width: 375px; */
+      /* float: left;  */
+      padding-right: 90px; }
     div.midcol div.topichead p.rally_topicdesc {
-      margin: 0px; }
+      margin: 0px;
+      margin-top: 10px; }
     div.midcol div.topichead div.rally_gotoactive {
       -moz-border-radius: 4px;
       /* FF1+ */
@@ -250,7 +252,10 @@ div.midcol {
       margin-top: 5px; }
     div.midcol div.topichead div.navbox {
       width: 50px;
-      float: right; }
+      /* float: right; */
+      position: absolute;
+      right: 0;
+      top: 0; }
   div.midcol div.postsarea {
     overflow-y: auto;
     overflow-x: hidden; }
@@ -259,8 +264,8 @@ div.midcol {
     div.midcol div.postsarea ul.topicposts {
       list-style-type: none;
       margin: 0px;
-      padding: 0px;
-      margin-right: 10px; }
+      padding: 10px;
+      /* margin-right:10px; */ }
       div.midcol div.postsarea ul.topicposts li.message {
         -moz-box-shadow: 0px 1px 3px #bfbfbf;
         -webkit-box-shadow: 0px 1px 3px #bfbfbf;
