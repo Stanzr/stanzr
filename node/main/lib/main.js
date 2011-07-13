@@ -1089,8 +1089,9 @@ main.api = {
       var vanity = null
       var newchat = null
       var pubalias = null
-
+      var aliases = []
       
+
       function removeoldentries(cb) {
         pub.list$({c:chatid},RE(res,function(oldentries){
           function removeoldentry(i) {
@@ -1119,14 +1120,18 @@ main.api = {
       }
 
 
-      function getvanityalias(cb) {
+      function handlealiases(cb) {
         var alias = main.ent.make$('app','alias')
 
         alias.list$({c:chatid},RE(res,function(list){
           for( var i = 0; i < list.length; i++ ) {
             if( -1 == list[i].a.indexOf('-') ) {
-              vanity = list[i].a
-                break
+
+              if( !vanity ) {
+                vanity = list[i].a
+              }
+
+              aliases.push(list[i].a)
             }
           }
           cb()
@@ -1146,6 +1151,7 @@ main.api = {
           newchat.whenstr = 'Next week'
           newchat.parent = req.chat$.parent || req.chat$.chatid
           newchat.vanity = vanity
+          newchat.aliases = aliases
 
           newchat.save$(RE(res,function(){
             cb()
@@ -1190,7 +1196,7 @@ main.api = {
       (
         function(){ removeoldentries(
           function(){ insertnewentries(
-            function(){ getvanityalias(
+            function(){ handlealiases(
               function(){ makenewchat(
                 function(){ publisholdchat(
                   function(){ sendpublishresult(
@@ -1200,20 +1206,38 @@ main.api = {
 
 
     movevanity: function(req,res) {
-      var vanity = req.chat$.vanity
-      if( vanity ) {
-        var alias = main.ent.make$('app','alias')
-        alias.load$({a:vanity},RE(res,function(vanityalias){
-          if( !vanityalias ) {
-            common.sendjson(res,{chatname:req.chat$.chatid})
-            return
-          }
+      var aliases = req.chat$.aliases
+      
+      if( !aliases ) {
+        var vanity = req.chat$.vanity
 
-          vanityalias.c = req.chat$.chatid
-          vanityalias.save$(RE(res,function(){
-            common.sendjson(res,{chatname:vanity})
-          }))
-        }))
+        if( vanity ) {
+          aliases = [vanity]
+        }
+        else {
+          aliases = []
+        }
+      }
+
+      if( 0 < aliases.length ) {
+        var alias = main.ent.make$('app','alias')
+
+        function updatealias(i) {
+          if( i < aliases.length ) {
+
+            var a = aliases[i]
+            alias.load$({a:a},RE(res,function(foundalias){
+              if( foundalias ) {
+                foundalias.c = req.chat$.chatid
+                foundalias.save$(RE(res,function(){}))
+              }
+            }))
+          }
+          else {
+            common.sendjson(res,{chatname:vanity||aliases[0]})
+          }
+        }
+        updatealias(0)
       }
       else {
         common.sendjson(res,{chatname:req.chat$.chatid})
@@ -2092,6 +2116,7 @@ Seneca.init(
         
     app.use( 
       connect.router(function(capp){
+        // FIX remove as repeated?
         capp.post('/api/auth/:action', main.api.auth.post)
 
         capp.put('/api/chat', main.api.chat.save)
