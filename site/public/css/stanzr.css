@@ -87,7 +87,10 @@ div.post_content {
   div.post_content h4 {
     float: left; }
   div.post_content .post_actions {
-    float: right; }
+    float: right;
+    xposition: absolute;
+    right: 5px;
+    margin-top: -5px; }
   div.post_content div.meta {
     color: #ccc;
     float: left;

@@ -3367,11 +3367,10 @@ $('li.message').live('mouseleave', function(){
   }
 });	
 
-$('li.message .post_actions a.sprite-reshare').live('click', function(evt){
+
+$('li.message .post_actions a.sprite-reshare, li.message .post_actions a.sprite-approve').live('click', function(evt){
   $(this).parents('li.message').data('shared', true);
 });
-
-
 
 }
 catch( e ) {
