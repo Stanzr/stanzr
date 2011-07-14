@@ -1231,6 +1231,7 @@ main.api = {
                 foundalias.c = req.chat$.chatid
                 foundalias.save$(RE(res,function(){}))
               }
+              updatealias(i+1)
             }))
           }
           else {
