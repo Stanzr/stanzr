@@ -2636,7 +2636,7 @@ function ProfileBox() {
 
   self.checkmouse = function() {
     if( !self.mouseoverme ) {
-      //self.el.box.hide()
+      //self.el.box.hide() does not work
     }
   }
   
@@ -3356,7 +3356,26 @@ window.restartchat = function() {
   setTimeout(app.joinchat, restartdelay )
 }
 
+
+$('li.message').live('mouseenter', function(){
+  $('.post_actions', this).show();
+});
+
+$('li.message').live('mouseleave', function(){
+  if( $(this).data('shared')!==true ){
+    $('.post_actions', this).hide();
+  }
+});	
+
+
+$('li.message .post_actions a.sprite-reshare, li.message .post_actions a.sprite-approve').live('click', function(evt){
+  $(this).parents('li.message').data('shared', true);
+});
+
 }
 catch( e ) {
   logerror('error',e)
 }
+
+
+
