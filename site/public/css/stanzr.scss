@@ -379,7 +379,8 @@ div {
     }
 
     div.postsarea {
-      overflow: auto;
+      overflow-y: auto;
+      overflow-x:hidden;
 
       #posts_tm { 
         display: none; 

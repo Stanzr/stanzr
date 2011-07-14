@@ -2636,7 +2636,7 @@ function ProfileBox() {
 
   self.checkmouse = function() {
     if( !self.mouseoverme ) {
-      //self.el.box.hide()
+      //self.el.box.hide() does not work
     }
   }
   
