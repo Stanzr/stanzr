@@ -34,6 +34,10 @@ module.exports = {
       amazon: {
         key: 'AKIAILYJ4OHQKFQHZAVQ',
         secret: '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'
+      },
+      postmark: {
+        key:'5a3d643a-1803-47e9-9517-ffda1e18c308',
+        sender:'taariq@stanzr.com'
       }
     }
   }

@@ -1,0 +1,6 @@
+
+
+
+db.sys_email.insert({code:'welcome',replyto:'no-reply@stanzr.com'})
+db.sys_email.insert({code:'unsubscribe',replyto:'no-reply@stanzr.com'})
+db.sys_email.insert({code:'chat-reminder',replyto:'no-reply@stanzr.com'})
