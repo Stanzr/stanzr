@@ -1,0 +1,85 @@
+{
+   "name": "Stanzr",
+   "version": "0.0.1",
+   "description": "",
+   "keywords": [
+   ],
+   "maintainers": [
+       {
+           "name": "Richard Rodger",
+           "email": "richard@chartaca.com",
+           "web": "http://" 
+       } 
+   ],
+   "contributors": [
+       {
+           "name": "Daniel Lewis",
+           "email": "daniel@cloudspace.com",
+           "web": "http://www.cloudspace.com/" 
+       } 
+   ],
+   "bugs": {
+       "email": "richard@chartaca.com",
+       "web": "http://" 
+   },
+   "licenses": [
+       {
+           "type": "",
+           "url": "" 
+       } 
+   ],
+   "repositories": [
+       {
+           "type": "git",
+           "url": "git@github.com:Stanzr/stanzr.git" 
+       } 
+   ],
+   "dependencies": {
+       "colors": "0.5.0",
+       "config": "0.2.9",
+       "connect": "1.5.1",
+       "connect-form": "0.2.1",
+       "cookies": "0.1.6",
+       "ejs": "0.4.3",
+       "express": "2.4.0",
+       "eyes": "0.1.6",
+       "gex": "0.0.1",
+       "knox": "0.0.9",
+       "log": "1.2.0",
+       "loggly": "0.3.5",
+       "node-proxy": "0.5.1",
+       "node-uuid": "1.2.0",
+       "oauth": "0.9.2",
+       "postmark": "0.1.2",
+       "request": "1.9.8",
+       "riak-js": "0.4.0",
+       "socket.io": "0.7.6",
+       "twitter": "v0.1.17",
+       "underscore": "1.1.6",
+       "xml2js": "0.1.9",
+       "winston": "0.2.11",
+       "vows": "0.5.8",
+       "yaml": "0.2.1",
+       "mime": ">=0.0.1",
+       "qs": ">=0.0.6",
+       "formidable": ">=0.9.3",
+       "timespan": "2.x.x",
+       "policyfile": "0.0.3",
+       "redis": "0.6.0",
+       "socket.io-client": "0.7.3",
+       "cookie": ">=0.1.4",
+       "sax": ">=0.1.1",
+       "mongodb": "https://github.com/christkv/node-mongodb-native/tarball/HEAD",
+       "now": "https://github.com/rjrodger/now/tarball/HEAD",
+       "oauth": "https://github.com/rjrodger/node-oauth/tarball/HEAD",
+       "seneca": "https://github.com/rjrodger/seneca/tarball/HEAD"
+   },
+   "os": ["linux"],
+   "cpu": ["x86", "x86_64"],
+   "engines": ["v8", "node", "ejs"],
+   "scripts": {
+   },
+   "directories": {
+       "lib": "main/lib"
+   } 
+}
