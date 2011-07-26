@@ -1413,6 +1413,7 @@ function SendBox() {
     dummy: null
 
     ,box: $('#send_box')
+    ,cover: $('#send_box_cover')
 
     ,sendbtn: $("#post_send")
     ,text: $("#post_text")
@@ -1430,7 +1431,10 @@ function SendBox() {
       return page && page.user && 'twitter' == page.user.service
     },
     box: function() {
-      return !!nick && (app.ismod || 'open' == app.chat.state ) && 'chat' == app.mode
+      return true
+    },
+    cover: function() {
+      return !( !!nick && (app.ismod || 'open' == app.chat.state ) && 'chat' == app.mode)
     }
   })
 
