@@ -7,3 +7,4 @@ node/node_modules
 site/public/css/.sass-cache
 test/db
 *.swp
+node_modules/
