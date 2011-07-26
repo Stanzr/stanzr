@@ -49,6 +49,7 @@ var _        = exports._         = require('underscore')
 var url      = exports.url       = require('url')
 var form     = exports.form      = require('connect-form')
 var knox     = exports.knox      = require('knox')
+var postmark = exports.postmark  = require('postmark')
 
 
 // winston pollutes namespace by injecting config
@@ -61,13 +62,10 @@ var oauth    = exports.oauth     = require('../../support/node-oauth')
 var winston  = exports.winston   = require('../../support/winston')
 
 var twitter  = exports.twitter   = require('twitter')
-//var twitter  = exports.twitter   = require('../../support/node-twitter')
 
 var seneca   = exports.seneca    = require('../../support/seneca')
-//var seneca   = exports.seneca    = require('seneca')
 
 var now      = exports.now   = require('now')
-//var now      = exports.now   = require('../../support/now')
 
 
 

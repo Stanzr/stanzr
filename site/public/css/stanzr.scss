@@ -878,6 +878,17 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#c9c9c9', end
 
 
 
+#send_box_cover {
+  width: 450px;
+  height: 100px;
+  float: left;
+  position: absolute;
+  left: 0px;
+  background-color: #ccc;
+  opacity: 0.8;
+  z-index:99999;
+}
+
 
 /* LANDING PAGE */
 * html .landing {height: 100%} /* IE6 hack */

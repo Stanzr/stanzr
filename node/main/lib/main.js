@@ -20,13 +20,17 @@ var twitter = common.twitter
 var oauth   = common.oauth
 var form    = common.form
 
+
 var office  = common.office
 var log     = common.log
+log('start',new Date())
+
 
 var winston     = common.winston
 
 var TweetSearch = require('./tweetsearch')
 var imageupload = require('./imageupload')
+var email     = require('./email')
 
 var main = {}
 
@@ -40,6 +44,9 @@ process.on('uncaughtException', function (err) {
 
 var Log = require('log')
 var twlog = new Log(Log.DEBUG,fs.createWriteStream(conf.twlog));
+
+
+var emailer = new email.Emailer()
 
 
 function sendcode(code,res) {
@@ -151,6 +158,36 @@ function waitfor( obj, prop, info, cb ) {
     }
   }
   exists(0)
+}
+
+
+
+function sendemail( code, to, inserts ) {
+  log('email',code,to,inserts)
+
+  var email = main.ent.make$('sys','email')
+  email.load$({code:code},LE(function(email){
+    if( email ) {
+
+      var text    = emailer.insert( inserts, email.text )
+      var subject = emailer.insert( inserts, email.subject )
+
+      var spec = {
+        to:to,
+        subject:subject,
+        text:text,
+        code:code
+      }
+      
+      log('email',spec)
+      emailer.send(spec,function(err){
+        log('error','email',spec,err)
+      })
+    }
+    else {
+      log('error','email','badcode',code,to,inserts)
+    }
+  }))
 }
 
 
@@ -1419,7 +1456,29 @@ main.api.user.post_terms = function( req, res ) {
     req.user$.email = req.json$.email
     req.user$.name = req.json$.name
     req.user$.toc = 1
+    req.user$.unsub = uuid()
     req.user$.save$(sendok(res))
+
+    var chatid = req.json$.chatid
+    if( chatid ) {
+      main.chat.get( chatid, LE(function(chat){
+
+        sendemail(
+          'welcome',
+          req.user$.email,
+          { name: req.user$.name,
+            title: chat.title,
+            moderator: chat.modname,
+            when: chat.whenstr,
+            alias: chat.vanity || (chat.aliases && chat.aliases[0]) || chatid,
+            unsubscribe: req.user$.unsub
+          },
+          function(err){
+            log('error','email',err)
+          }
+        )
+      }))
+    }
   }
   else {
     denied(res)
@@ -1700,6 +1759,9 @@ function chatmustbeopen(req,res,next) {
       denied(res)
     }
   }
+  else if( req.user$.admin ) {
+    next()
+  }
   else {
     bad(res)
   }
@@ -1714,6 +1776,9 @@ function mustbemod(req,res,next) {
     else {
       denied(res)
     }
+  }
+  else if( req.user$.admin ) {
+    next()
   }
   else {
     bad(res)
@@ -1945,7 +2010,7 @@ function senecalogger() {
     for( var i = 0; i < args.length; i++ ) {
       sb.push( JSON.stringify(args[i]) )
     }
-    console.log( sb.join(' ') )
+    //console.log( sb.join(' ') )
   }
 }
 
@@ -1953,7 +2018,7 @@ function senecalogger() {
 Seneca.init(
   {logger:senecalogger,
    entity:mongourl,
-   plugins:['util','user','echo']
+   plugins:['util','user','echo','rest','edit']
   },
   function(err,seneca){
     if( err ) {
@@ -1998,6 +2063,7 @@ Seneca.init(
 
 
     app.use( connect.logger( {stream:fs.createWriteStream(conf.accesslog)} ) )
+    //app.use( connect.logger() )
 
     app.use(form({ keepExtensions: true }))
 
@@ -2028,8 +2094,11 @@ Seneca.init(
       }
     })
 
+
+
     app.set('views', __dirname + '/../../../site/views');
     app.set('view engine', 'ejs');
+
 
     app.use(function(req,res,next){
       var url = req.url.substring(1)
@@ -2038,6 +2107,9 @@ Seneca.init(
         0==url.indexOf('js') ||
         0==url.indexOf('img') ||
         0==url.indexOf('css') ||
+        0==url.indexOf('api') ||
+        0==url.indexOf('admin/rest') ||
+        0==url.indexOf('admin/edit') ||
         0==url.indexOf('api') ||
         0==url.indexOf('favicon.ico') ||
         false
@@ -2049,6 +2121,8 @@ Seneca.init(
         var alias = main.ent.make$('app','alias')
 
         alias.load$({a:url},RE(res,function(alias){
+          console.log('alias:'+alias+' '+typeof(alias))
+
           if( alias ) {
             req.params = req.params || {}
             req.params.chatid = alias.c
@@ -2075,6 +2149,7 @@ Seneca.init(
     // http://localhost:8080/member/QJAAMZDU
     app.get('/:chatid/QJAAMZDU', main.view.chat.hash)
 
+
     app.listen(conf.web.port);
     log("port", app.address().port)
 
@@ -2086,7 +2161,9 @@ Seneca.init(
 
     app.use( initsocial() )    
     
+
     app.use( json )
+
     app.use( loadchat )
 
     app.use( 
@@ -2189,6 +2266,82 @@ Seneca.init(
       })
     )
 
+
+    var restprefix = '/admin/rest'
+    app.use( main.seneca.service('rest',{
+      prefix:restprefix,
+      tenant:'stanzr',
+      ents:[
+        {base:'app',name:'chat'},
+        {base:'app',name:'alias'},
+
+        {base:'sys',name:'user'},
+        {base:'sys',name:'email'}
+
+        //{base:'app',name:'test'}
+      ]
+    }, function(err){log(err)}))
+
+    app.use( main.seneca.service('edit',{
+      prefix:'/admin/edit',
+      restprefix:restprefix,
+      tenant:'stanzr',
+      ents:[
+        {base:'app',name:'chat',
+         fields:['chatid','hashtag','title','state','vanity','aliases','whenstr','desc','modnicks','nicks','bans','topic','topics'],
+         fieldtypes:{
+           chatid:{type:'string'},
+           hashtag:{type:'string'},
+           title:{type:'string'},
+           state:{type:'string'},
+           vanity:{type:'string'},
+           aliases:{type:'array'},
+           whenstr:{type:'string'},
+           desc:{type:'string'},
+           modnicks:{type:'object'},
+           nicks:{type:'array'},
+           bans:{type:'object'},
+           topic:{type:'integer'},
+           topics:{type:'object'}
+         }
+        },
+        {base:'app',name:'alias',fields:['c','a'],fieldtypes:{c:{type:'string'},a:{type:'string'}}},
+
+        {base:'sys',name:'email',fields:['code','subject','replyto','text'],
+         fieldtypes:{
+           code:{type:'string'},
+           subject:{type:'string'},
+           replyto:{type:'string'},
+           text:{type:'string'}
+         }
+        },
+        {base:'sys',name:'user',fields:['nick','email','name','active','toc','avimg','social','admin'],
+         fieldtypes:{
+           nick:{type:'string'},
+           email:{type:'string'},
+           name:{type:'string'},
+           active:{type:'boolean'},
+           toc:{type:'integer'},
+           avimg:{type:'string'},
+           social:{type:'object'},
+           admin:{type:'integer'}
+         }
+        },
+
+        /*
+        {base:'app',name:'test',fields:['str','json','arr','num','int','float','flag','when'],fieldtypes:{
+          'str':{type:'string'},
+          'json':{type:'object'},
+          'arr':{type:'array'},
+          'num':{type:'number'},
+          'int':{type:'integer'},
+          'float':{type:'decimal'},
+          'flag':{type:'boolean'},
+          'when':{type:'date'},
+        }}
+        */
+      ]
+    }, function(err){log(err)}))
 
 
     //console.__debug__ = true

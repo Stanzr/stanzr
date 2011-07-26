@@ -391,7 +391,7 @@ var app = {
   userterms: function(data,cb) {
     http.post(
       '/api/user/'+page.user.nick+'/terms',
-      {email:data.email,name:data.name},
+      {email:data.email,name:data.name,chatid:data.chatid},
       RE(function(res){
         cb && cb(res)
       }))
@@ -1413,6 +1413,7 @@ function SendBox() {
     dummy: null
 
     ,box: $('#send_box')
+    ,cover: $('#send_box_cover')
 
     ,sendbtn: $("#post_send")
     ,text: $("#post_text")
@@ -1430,7 +1431,10 @@ function SendBox() {
       return page && page.user && 'twitter' == page.user.service
     },
     box: function() {
-      return !!nick && (app.ismod || 'open' == app.chat.state ) && 'chat' == app.mode
+      return true
+    },
+    cover: function() {
+      return !( !!nick && (app.ismod || 'open' == app.chat.state ) && 'chat' == app.mode)
     }
   })
 
@@ -3048,7 +3052,7 @@ function TermsBox() {
       }
       else {
         self.el.box.hide()
-        app.userterms({email:self.el.email.val(),name:self.el.name.val()})
+        app.userterms({chatid:app.chat.chatid,email:self.el.email.val(),name:self.el.name.val()})
       }
     })
   }
