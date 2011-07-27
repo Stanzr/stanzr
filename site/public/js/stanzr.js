@@ -1443,7 +1443,7 @@ function SendBox() {
     self.el.tweet.change(function(){self.el.text.keydown()})
 
     self.el.text.NobleCount('#send_count',{
-      max_chars:280,
+      max_chars:210,
       on_update:function(t_obj, char_area, c_settings, char_rem){
         var tweet = self.el.tweet.attr('checked')
 
@@ -2347,8 +2347,10 @@ function HostChatBox() {
 
   function moretopic(topicdata) {
     var topic = self.el.topicitem_tm.clone()
+    var topic_character_count = topic.find('#topic_character_countitem_tm')
     var tI = self.el.topiclist.find('li').length
     topic.attr('id','hostchat_topic_'+tI)
+    topic_character_count.attr('id', 'topic_character_count_'+tI)
 
     if( topicdata ) {
       topic.find('input').val(topicdata.title)
@@ -2361,6 +2363,15 @@ function HostChatBox() {
     if( 1 < self.el.topiclist.find('li').length ) {
       self.el.lessbtn.show()
     }
+    
+    //console.log('creating NobleCount on ', topic.find('input'), topic_character_count);
+    topic.find('input').NobleCount(topic_character_count, {
+        max_chars: 10,
+        on_update: function(t_obj, char_area, c_settings, char_rem){
+            console.log(t_obj, char_area, c_settings, char_rem);
+        }
+    });
+    //console.log('created NobleCount on ', topic.find('input'));
   }
 
   
@@ -3370,7 +3381,6 @@ $('li.message').live('mouseleave', function(){
     $('.post_actions', this).hide();
   }
 });	
-
 
 $('li.message .post_actions a.sprite-reshare, li.message .post_actions a.sprite-approve').live('click', function(evt){
   $(this).parents('li.message').data('shared', true);
