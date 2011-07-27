@@ -2364,14 +2364,12 @@ function HostChatBox() {
       self.el.lessbtn.show()
     }
     
-    //console.log('creating NobleCount on ', topic.find('input'), topic_character_count);
-    topic.find('input').NobleCount(topic_character_count, {
-        max_chars: 10,
+    topic.find('input').NobleCount('#topic_character_count_' + tI, {
+        max_chars: 140,
         on_update: function(t_obj, char_area, c_settings, char_rem){
             console.log(t_obj, char_area, c_settings, char_rem);
         }
     });
-    //console.log('created NobleCount on ', topic.find('input'));
   }
 
   
