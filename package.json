@@ -69,7 +69,7 @@
        "socket.io-client": "0.7.3",
        "cookie": ">=0.1.4",
        "sax": ">=0.1.1",
-       "mongodb": "https://github.com/christkv/node-mongodb-native/tarball/HEAD",
+       "mongodb": "https://github.com/christkv/node-mongodb-native/tarball/v0.9.3",
        "now": "https://github.com/rjrodger/now/tarball/HEAD",
        "oauth": "https://github.com/rjrodger/node-oauth/tarball/HEAD",
        "seneca": "https://github.com/rjrodger/seneca/tarball/HEAD"
