@@ -1444,11 +1444,11 @@ function SendBox() {
 
     self.el.text.NobleCount('#send_count',{
       max_chars:210,
-      on_update:function(t_obj, char_area, c_settings, char_rem){
+      on_update:function(t_obj, char_area, c_settings, char_remaining){
         var tweet = self.el.tweet.attr('checked')
 
         var countelem = self.el.count
-        char_rem = tweet ? char_rem - 140 : char_rem
+        char_rem = tweet ? char_remaining - 140 : char_remaining
 
         if( tweet ) {
           self.el.count.text( parseInt(self.el.count.text())-140 )
@@ -1471,6 +1471,12 @@ function SendBox() {
         else {
           self.el.sendbtn.show()
           countelem.hide()
+        }
+
+        // limit text input to [maxLength] characters and display error message if above
+        if (char_remaining < 0) {
+          self.el.text.val(self.el.text.val().substring(0,210));
+          self.el.count.text( "Woah!")
         }
       } 
     })
