@@ -2373,7 +2373,7 @@ function HostChatBox() {
     topic.find('input').NobleCount('#topic_character_count_' + tI, {
         max_chars: 140,
         on_update: function(t_obj, char_area, c_settings, char_rem){
-            console.log(t_obj, char_area, c_settings, char_rem);
+            //console.log(t_obj, char_area, c_settings, char_rem);
         }
     });
   }
