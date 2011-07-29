@@ -3,6 +3,10 @@
 node/support/node-*
 node/support/now
 node/support/seneca
+node/support/winston
 node/node_modules
 site/public/css/.sass-cache
 test/db
+*.swp
+*.swo
+node_modules/

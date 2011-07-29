@@ -1421,12 +1421,12 @@ function SendBox() {
     self.el.tweet.change(function(){self.el.text.keydown()})
 
     self.el.text.NobleCount('#send_count',{
-      max_chars:280,
-      on_update:function(t_obj, char_area, c_settings, char_rem){
+      max_chars:210,
+      on_update:function(t_obj, char_area, c_settings, char_remaining){
         var tweet = self.el.tweet.attr('checked')
 
         var countelem = self.el.count
-        char_rem = tweet ? char_rem - 140 : char_rem
+        char_rem = tweet ? char_remaining - 140 : char_remaining
 
         if( tweet ) {
           self.el.count.text( parseInt(self.el.count.text())-140 )
@@ -1449,6 +1449,12 @@ function SendBox() {
         else {
           self.el.sendbtn.show()
           countelem.hide()
+        }
+
+        // limit text input to [maxLength] characters and display error message if above
+        if (char_remaining < 0) {
+          self.el.text.val(self.el.text.val().substring(0,210));
+          self.el.count.text( "Woah!")
         }
       } 
     })
@@ -2330,8 +2336,12 @@ function HostChatBox() {
 
   function moretopic(topicdata) {
     var topic = self.el.topicitem_tm.clone()
+    var topic_character_count = topic.find('#topic_character_countitem_tm')
+    var topic_title = topic.find('input')
+    var topic_description = topic.find('textarea')
     var tI = self.el.topiclist.find('li').length
     topic.attr('id','hostchat_topic_'+tI)
+    topic_character_count.attr('id', 'topic_character_count_'+tI)
 
     if( topicdata ) {
       topic.find('input').val(topicdata.title)
@@ -2344,6 +2354,14 @@ function HostChatBox() {
     if( 1 < self.el.topiclist.find('li').length ) {
       self.el.lessbtn.show()
     }
+    
+    topic_title.NobleCount('#topic_character_count_' + tI, {
+        max_chars: 140,
+        on_update: function(t_obj, char_area, c_settings, char_rem){
+            topic_character_count.val(char_rem)
+            topic_title.val(topic_title.val().substring(0,140))
+        }
+    });
   }
 
   
@@ -3391,7 +3409,6 @@ $('li.message').live('mouseleave', function(){
     $('.post_actions', this).hide();
   }
 });	
-
 
 $('li.message .post_actions a.sprite-reshare, li.message .post_actions a.sprite-approve').live('click', function(evt){
   $(this).parents('li.message').data('shared', true);
