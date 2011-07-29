@@ -557,6 +557,7 @@ div.modalbox {
   top: 100px;
   margin: auto;
   width: 200px;            
+  z-index:1000;
 
   div.modal_close {
     position: absolute;
@@ -886,7 +887,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#c9c9c9', end
   left: 0px;
   background-color: #ccc;
   opacity: 0.8;
-  z-index:99999;
+  z-index:500;
 }
 
 

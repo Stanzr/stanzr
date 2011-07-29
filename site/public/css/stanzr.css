@@ -364,7 +364,8 @@ div.modalbox {
   position: absolute;
   top: 100px;
   margin: auto;
-  width: 200px; }
+  width: 200px;
+  z-index: 1000; }
   div.modalbox div.modal_close {
     position: absolute;
     top: 10px;
@@ -630,7 +631,7 @@ div.modalbox {
   left: 0px;
   background-color: #ccc;
   opacity: 0.8;
-  z-index: 99999; }
+  z-index: 500; }
 
 /* LANDING PAGE */
 * html .landing {
