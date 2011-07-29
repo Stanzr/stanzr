@@ -425,6 +425,9 @@ div.modalbox {
   #hostchat_box #hostchat_topicitem_tm {
     display: none; }
 
+#email_box {
+  width: 400px; }
+
 #signup_box {
   width: 250px; }
 

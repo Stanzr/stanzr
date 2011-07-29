@@ -52,6 +52,7 @@
       <h3 id="rally_followon" class="textbtn hide" style="text-decoration:underline;color:red;cursor:pointer">Host another chat!</h3>
 
       <a id="rally_editbtn" class="textbtn hide">edit</a>
+      <a id="rally_emailbtn" class="textbtn hide">email</a>
       <a id="rally_curatebtn" class="textbtn hide">curate</a>
       <a id="rally_unpublishbtn" class="textbtn hide">unpublish</a>
 
@@ -706,6 +707,31 @@ if( 'done' == val.chat.state ) {
   </div>
 
   <p id="terms_msg" style="clear:both"></p>
+</div>
+
+
+<div id="email_box" class="modalbox hide">
+  <div class="modal_close"><a onclick="$('#email_box').hide()" class="textbtn">&times;</a></div>
+
+  <h2>Email Participants</h2>
+  
+  <p>Send an email to all chat participants.</p>
+
+  <p>
+    Subject:
+    <input id="email_subject">
+  </p>
+
+  <p>
+    Body:
+    <textarea id="email_body"></textarea>
+  </p>
+
+  <div style="clear:both">
+    <a id="email_sendbtn" class="textbtn">send</a>
+  </div>
+
+  <p id="email_msg" style="clear:both"></p>
 </div>
 
 

@@ -165,12 +165,18 @@ function waitfor( obj, prop, info, cb ) {
 function sendemail( code, to, inserts ) {
   log('email',code,to,inserts)
 
+  var custom = {}
+  if( code.subject ) {
+    custom = code
+    code = code.code
+  }
+
   var email = main.ent.make$('sys','email')
   email.load$({code:code},LE(function(email){
     if( email ) {
 
-      var text    = emailer.insert( inserts, email.text )
-      var subject = emailer.insert( inserts, email.subject )
+      var text    = emailer.insert( inserts, custom.text || email.text )
+      var subject = emailer.insert( inserts, custom.subject || email.subject )
 
       var spec = {
         to:to,
@@ -1450,6 +1456,71 @@ main.api = {
 }
 
 
+main.api.chat.emailmoderator = function( req, res ) {
+  if( req.user$.modemails ) {
+    var out =  req.user$.modemails.moderator
+  }
+
+  if( !out ) {
+    var email = main.ent.make$('sys','email')
+    email.load$({code:'moderator'},RE(res,function(email){
+      if( !email ) return lost(res);
+      common.sendjson(res,{subject:email.subject,body:email.text})
+    }))
+  }
+  else {
+    common.sendjson(res,out)
+  }
+}
+
+main.api.chat.emailsend = function( req, res ) {
+  var subject = req.json$.subject
+  var body    = req.json$.body
+
+  var chat = req.chat$
+  var nicks = req.chat$.nicks
+
+  req.user$.modemails = req.user$.modemails || {}
+  req.user$.modemails.moderator = {subject:subject,body:body}
+  req.user$.save$()
+
+  log('email',nicks)
+
+  for( var nI = 0; nI < nicks.length; nI++ ) {
+    var nick = nicks[nI]
+
+    var user = main.ent.make$('sys','user')
+    user.load$({nick:nick},LE(function(user){
+      if( user.email ) {
+        
+        console.log('EMAIL '+user.email+' '+subject+' '+body)
+
+        sendemail(
+          {
+            code:'moderator',
+            subject:subject,
+            text:body
+          },
+          user.email,
+          { name: user.name,
+            title: chat.title,
+            moderator: chat.modname,
+            when: chat.whenstr,
+            alias: chat.vanity || (chat.aliases && chat.aliases[0]) || chat.chatid,
+            unsubscribe: user.unsub
+          },
+          function(err){
+            log('error','email',err)
+          }
+        )
+      }
+    }))
+  }
+
+  common.sendjson(res,{ok:true,count:nicks.length})
+}
+
+
 main.api.user.post_terms = function( req, res ) {
   var nick = req.params.nick
   if( nick == req.user$.nick ) {
@@ -2084,6 +2155,7 @@ Seneca.init(
           'localhost:8080' == host ||
           'stanzr.com' == host ||
           'stanzr.test' == host ||
+          '127.0.0.1' == host ||
           0 == host.indexOf('192.168.') ) 
       {
         next()
@@ -2246,6 +2318,9 @@ Seneca.init(
         capp.post('/api/chat/:chatid/publish', main.api.chat.publish)
 
         capp.post('/api/chat/:chatid/movevanity', main.api.chat.movevanity)
+
+        capp.get('/api/chat/:chatid/email/moderator', main.api.chat.emailmoderator)
+        capp.post('/api/chat/:chatid/email/send', main.api.chat.emailsend)
       })
     )
 
