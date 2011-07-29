@@ -616,6 +616,13 @@ div.modalbox {
     li {
       margin: 5px 0px 0px 0px;
     }
+
+    label {
+      span {
+        color: green;
+        float: right;
+      }
+    }
   }
 
   #hostchat_backbtn {margin: 0 0 15px 0;}
@@ -626,8 +633,8 @@ div.modalbox {
   }
 }
 
-#login_box {
-
+#email_box {
+ width: 400px;
 }
 
 #signup_box {

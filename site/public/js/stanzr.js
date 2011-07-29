@@ -90,29 +90,6 @@ function validateEmail(email) {
  return email.match(re) 
 }
 
-/*
-function ct(cb) {
-  return function(event){
-    debug(event)
-    var id = event.target.id
-    if( id && app.chartaca ) {
-      var ce = 'click:'+id+':'+app.chat.chatid
-      debug(ce)
-      app.chartaca.fire(ce)
-    }
-    cb(event)
-  }
-}
-var $fnclick = $.fn.click
-$.fn.click = function(a,c){
-  if(c) {
-    $fnclick.call(this,a,ct(c))
-  }
-  else {
-    $fnclick.call(this,ct(a))
-  }
-}
-*/
 
 
 var http = {
@@ -193,6 +170,9 @@ var app = {
     ,registeremail: 'Please enter an email address'
     ,registerpwd:  'Please enter a password'
     ,registerpwdnomatch: 'Your passwords do not match'
+
+    ,entersubject: 'Please enter a subject line'
+    ,enterbody: 'Please enter a some body text'
   },
 
 
@@ -560,6 +540,22 @@ var app = {
   },
 
 
+  getmoderatoremail: function(cb) {
+    debug('getmodemail')
+    http.get( '/api/chat/'+app.chat.chatid+'/email/moderator',
+              cb
+            )
+  },
+
+
+  emailparticipants: function(subject,body,cb) {
+    http.post( '/api/chat/'+app.chat.chatid+'/email/send',
+               {subject:subject,body:body}, 
+               cb
+             )
+  },
+
+
   formatpublishedchat: function() {
     
     app.leftbar.box.detail.init(app.chat).render()
@@ -894,25 +890,6 @@ $(function(){
 
   $.ajaxSetup({ cache: false })
 
-  //$('#headlogo').click(function(){$('#log').show()})
-
-/*
-  $.reject({  
-    reject: {
-      msie: true, // Microsoft Internet Explorer  
-      opera: true, // Opera  
-      konqueror: true, // Konqueror (Linux)  
-      unknown: true // Everything else  
-    },
-    display: ['chrome','safari','firefox'],
-    header: 'Your browser is not supported yet', // Header Text  
-    paragraph1: 'You are currently using an unsupported browser', // Paragraph 1  
-    paragraph2: 'Please install one of the many optional browsers below to proceed', // Paragraph 2  
-    closeMessage: '', // Message below close window link  
-    imagePath: '/img/'
-  });
-*/
-
   $.timeago.settings.refreshMillis = 60000
   app.timeago = $('#timeago').timeago()
 
@@ -1099,6 +1076,7 @@ $(function(){
   app.popup.box.signup    = new SignUpBox()
   app.popup.box.history   = new HistoryBox()
   app.popup.box.terms     = new TermsBox()
+  app.popup.box.email     = new EmailBox()
 
   app.popup.box.share   = new ShareBox().init()
 
@@ -1443,12 +1421,12 @@ function SendBox() {
     self.el.tweet.change(function(){self.el.text.keydown()})
 
     self.el.text.NobleCount('#send_count',{
-      max_chars:280,
-      on_update:function(t_obj, char_area, c_settings, char_rem){
+      max_chars:210,
+      on_update:function(t_obj, char_area, c_settings, char_remaining){
         var tweet = self.el.tweet.attr('checked')
 
         var countelem = self.el.count
-        char_rem = tweet ? char_rem - 140 : char_rem
+        char_rem = tweet ? char_remaining - 140 : char_remaining
 
         if( tweet ) {
           self.el.count.text( parseInt(self.el.count.text())-140 )
@@ -1471,6 +1449,12 @@ function SendBox() {
         else {
           self.el.sendbtn.show()
           countelem.hide()
+        }
+
+        // limit text input to [maxLength] characters and display error message if above
+        if (char_remaining < 0) {
+          self.el.text.val(self.el.text.val().substring(0,210));
+          self.el.count.text( "Woah!")
         }
       } 
     })
@@ -1533,6 +1517,7 @@ function ChatDetailsBox() {
     ,addtocalbtn: $('#rally_addtocalbtn')
 
     ,editbtn: $('#rally_editbtn')
+    ,emailbtn: $('#rally_emailbtn')
     ,curatebtn: $('#rally_curatebtn')
     ,unpublishbtn: $('#rally_unpublishbtn')
 
@@ -1580,6 +1565,7 @@ function ChatDetailsBox() {
     
     if( app.ismod ) {
       self.el.editbtn.click(killpopups(app.popup.box.hostchat.editchat))
+      self.el.emailbtn.click(killpopups(app.popup.box.email.render))
       self.el.curatebtn.click(killpopups(app.curate.render))
       self.el.unpublishbtn.click(killpopups(function(){app.closechat(function(){
         app.reloadpage(alias)
@@ -1598,6 +1584,9 @@ function ChatDetailsBox() {
 
     showif(self,{
       editbtn: function(){
+        return app.ismod
+      },
+      emailbtn: function(){
         return app.ismod
       },
       curatebtn: function(){
@@ -2347,8 +2336,12 @@ function HostChatBox() {
 
   function moretopic(topicdata) {
     var topic = self.el.topicitem_tm.clone()
+    var topic_character_count = topic.find('#topic_character_countitem_tm')
+    var topic_title = topic.find('input')
+    var topic_description = topic.find('textarea')
     var tI = self.el.topiclist.find('li').length
     topic.attr('id','hostchat_topic_'+tI)
+    topic_character_count.attr('id', 'topic_character_count_'+tI)
 
     if( topicdata ) {
       topic.find('input').val(topicdata.title)
@@ -2361,6 +2354,14 @@ function HostChatBox() {
     if( 1 < self.el.topiclist.find('li').length ) {
       self.el.lessbtn.show()
     }
+    
+    topic_title.NobleCount('#topic_character_count_' + tI, {
+        max_chars: 140,
+        on_update: function(t_obj, char_area, c_settings, char_rem){
+            topic_character_count.val(char_rem)
+            topic_title.val(topic_title.val().substring(0,140))
+        }
+    });
   }
 
   
@@ -2481,26 +2482,6 @@ function HostChatBox() {
     self.el.details.show()
     self.el.topics.hide()
   })
-
-
-  /*
-  $('.hostchat_topic input').live('keydown', function(e){ if (e.keyCode == 13) savechat() });
-  
-  var nextOnEnter = function(e) {
-    if (e.keyCode == 13) {
-      self.el.details.hide(); 
-      self.el.topics.show(); 
-      $('.hostchat_topic:first-child input').focus();
-    }
-  };
-  
-  self.el.title.keydown(nextOnEnter);
-  self.el.modname.keydown(nextOnEnter);
-  self.el.whenstr.keydown(nextOnEnter);
-  self.el.hashtag.keydown(nextOnEnter);
-  self.el.desc.keydown(nextOnEnter);
-  */
-
 
   self.el.donebtn.click(function(){
     savechat()
@@ -3059,6 +3040,64 @@ function TermsBox() {
 }
 
 
+
+function EmailBox() {
+  var self = this
+
+  self.el = {
+    dummy: null
+
+    ,box: $('#email_box')
+
+    ,subject: $('#email_subject')
+    ,body: $('#email_body')
+
+    ,sendbtn: $('#email_sendbtn')
+    ,msg: $('#email_msg')
+  }
+
+  
+  showif(self,{
+  })
+
+
+  self.render = function() {
+    self.el.box.show()
+
+    app.getmoderatoremail(function(data){
+      self.el.subject.val(data.subject)
+      self.el.body.val(data.body)
+    })
+  }
+
+
+  self.el.sendbtn.click(function(){
+    var subject = self.el.subject.val()
+    var body    = self.el.body.val()
+
+    if( '' == subject ) {
+      self.el.msg.text(app.text.entersubject)
+    }
+    else if( '' == body ) {
+      self.el.msg.text(app.text.enterbody)
+    }
+    else {
+      self.el.msg.text('Sending email...')
+      self.el.sendbtn.hide()
+
+      app.emailparticipants(subject,body,function(err,out){
+        if( err ) {
+          self.el.msg.text('Email sending failed.')
+        }
+        else {
+          self.el.msg.text('Email sent successfully.')
+        }
+      })
+    }
+  })
+}
+
+
 function WinzigBox(elemid) {
   var self = this
 
@@ -3370,7 +3409,6 @@ $('li.message').live('mouseleave', function(){
     $('.post_actions', this).hide();
   }
 });	
-
 
 $('li.message .post_actions a.sprite-reshare, li.message .post_actions a.sprite-approve').live('click', function(evt){
   $(this).parents('li.message').data('shared', true);

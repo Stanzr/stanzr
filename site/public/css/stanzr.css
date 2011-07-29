@@ -419,12 +419,18 @@ div.modalbox {
     padding: 0px; }
     #hostchat_box #hostchat_topiclist li {
       margin: 5px 0px 0px 0px; }
+    #hostchat_box #hostchat_topiclist label span {
+      color: green;
+      float: right; }
   #hostchat_box #hostchat_backbtn {
     margin: 0 0 15px 0; }
   #hostchat_box #hostchat_addremove {
     margin: 0 0 15px 0; }
   #hostchat_box #hostchat_topicitem_tm {
     display: none; }
+
+#email_box {
+  width: 400px; }
 
 #signup_box {
   width: 250px; }
