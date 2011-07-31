@@ -563,7 +563,7 @@ var app = {
     app.rightbar.box.reply.set(app.chat)
     app.rightbar.box.dm.render()
 
-    $('p').each(function(index,post){
+    $('p.post').each(function(index,post){
       var p = $(post)
       var ht = app.formatmsgtext( p.text() )
       p.html(ht)
@@ -1234,8 +1234,9 @@ $(function(){
 
         // chat done
         else {
-          app.formatpublishedchat()
-          $('#appdump').text(app.dump('done-chat-loaded'))
+	    
+	    app.formatpublishedchat()
+	    $('#appdump').text(app.dump('done-chat-loaded'))
         }
       }
     })
@@ -3064,6 +3065,8 @@ function EmailBox() {
 
 
   self.render = function() {
+      console.log(self.el.box.html())
+
     self.el.box.show()
 
     app.getmoderatoremail(function(data){
