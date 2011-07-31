@@ -3053,6 +3053,8 @@ function EmailBox() {
     ,body: $('#email_body')
 
     ,sendbtn: $('#email_sendbtn')
+    ,closebtn: $('#email_closebtn')
+
     ,msg: $('#email_msg')
   }
 
@@ -3086,6 +3088,8 @@ function EmailBox() {
       self.el.sendbtn.hide()
 
       app.emailparticipants(subject,body,function(err,out){
+	self.el.closebtn.show()
+
         if( err ) {
           self.el.msg.text('Email sending failed.')
         }
@@ -3095,6 +3099,8 @@ function EmailBox() {
       })
     }
   })
+
+  self.el.closebtn.click(function(){ self.el.box.hide() } )
 }
 
 
