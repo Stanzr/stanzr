@@ -1419,7 +1419,7 @@ function SendBox() {
 
 
   self.init = function() {
-    var max_length = 210, tweet_length = 140;
+    var max_length = 210-(page.chat.hashtag.length)-1, tweet_length = 140;
 
     self.el.tweet.change(function(){self.el.text.keydown()})
 
