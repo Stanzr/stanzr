@@ -1422,7 +1422,7 @@ function SendBox() {
     self.el.tweet.change(function(){self.el.text.keydown()})
 
     self.el.text.NobleCount('#send_count',{
-      max_chars:210,
+      max_chars:280,
       on_update:function(t_obj, char_area, c_settings, char_remaining){
         var tweet = self.el.tweet.attr('checked')
 
