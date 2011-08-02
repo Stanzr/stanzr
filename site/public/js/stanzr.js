@@ -2715,7 +2715,7 @@ function HistoryBox() {
   }
 }
 
-
+	     /*
 $('.imgbtn[title]:visible, .agrees.count, .replies.count').livequery(function() {
   $(this)
     .qtip({
@@ -2731,6 +2731,7 @@ $('.imgbtn[title]:visible, .agrees.count, .replies.count').livequery(function() 
         }
       });
 });
+	     */
 
 var ui = {
   text: function(el,map) {
