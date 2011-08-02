@@ -1419,18 +1419,20 @@ function SendBox() {
 
 
   self.init = function() {
+    var max_length = 210, tweet_length = 140;
+
     self.el.tweet.change(function(){self.el.text.keydown()})
 
     self.el.text.NobleCount('#send_count',{
-      max_chars:210,
+      max_chars:max_length,
       on_update:function(t_obj, char_area, c_settings, char_remaining){
         var tweet = self.el.tweet.attr('checked')
 
         var countelem = self.el.count
-        char_rem = tweet ? char_remaining - 140 : char_remaining
+        char_rem = tweet ? char_remaining - ( max_length - tweet_length ) : char_remaining
 
         if( tweet ) {
-          self.el.count.text( parseInt(self.el.count.text())-140 )
+          self.el.count.text( parseInt(self.el.count.text()) - ( max_length - tweet_length ) )
         }
 
         var warnsize = 20
@@ -1454,7 +1456,7 @@ function SendBox() {
 
         // limit text input to [maxLength] characters and display error message if above
         if (char_remaining < 0) {
-          self.el.text.val(self.el.text.val().substring(0,210));
+          self.el.text.val(self.el.text.val().substring(0,max_length));
           self.el.count.text( "Woah!")
         }
       } 
