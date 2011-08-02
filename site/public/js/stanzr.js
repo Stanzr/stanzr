@@ -2339,12 +2339,13 @@ function HostChatBox() {
 
   function moretopic(topicdata) {
     var topic = self.el.topicitem_tm.clone()
-    var topic_character_count = topic.find('#topic_character_countitem_tm')
+    var topic_title_count = topic.find('#topic_title_countitem_tm')
     var topic_title = topic.find('input')
+    var topic_description_count = topic.find('#topic_description_countitem_tm')
     var topic_description = topic.find('textarea')
     var tI = self.el.topiclist.find('li').length
     topic.attr('id','hostchat_topic_'+tI)
-    topic_character_count.attr('id', 'topic_character_count_'+tI)
+    topic_title_count.attr('id', 'topic_character_count_'+tI)
 
     if( topicdata ) {
       topic.find('input').val(topicdata.title)
@@ -2358,13 +2359,26 @@ function HostChatBox() {
       self.el.lessbtn.show()
     }
     
-    topic_title.NobleCount('#topic_character_count_' + tI, {
+    topic_title.NobleCount('#topic_title_count_' + tI, {
         max_chars: 140,
         on_update: function(t_obj, char_area, c_settings, char_rem){
-            topic_character_count.val(char_rem)
-            topic_title.val(topic_title.val().substring(0,140))
+            topic_title_count.val(char_rem < 0 ? char_rem : 0)
+            if(char_rem < 0) {
+                topic_title.val(topic_title.val().substring(0,140))
+            }
         }
-    });
+    })
+
+    topic_description.NobleCount('#topic_description_count_' + tI, {
+        max_chars: 140,
+        on_update: function(t_obj, char_area, c_settings, char_rem){
+            topic_description_count.val(char_rem < 0 ? char_rem : 0)
+            if(char_rem < 0) {
+                topic_description.val(topic_description.val().substring(0,140))
+            }
+        }
+    })
+
   }
 
   
