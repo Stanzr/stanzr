@@ -19,6 +19,7 @@ var conf    = common.conf
 var twitter = common.twitter
 var oauth   = common.oauth
 var form    = common.form
+var https    = require('http')
 
 
 var office  = common.office
@@ -74,6 +75,10 @@ function bad_unless(res,cond,cb){
 }
 
 
+// RE -- binds a function's `this` to the calling object
+//       good for callbacks.
+// res: response variable
+// win: function with arbitrary number of paramters
 function RE(res,win){
   return function(err){
     if( err ) {
@@ -297,42 +302,79 @@ main.util = {
     return r
   },
 
-  tweet: function(msg,hashtag) {
-    var sendtweet = msg.w && hashtag && 2 < hashtag.length
-    log('tweet',{hashtag:hashtag,msg:msg,sendtweet:sendtweet})
-    if( sendtweet ) {
-      var user = main.ent.make$('sys','user')
-      user.load$({nick:msg.f},LE(function(user){
-        if( user.social && 'twitter' == user.social.service ) {
-          
-          var twit = new twitter({
-            consumer_key: conf.keys.twitter.key,
-            consumer_secret: conf.keys.twitter.secret,
-            access_token_key: user.social.key,
-            access_token_secret: user.social.secret
-          });
-          
+  post_to_social_network: function(msg, hashtag) {
+    var user = main.ent.make$('sys','user')
+    user.load$({nick:msg.f},LE(function(user){
+      switch ( user.social.service ) {
+        case 'twitter':
+          main.util.tweet(msg, hashtag, user)
+          break
+        case 'facebook':
+          main.util.post_to_facebook(msg, hashtag, user)
+          break
+        case 'linkedin':
+          break
+      }
+    }))
+  },
 
-          var tweet = msg.t 
-          if( -1 == tweet.indexOf('#'+hashtag) ) {
-            tweet += ' #'+hashtag
-          }
+  post_to_facebook: function(msg, hashtag, user) {
+    if ( user.social && 'facebook' == user.social.service ) {
+     console.log("\n\n\n\n\n\n")
+      var options = { 
+          host: 'graph.facebook.com'
+          ,port: 443
+          ,path: '/' + user.facebook_id + '/feed'
+          ,method: 'POST'
+      }
+      var request = https.request(options, function(res) {
+            console.log("#####################" + 'http://graph.facebook.com:80/' + user.facebook_id + '/feed')
+            console.log("#####################" + "msg=" + msg.t + "&link=http://stanzr.com/" + msg.c + "&access_token=" + user.social.key)
+            console.log("statusCode: ", res.statusCode);
+            console.log("headers: ", res.headers);
+            res.on('data', function(d) {
+              process.stdout.write(d);
+            });
+            res.on('close', function () {response.emit('end')});
+      })
 
-          var start = new Date()
-          twit.updateStatus(
-            tweet,
-            function (data) {
-              var end = new Date()
-              var dur = end.getTime()-start.getTime()
-              twlog.debug( dur+', '+JSON.stringify(data) )
-            }
-          )
-          
-        }
-      }))
+
+      request.write("msg=" + msg.t + "&link=http://stanzr.com/" + msg.c + "&access_token=" + user.social.key)
+      request.on('error', function(e) {
+        console.error(e);
+      });
     }
   },
 
+  tweet: function(msg, hashtag, user) {
+    var sendtweet = msg.w && hashtag && 2 < hashtag.length
+    log('tweet',{hashtag:hashtag,msg:msg,sendtweet:sendtweet})
+    if( sendtweet ) {
+      if( user.social && 'twitter' == user.social.service ) {
+
+        var twit = new twitter({
+          consumer_key: conf.keys.twitter.key,
+          consumer_secret: conf.keys.twitter.secret,
+          access_token_key: user.social.key,
+          access_token_secret: user.social.secret
+        });
+        
+        var tweet = msg.t 
+        if( -1 == tweet.indexOf('#'+hashtag) ) {
+          tweet += ' #'+hashtag
+        }
+
+        var start = new Date()
+        twit.updateStatus(tweet, function (data) {
+            var end = new Date()
+            var dur = end.getTime()-start.getTime()
+            twlog.debug( dur+', '+JSON.stringify(data) )
+          }
+        )
+      }
+    }
+  },
+  
   sendtogroup: function(group,type,msg) {
     waitfor( group.now, 'receiveMessage', JSON.stringify([group.groupName,type,msg]), function() {
       group.now.receiveMessage(
@@ -588,7 +630,7 @@ main.msg.post = function(msg,cb) {
         cb && cb(msgdata)
 
         log('message',msgdata)
-        main.util.tweet(msgdata,hashtag)
+        main.util.post_to_social_network(msgdata,hashtag)
         main.util.sendtogroup(group,'message',msgdata)
       }
       else {
@@ -1567,7 +1609,7 @@ main.api.chat.msg.share = function(req,res) {
     var tweet = req.json$.tweet
     if( text.length <= 140 && tweet ) {
       var tweetmsg = {w:1,f:req.user$.nick,t:text}
-      main.util.tweet(tweetmsg,req.chat$.hashtag)
+      main.util.post_to_social_network(tweetmsg,req.chat$.hashtag)
     }
 
     msg.rt = msg.rg ? 1+msg.rt : 1;
@@ -2258,6 +2300,7 @@ Seneca.init(
         capp.get('/api/user/:nick/avatar', main.api.user.get_avatar)
 
         capp.get('/api/user/:nick/details', main.api.user.get_details)
+
       })
     )
 
@@ -2472,4 +2515,5 @@ Seneca.init(
 )
 
 module.exports = main
+
 

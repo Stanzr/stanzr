@@ -692,7 +692,7 @@ var app = {
         })
       }
 
-      if( 'twitter' == page.user.service ) {
+      if( 'twitter' == page.user.service || 'facebook' == page.user.service || 'linkedin' == page.user.service ) {
         share.click(function(){
           app.popup.box.share.render(msg.i)
         })
@@ -2971,9 +2971,17 @@ function ShareBox() {
   self.init = function() {
     self.el.postbtn.click(function(){
       var text = self.el.text.val()
-      //self.el.text.text('')
       self.el.text.val('')
       self.el.box.hide()
+
+      switch (page.user.service) {
+        case 'twitter':
+            break;
+        case 'facebook':
+            break;
+        case 'linkedin':
+            break;
+      }
 
       var tweet = self.el.tweet.attr('checked')
 
