@@ -19,8 +19,7 @@ var conf    = common.conf
 var twitter = common.twitter
 var oauth   = common.oauth
 var form    = common.form
-var https    = require('http')
-
+var https    = require('https')
 
 var office  = common.office
 var log     = common.log
@@ -320,29 +319,28 @@ main.util = {
 
   post_to_facebook: function(msg, hashtag, user) {
     if ( user.social && 'facebook' == user.social.service ) {
-     console.log("\n\n\n\n\n\n")
-      var options = { 
-          host: 'graph.facebook.com'
-          ,port: 443
-          ,path: '/' + user.facebook_id + '/feed'
-          ,method: 'POST'
-      }
-      var request = https.request(options, function(res) {
-            console.log("#####################" + 'http://graph.facebook.com:80/' + user.facebook_id + '/feed')
-            console.log("#####################" + "msg=" + msg.t + "&link=http://stanzr.com/" + msg.c + "&access_token=" + user.social.key)
-            console.log("statusCode: ", res.statusCode);
-            console.log("headers: ", res.headers);
-            res.on('data', function(d) {
-              process.stdout.write(d);
-            });
-            res.on('close', function () {response.emit('end')});
-      })
+      var options = {
+        host: 'graph.facebook.com',
+        port: 443,
+        path: '/' + user.facebook_id + '/feed',
+        method: 'POST'
+      };
 
-
-      request.write("msg=" + msg.t + "&link=http://stanzr.com/" + msg.c + "&access_token=" + user.social.key)
-      request.on('error', function(e) {
-        console.error(e);
+      var req = https.request(options, function(res) {
+        console.log('STATUS: ' + res.statusCode);
+        console.log('HEADERS: ' + JSON.stringify(res.headers));
+        res.setEncoding('utf8');
+        res.on('data', function (chunk) {
+          console.log('BODY: ' + chunk);
+        });
       });
+
+      req.on('error', function(e) {
+        console.log('problem with request: ' + e.message);
+      });
+      
+      req.write("message=" + msg.t + "&link=http://stanzr.com/" + msg.c + "&access_token=" + user.social.key)
+      req.end();
     }
   },
 
