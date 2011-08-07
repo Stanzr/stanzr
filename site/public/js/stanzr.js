@@ -2941,6 +2941,7 @@ function ShareBox() {
     ,tweetout: $('#share_tweetout')
     ,tweet: $('#share_tweet')
     ,count: $('#share_count')
+    ,title: $('#share_box h2')
 
     ,postbtn: $('#share_postbtn')
   }
@@ -2995,6 +2996,14 @@ function ShareBox() {
 
   self.render = function(msgid) {
     self.el.box.show()
+
+    if ( page.user.service == 'twitter' ) {
+      self.el.title.text("Post to Twitter")
+    } else if ( page.user.service == 'facebook' ) {
+      self.el.title.text("Post to Facebook")
+    } else if ( page.user.service == 'linkedin' ) {
+      self.el.title.text("Post to LinkedIn")
+    }
 
     self.msg = app.msgcache[msgid]
     var text =  ('RT @'+self.msg.f+': '+self.msg.t).replace(/\n/g,'')
