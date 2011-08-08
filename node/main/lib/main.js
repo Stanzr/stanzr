@@ -628,7 +628,9 @@ main.msg.post = function(msg,cb) {
         cb && cb(msgdata)
 
         log('message',msgdata)
-        main.util.post_to_social_network(msgdata,hashtag)
+
+        // this is also being posted at 1611 in main.api.chat.msg.share
+        //main.util.post_to_social_network(msgdata,hashtag)
         main.util.sendtogroup(group,'message',msgdata)
       }
       else {
@@ -1606,7 +1608,7 @@ main.api.chat.msg.share = function(req,res) {
     var text = req.json$.text
     var tweet = req.json$.tweet
     if( text.length <= 140 && tweet ) {
-      var tweetmsg = {w:1,f:req.user$.nick,t:text}
+      var tweetmsg = {i:msg.i, f:req.user$.nick, c:msg.c, p:msg.p, t:text, r:msg.r, w:1};
       main.util.post_to_social_network(tweetmsg,req.chat$.hashtag)
     }
 
