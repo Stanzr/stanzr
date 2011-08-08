@@ -693,3 +693,6 @@ input:disabled {
 .addthis_button_facebook_like {
   width: 50px;
   overflow: hidden; }
+
+.hidden {
+  display: none; }

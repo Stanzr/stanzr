@@ -197,7 +197,7 @@ var app = {
 
     $('ul.topicposts').hide()
     app.topicposts = $('#topic_posts_'+app.topic).show()
-
+    
     app.resize()
 
     app.scrolldown()
@@ -689,7 +689,7 @@ var app = {
         })
       }
 
-      if( 'twitter' == page.user.service ) {
+      if( 'twitter' == page.user.service || 'facebook' == page.user.service || 'linkedin' == page.user.service ) {
         share.click(function(){
           app.popup.box.share.render(msg.i)
         })
@@ -1886,7 +1886,6 @@ function DirectMessageBox() {
 DirectMessageBox.prototype = new RightbarBox()
 
 
-
 function AgreeBox() {
   var self = this
 
@@ -1922,6 +1921,7 @@ function AgreeBox() {
 
 
   self.render = function(msg) {
+    console.log('RUNNING RENDER')
     if( msg ) {
       agrees.push(msg.i)
       agrees = _.uniq(agrees)
@@ -1945,13 +1945,12 @@ function AgreeBox() {
           msgdiv.find('h4').text(msg.f)
           msgdiv.find('.count').text('x'+msg.a)
           msgdiv.find('.post').text(msg.t)
-
           if( !msg.h ) {
             self.el.msgs.append(msgdiv)
             msgdiv.fadeIn()
             self.count++
           }
-
+          
           if( 'up' == self.drill && 100 < self.el.msgs.height() ) {
             i = agrees.length
           }
@@ -2943,6 +2942,7 @@ function ShareBox() {
     ,tweetout: $('#share_tweetout')
     ,tweet: $('#share_tweet')
     ,count: $('#share_count')
+    ,title: $('#share_box h2')
 
     ,postbtn: $('#share_postbtn')
   }
@@ -2958,9 +2958,17 @@ function ShareBox() {
   self.init = function() {
     self.el.postbtn.click(function(){
       var text = self.el.text.val()
-      //self.el.text.text('')
       self.el.text.val('')
       self.el.box.hide()
+
+      switch (page.user.service) {
+        case 'twitter':
+            break;
+        case 'facebook':
+            break;
+        case 'linkedin':
+            break;
+      }
 
       var tweet = self.el.tweet.attr('checked')
 
@@ -2989,6 +2997,14 @@ function ShareBox() {
 
   self.render = function(msgid) {
     self.el.box.show()
+
+    if ( page.user.service == 'twitter' ) {
+      self.el.title.text("Post to Twitter")
+    } else if ( page.user.service == 'facebook' ) {
+      self.el.title.text("Post to Facebook")
+    } else if ( page.user.service == 'linkedin' ) {
+      self.el.title.text("Post to LinkedIn")
+    }
 
     self.msg = app.msgcache[msgid]
     var text =  ('RT @'+self.msg.f+': '+self.msg.t).replace(/\n/g,'')

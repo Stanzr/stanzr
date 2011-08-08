@@ -19,7 +19,7 @@ var conf    = common.conf
 var twitter = common.twitter
 var oauth   = common.oauth
 var form    = common.form
-
+var https    = require('https')
 
 var office  = common.office
 var log     = common.log
@@ -74,6 +74,10 @@ function bad_unless(res,cond,cb){
 }
 
 
+// RE -- binds a function's `this` to the calling object
+//       good for callbacks.
+// res: response variable
+// win: function with arbitrary number of paramters
 function RE(res,win){
   return function(err){
     if( err ) {
@@ -297,42 +301,78 @@ main.util = {
     return r
   },
 
-  tweet: function(msg,hashtag) {
-    var sendtweet = msg.w && hashtag && 2 < hashtag.length
-    log('tweet',{hashtag:hashtag,msg:msg,sendtweet:sendtweet})
-    if( sendtweet ) {
-      var user = main.ent.make$('sys','user')
-      user.load$({nick:msg.f},LE(function(user){
-        if( user.social && 'twitter' == user.social.service ) {
-          
-          var twit = new twitter({
-            consumer_key: conf.keys.twitter.key,
-            consumer_secret: conf.keys.twitter.secret,
-            access_token_key: user.social.key,
-            access_token_secret: user.social.secret
-          });
-          
+  post_to_social_network: function(msg, hashtag) {
+    var user = main.ent.make$('sys','user')
+    user.load$({nick:msg.f},LE(function(user){
+      switch ( user.social.service ) {
+        case 'twitter':
+          main.util.tweet(msg, hashtag, user)
+          break
+        case 'facebook':
+          main.util.post_to_facebook(msg, hashtag, user)
+          break
+        case 'linkedin':
+          break
+      }
+    }))
+  },
 
-          var tweet = msg.t 
-          if( -1 == tweet.indexOf('#'+hashtag) ) {
-            tweet += ' #'+hashtag
-          }
+  post_to_facebook: function(msg, hashtag, user) {
+    if ( user.social && 'facebook' == user.social.service ) {
+      var options = {
+        host: 'graph.facebook.com',
+        port: 443,
+        path: '/' + user.facebook_id + '/feed',
+        method: 'POST'
+      };
 
-          var start = new Date()
-          twit.updateStatus(
-            tweet,
-            function (data) {
-              var end = new Date()
-              var dur = end.getTime()-start.getTime()
-              twlog.debug( dur+', '+JSON.stringify(data) )
-            }
-          )
-          
-        }
-      }))
+      var req = https.request(options, function(res) {
+        console.log('STATUS: ' + res.statusCode);
+        console.log('HEADERS: ' + JSON.stringify(res.headers));
+        res.setEncoding('utf8');
+        res.on('data', function (chunk) {
+          console.log('BODY: ' + chunk);
+        });
+      });
+
+      req.on('error', function(e) {
+        console.log('problem with request: ' + e.message);
+      });
+      
+      req.write("message=" + msg.t + "&link=http://stanzr.com/" + msg.c + "&access_token=" + user.social.key)
+      req.end();
     }
   },
 
+  tweet: function(msg, hashtag, user) {
+    var sendtweet = msg.w && hashtag && 2 < hashtag.length
+    log('tweet',{hashtag:hashtag,msg:msg,sendtweet:sendtweet})
+    if( sendtweet ) {
+      if( user.social && 'twitter' == user.social.service ) {
+
+        var twit = new twitter({
+          consumer_key: conf.keys.twitter.key,
+          consumer_secret: conf.keys.twitter.secret,
+          access_token_key: user.social.key,
+          access_token_secret: user.social.secret
+        });
+        
+        var tweet = msg.t 
+        if( -1 == tweet.indexOf('#'+hashtag) ) {
+          tweet += ' #'+hashtag
+        }
+
+        var start = new Date()
+        twit.updateStatus(tweet, function (data) {
+            var end = new Date()
+            var dur = end.getTime()-start.getTime()
+            twlog.debug( dur+', '+JSON.stringify(data) )
+          }
+        )
+      }
+    }
+  },
+  
   sendtogroup: function(group,type,msg) {
     waitfor( group.now, 'receiveMessage', JSON.stringify([group.groupName,type,msg]), function() {
       group.now.receiveMessage(
@@ -588,7 +628,9 @@ main.msg.post = function(msg,cb) {
         cb && cb(msgdata)
 
         log('message',msgdata)
-        main.util.tweet(msgdata,hashtag)
+
+        // this is also being posted at 1611 in main.api.chat.msg.share
+        //main.util.post_to_social_network(msgdata,hashtag)
         main.util.sendtogroup(group,'message',msgdata)
       }
       else {
@@ -1566,8 +1608,8 @@ main.api.chat.msg.share = function(req,res) {
     var text = req.json$.text
     var tweet = req.json$.tweet
     if( text.length <= 140 && tweet ) {
-      var tweetmsg = {w:1,f:req.user$.nick,t:text}
-      main.util.tweet(tweetmsg,req.chat$.hashtag)
+      var tweetmsg = {i:msg.i, f:req.user$.nick, c:msg.c, p:msg.p, t:text, r:msg.r, w:1};
+      main.util.post_to_social_network(tweetmsg,req.chat$.hashtag)
     }
 
     msg.rt = msg.rg ? 1+msg.rt : 1;
@@ -2258,6 +2300,7 @@ Seneca.init(
         capp.get('/api/user/:nick/avatar', main.api.user.get_avatar)
 
         capp.get('/api/user/:nick/details', main.api.user.get_details)
+
       })
     )
 
@@ -2472,4 +2515,5 @@ Seneca.init(
 )
 
 module.exports = main
+
 
