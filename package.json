@@ -72,7 +72,7 @@
        "mongodb": "https://github.com/christkv/node-mongodb-native/tarball/v0.9.3",
        "now": "https://github.com/rjrodger/now/tarball/HEAD",
        "oauth": "https://github.com/rjrodger/node-oauth/tarball/HEAD",
-       "seneca": "https://github.com/rjrodger/seneca/tarball/HEAD"
+       "seneca": "https://github.com/cloudspace/seneca/tarball/HEAD"
    },
    "os": ["linux"],
    "cpu": ["x86", "x86_64"],
