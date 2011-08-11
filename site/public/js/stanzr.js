@@ -1944,9 +1944,10 @@ function AgreeBox() {
     }
 
     self.count = 0
+    var topic_tapped_out = {};
     for( var i = 0; i < agrees.length; i++ ) {
       function displaymostagreed(msg){
-        if( 1 <= msg.a ) {
+        if( 1 <= msg.a && ! topic_tapped_out[msg.p] ) {
           var msgdiv = self.el.msg_tm.clone().attr('id','agree_'+msg.i)
           msgdiv.find('h4').text(msg.f)
           msgdiv.find('.count').text('x'+msg.a)
@@ -1955,6 +1956,7 @@ function AgreeBox() {
             // if we don't have a div for this topic (msg.p) yet, create one
             if( ! (msg.p in self.el.msg_lists) ) {
                 var new_msg_list = self.el.msgs_tm.clone().attr('id', 'rally_agree_'+msg.p)
+                topic_tapped_out[msg.p] = false;
 
                 // app.topic is set in the initial ajax call to get all app data, on line 1158
                 // if the ajax call doesnt return before this runs, when it does return it runs
@@ -1969,6 +1971,10 @@ function AgreeBox() {
             msgdiv.fadeIn()
             self.count++
           }
+        }
+
+        if( 'up' == self.drill && 100 < self.el.msg_lists[msg.p].height() ) {
+            topic_tapped_out[msg.p] = true;
         }
       }
 
