@@ -199,7 +199,7 @@ var app = {
     app.topicposts = $('#topic_posts_'+app.topic).show()
     
     $('#rally_agree_container ul').hide()
-    $('#rally_agree_' + topic).show()
+    $('#rally_agree_' + app.topic).show()
 
     app.resize()
 
@@ -896,7 +896,6 @@ $(function(){
   $.timeago.settings.refreshMillis = 60000
   app.timeago = $('#timeago').timeago()
 
-  console.log(app)
   
   app.resize()
   window.onresize = app.resize
@@ -1207,7 +1206,7 @@ $(function(){
             topicposts.css({display:'none'})
           }
           app.changetopic(app.active_topic)            
-          console.log("/api/chat/:chat_id was called, and page.chat.state was not equal to 'done'."); console.log(app); console.log(app.active_topic)
+
           app.updatetopics()
           app.postbottom()
           app.leftbar.box.detail.init(app.chat).render()
@@ -1927,7 +1926,6 @@ function AgreeBox() {
 
 
   self.render = function(msg) {
-    console.log('RUNNING RENDER')
     if( msg ) {
       agrees.push(msg.i)
       agrees = _.uniq(agrees)
@@ -1957,7 +1955,11 @@ function AgreeBox() {
             // if we don't have a div for this topic (msg.p) yet, create one
             if( ! (msg.p in self.el.msg_lists) ) {
                 var new_msg_list = self.el.msgs_tm.clone().attr('id', 'rally_agree_'+msg.p)
-                if ( $.isEmptyObject(self.el.msg_lists) ) {
+
+                // app.topic is set in the initial ajax call to get all app data, on line 1158
+                // if the ajax call doesnt return before this runs, when it does return it runs
+                // app.changetopic which will set this to displayed anyway.
+                if ( app.topic && app.topic == msg.p ) {
                     new_msg_list.css('display','block')
                 }
                 self.el.msg_lists[msg.p] = new_msg_list
@@ -1966,10 +1968,6 @@ function AgreeBox() {
             self.el.msg_lists[msg.p].append(msgdiv)
             msgdiv.fadeIn()
             self.count++
-          }
-          
-          if( 'up' == self.drill && 100 < self.el.msg_lists[msg.p].height() ) {
-            i = agrees.length
           }
         }
       }
@@ -3114,7 +3112,6 @@ function EmailBox() {
 
 
   self.render = function() {
-      console.log(self.el.box.html())
 
     self.el.box.show()
 
