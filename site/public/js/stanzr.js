@@ -198,6 +198,9 @@ var app = {
     $('ul.topicposts').hide()
     app.topicposts = $('#topic_posts_'+app.topic).show()
     
+    $('#rally_agree_container ul').hide()
+    $('#rally_agree_' + topic).show()
+
     app.resize()
 
     app.scrolldown()
@@ -893,7 +896,7 @@ $(function(){
   $.timeago.settings.refreshMillis = 60000
   app.timeago = $('#timeago').timeago()
 
-  app.changetopic(0)
+  console.log(app)
   
   app.resize()
   window.onresize = app.resize
@@ -1204,6 +1207,7 @@ $(function(){
             topicposts.css({display:'none'})
           }
           app.changetopic(app.active_topic)            
+          console.log("/api/chat/:chat_id was called, and page.chat.state was not equal to 'done'."); console.log(app); console.log(app.active_topic)
           app.updatetopics()
           app.postbottom()
           app.leftbar.box.detail.init(app.chat).render()
@@ -1899,7 +1903,9 @@ function AgreeBox() {
     ,drillup: $('#agree_drillup')
     ,box: $('#agree_box')
 
-    ,msgs: $('#rally_agree')
+    ,msgs_tm: $('#rally_agree_tm')
+    ,msg_lists_container: $('#rally_agree_container')
+    ,msg_lists: {}
     ,msg_tm: $('#agree_msg_tm')
 
   }
@@ -1935,7 +1941,9 @@ function AgreeBox() {
     })
     debug('post-sort',agrees)
 
-    self.el.msgs.empty()
+    for ( var i in self.el.msg_lists ) {
+        self.el.msg_lists[i].empty()
+    }
 
     self.count = 0
     for( var i = 0; i < agrees.length; i++ ) {
@@ -1946,12 +1954,21 @@ function AgreeBox() {
           msgdiv.find('.count').text('x'+msg.a)
           msgdiv.find('.post').text(msg.t)
           if( !msg.h ) {
-            self.el.msgs.append(msgdiv)
+            // if we don't have a div for this topic (msg.p) yet, create one
+            if( ! (msg.p in self.el.msg_lists) ) {
+                var new_msg_list = self.el.msgs_tm.clone().attr('id', 'rally_agree_'+msg.p)
+                if ( $.isEmptyObject(self.el.msg_lists) ) {
+                    new_msg_list.css('display','block')
+                }
+                self.el.msg_lists[msg.p] = new_msg_list
+                self.el.msg_lists_container.append(new_msg_list)
+            }
+            self.el.msg_lists[msg.p].append(msgdiv)
             msgdiv.fadeIn()
             self.count++
           }
           
-          if( 'up' == self.drill && 100 < self.el.msgs.height() ) {
+          if( 'up' == self.drill && 100 < self.el.msg_lists[msg.p].height() ) {
             i = agrees.length
           }
         }
