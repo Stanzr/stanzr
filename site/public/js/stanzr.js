@@ -1973,7 +1973,7 @@ function AgreeBox() {
           }
         }
 
-        if( 'up' == self.drill && 100 < self.el.msg_lists[msg.p].height() ) {
+        if( 'up' == self.drill && 110 < self.el.msg_lists[msg.p].height() ) {
             topic_tapped_out[msg.p] = true;
         }
       }
