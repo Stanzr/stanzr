@@ -198,6 +198,9 @@ var app = {
     $('ul.topicposts').hide()
     app.topicposts = $('#topic_posts_'+app.topic).show()
     
+    $('#rally_agree_container ul').hide()
+    $('#rally_agree_' + app.topic).show()
+
     app.resize()
 
     app.scrolldown()
@@ -893,7 +896,6 @@ $(function(){
   $.timeago.settings.refreshMillis = 60000
   app.timeago = $('#timeago').timeago()
 
-  app.changetopic(0)
   
   app.resize()
   window.onresize = app.resize
@@ -1204,6 +1206,7 @@ $(function(){
             topicposts.css({display:'none'})
           }
           app.changetopic(app.active_topic)            
+
           app.updatetopics()
           app.postbottom()
           app.leftbar.box.detail.init(app.chat).render()
@@ -1899,7 +1902,9 @@ function AgreeBox() {
     ,drillup: $('#agree_drillup')
     ,box: $('#agree_box')
 
-    ,msgs: $('#rally_agree')
+    ,msgs_tm: $('#rally_agree_tm')
+    ,msg_lists_container: $('#rally_agree_container')
+    ,msg_lists: {}
     ,msg_tm: $('#agree_msg_tm')
 
   }
@@ -1921,7 +1926,6 @@ function AgreeBox() {
 
 
   self.render = function(msg) {
-    console.log('RUNNING RENDER')
     if( msg ) {
       agrees.push(msg.i)
       agrees = _.uniq(agrees)
@@ -1935,25 +1939,43 @@ function AgreeBox() {
     })
     debug('post-sort',agrees)
 
-    self.el.msgs.empty()
+    for ( var i in self.el.msg_lists ) {
+        self.el.msg_lists[i].empty()
+    }
 
     self.count = 0
+    var topic_tapped_out = {};
     for( var i = 0; i < agrees.length; i++ ) {
       function displaymostagreed(msg){
-        if( 1 <= msg.a ) {
+        if( 1 <= msg.a && ! topic_tapped_out[msg.p] ) {
           var msgdiv = self.el.msg_tm.clone().attr('id','agree_'+msg.i)
           msgdiv.find('h4').text(msg.f)
           msgdiv.find('.count').text('x'+msg.a)
           msgdiv.find('.post').text(msg.t)
           if( !msg.h ) {
-            self.el.msgs.append(msgdiv)
+            // if we don't have a div for this topic (msg.p) yet, create one
+            if( ! (msg.p in self.el.msg_lists) ) {
+                var new_msg_list = self.el.msgs_tm.clone().attr('id', 'rally_agree_'+msg.p)
+                topic_tapped_out[msg.p] = false;
+
+                // app.topic is set in the initial ajax call to get all app data, on line 1158
+                // if the ajax call doesnt return before this runs, when it does return it runs
+                // app.changetopic which will set this to displayed anyway.
+                if ( app.topic && app.topic == msg.p ) {
+                    new_msg_list.css('display','block')
+                }
+                self.el.msg_lists[msg.p] = new_msg_list
+                self.el.msg_lists_container.append(new_msg_list)
+            }
+            self.el.msg_lists[msg.p].append(msgdiv)
             msgdiv.fadeIn()
             self.count++
           }
-          
-          if( 'up' == self.drill && 100 < self.el.msgs.height() ) {
-            i = agrees.length
-          }
+        }
+
+        if( 'up' == self.drill && 115 < self.el.msg_lists[msg.p].height() ) {
+          topic_tapped_out[msg.p] = true
+          self.el.msg_lists[msg.p].children().last().remove()
         }
       }
 
@@ -3098,7 +3120,6 @@ function EmailBox() {
 
 
   self.render = function() {
-      console.log(self.el.box.html())
 
     self.el.box.show()
 
