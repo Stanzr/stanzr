@@ -312,6 +312,7 @@ main.util = {
           main.util.post_to_facebook(msg, hashtag, user)
           break
         case 'linkedin':
+          main.util.post_to_linkedin(msg, hashtag, user)
           break
       }
     }))
@@ -341,6 +342,41 @@ main.util = {
       
       req.write("message=" + msg.t + "&link=http://stanzr.com/" + msg.c + "&access_token=" + user.social.key)
       req.end();
+    }
+  },
+
+  post_to_linkedin: function(msg, hashtag, user) {
+    if ( user.social && 'linkedin' == user.social.service ) {
+      var url = "http://stanzr.com/" + msg.c;
+      var xml = '<?xml version="1.0" encoding="UTF-8"?>' + 
+                '<share>' +
+                ' <comment>' + msg.t + ' ' + url + '</comment>' +
+                ' <content>' +
+                '  <title>' + msg.t + '</title>' +
+                '  <submitted-url>' + url + '</submitted-url>' +
+                ' </content>' +
+                ' <visibility>' +
+                '  <code>anyone</code>' +
+                ' </visibility>' +
+                '</share>'
+
+      eyes.inspect([url, conf.keys.linkedin.key, conf.keys.linkedin.secret, user.social])
+      var oa = new oauth.OAuth(
+        'https://api.linkedin.com/uas/oauth/requestToken',
+        'https://api.linkedin.com/uas/oauth/accessToken',
+        conf.keys.linkedin.key,
+        conf.keys.linkedin.secret,
+        '1.0', null, 'HMAC-SHA1', null,
+        {})
+      oa.post('https://api.linkedin.com/v1/people/~/shares', 
+                user.social.key, user.social.secret, 
+                xml, 'text/xml', function(error, data, response) { 
+        if(error.statusCode && error.statusCode != 200 && error.statusCode != 201 && error.statusCode != 202) {
+          eyes.inspect({ "LinkedInShareError": [error, data, response]}, { maxLength: 50000 })
+        } else {
+          console.log("Successfully posted stanza to " + user.nick + "'s LinkedIn")
+        }
+      })
     }
   },
 
