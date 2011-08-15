@@ -1646,7 +1646,8 @@ main.api.chat.msg.share = function(req,res) {
 
     var text = req.json$.text
     var tweet = req.json$.tweet
-    var tweetmsg = {i:msg.i, f:req.user$.nick, c:msg.c, p:msg.p, t:text, r:msg.r, w:1}
+    var tweetmsg = {i:msg.i, f:req.user$.nick, c:msg.c, p:msg.p, t:text, r:msg.r, w:tweet}
+
     main.util.post_to_social_network(tweetmsg,req.chat$.hashtag)
 
     msg.rt = msg.rg ? 1+msg.rt : 1;
