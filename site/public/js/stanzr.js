@@ -112,7 +112,7 @@ var http = {
       type:'POST',
       contentType:'application/json',
       data:JSON.stringify(data),
-      dataType:'json',
+      xdataType:'json',
       success:http.success(cb),
       error:http.error(cb)
     })
@@ -3446,7 +3446,7 @@ function Curate() {
     
     if( 0 < entries.length ) {
       http.post('/api/chat/'+app.chat.chatid+'/publish',{entries:entries},function(err,res){
-        if( err ) return debug(err);
+	      if( err ) return debug(err);
         app.reloadpage(res.pubalias)
       })
     }
