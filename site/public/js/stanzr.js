@@ -1958,14 +1958,15 @@ function AgreeBox() {
                 var new_msg_list = self.el.msgs_tm.clone().attr('id', 'rally_agree_'+msg.p)
                 topic_tapped_out[msg.p] = false;
 
+                self.el.msg_lists[msg.p] = new_msg_list
+                self.el.msg_lists_container.append(new_msg_list)
+
                 // app.topic is set in the initial ajax call to get all app data, on line 1158
                 // if the ajax call doesnt return before this runs, when it does return it runs
                 // app.changetopic which will set this to displayed anyway.
-                if ( app.topic && app.topic == msg.p ) {
-                    new_msg_list.css('display','block')
+                if ( typeof app.topic != 'undefined' && app.topic == msg.p ) {
+                    new_msg_list.show()
                 }
-                self.el.msg_lists[msg.p] = new_msg_list
-                self.el.msg_lists_container.append(new_msg_list)
             }
             self.el.msg_lists[msg.p].append(msgdiv)
             msgdiv.fadeIn()
