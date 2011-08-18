@@ -15,7 +15,7 @@ function Emailer() {
 
   self.send = function( spec, cb ) {
     var pmspec = {
-      "From": conf.keys.postmark.sender, 
+      "From": "moderator@stanzr.com", 
       "To": spec.to, 
       "Subject": spec.subject, 
       "TextBody": spec.text,
