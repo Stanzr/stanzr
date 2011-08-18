@@ -19,7 +19,7 @@ function Emailer() {
       "To": spec.to, 
       "Subject": spec.subject, 
       "TextBody": spec.text,
-      "ReplyTo":"moderator@stanzr.com",
+      "ReplyTo": "moderator@stanzr.com",
       "Tag": spec.code
     }
 
