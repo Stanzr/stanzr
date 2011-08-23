@@ -988,12 +988,22 @@ main.api = {
       }))
     },
 
-    get_avatar: function(req,res) {
+    get_avatar_and_social: function(req,res) {
       var nick = req.params.nick
       var user = main.ent.make$('sys','user')
       user.load$({nick:nick},RE(res,function(user){
         if( user ) {
-          common.sendjson(res,{nick:user.nick,avimg:user.avimg})
+          eyes.inspect(user)
+          var usersocial = ''
+          if ( user.social.service == 'twitter' ) {
+            // user.twitter_id does exist, but I couldn't find an easy way to translate it into a user stream. the nickname should be the same. 
+            usersocial = 'http://twitter.com/#!/' + user.nick 
+          } else if ( user.social.service == 'facebook' ) {
+            usersocial = 'http://facebook.com/' + user.facebook_id
+          } else if ( user.social.service == 'linkedin' ) {
+            usersocial = 'http://www.linkedin.com/profile/view?id=' + user.linkedin_id
+          }
+          common.sendjson(res,{nick:user.nick,avimg:user.avimg,usersocial:usersocial})
         }
         else {
           lost(res)
@@ -2335,7 +2345,7 @@ Seneca.init(
         capp.get('/api/chat/:chatid/msg/:msgid', main.api.chat.msg.get)
 
         capp.get('/api/chat/:chatid/topic/:topic', main.api.chat.topic.get)
-        capp.get('/api/user/:nick/avatar', main.api.user.get_avatar)
+        capp.get('/api/user/:nick/avatar_and_social', main.api.user.get_avatar_and_social)
 
         capp.get('/api/user/:nick/details', main.api.user.get_details)
 

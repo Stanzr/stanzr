@@ -148,6 +148,7 @@ var app = {
   nickmap: {},
   joinmap: {},
   avimg: {},
+  usersocial: {},
   invitesused: 0,
 
   usercache: {},
@@ -391,27 +392,31 @@ var app = {
   },
 
 
-  getavatar: function(avnick,cb) {
-    debug('getavatar:'+avnick+':'+app.avimg[avnick])
+  getavatarandsocial: function(avnick,cb) {
+    debug('getavatarandsocial:'+avnick+':'+app.avimg[avnick])
     if( (app.avimg[avnick] && '__pending__'!=app.avimg[avnick]) || null === app.avimg[avnick] ) {
-      cb && cb(app.avimg[avnick])
+      cb && cb(app.avimg[avnick], app.usersocial[avnick])
     }
     else if('__pending__'==app.avimg[avnick]) {
       setTimeout(function(){
-        app.getavatar(avnick,cb)
+        app.getavatarandsocial(avnick,cb)
       },5000)
     }
     else {
       app.avimg[avnick] = '__pending__'
-      debug('getavatar:HTTP GET:'+avnick)
-      http.get('/api/user/'+avnick+'/avatar',function(res){
+      debug('getavatarandsocial:HTTP GET:'+avnick)
+      http.get('/api/user/'+avnick+'/avatar_and_social',function(res){
         if( res.avimg ) {
           app.avimg[avnick] = res.avimg
-        }
-        else {
+        } else {
           app.avimg[avnick] = null        
         }
-        cb && cb(app.avimg[avnick])
+        if ( res.usersocial ) {
+          app.usersocial[avnick] = res.usersocial
+        } else {
+          app.usersocial[avnick] = null
+        }
+        cb && cb(app.avimg[avnick], app.usersocial[avnick])
       })
     }
   },
@@ -625,7 +630,6 @@ var app = {
       return
     }
 
-
     app.nickmap[msg.f] = true
 
     msg.p = 'undefined'==typeof(msg.p) ? app.topic : msg.p
@@ -644,11 +648,12 @@ var app = {
       post.find('div.moderator').removeClass('hide')
     }
 
-    app.getavatar(msg.f,function(avimg){
-      if( avimg ) {
-        debug('avimg',msg.f,avimg)
-        post.find('div.post_avatar').html('<img src="'+avimg+'" width="32" height="32"></img>')
-      }
+    app.getavatarandsocial(msg.f,function(avimg, usersocial){
+      var buffer = ''
+      debug('avimg',msg.f,avimg,usersocial)
+      if ( avimg )       buffer += '<img src="'+avimg+'" width="32" height="32"></img>'
+      if ( usersocial ) buffer = '<a target="_blank" href="'+usersocial+'">' + buffer + '</a>'
+      if ( avimg )      post.find('div.post_avatar').html(buffer)
     })
 
 
@@ -2211,10 +2216,12 @@ function AvatarBox() {
         avatar.show()
         avatars[avnick] = avatar
 
-        app.getavatar(avnick,function(avimg){
-          if( avimg ) {
-            avatar.html('<img src="'+avimg+'" width="32" height="32"></img>')
-          }
+        app.getavatarandsocial(avnick,function(avimg, usersocial){
+          var buffer = ''
+          debug('avatarbox',avnick,avimg,usersocial)
+          if ( avimg )      buffer += '<img src="'+avimg+'" width="32" height="32"></img>'
+          if ( usersocial ) buffer = '<a target="_blank" href="'+usersocial+'">' + buffer + '</a>'
+          if ( avimg )      avatar.html(buffer)
         })
 
         var pcount = $('#rally_pcount').text()
