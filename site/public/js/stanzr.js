@@ -538,7 +538,7 @@ var app = {
     for(var i in atnames) {
       var name = atnames[i].substring(1).toLowerCase()
       if (name in usernames && usernames[name]) {
-        t = t.replace(atnames[i], '<a target="_blank" href="' + app.usersocial[usernames[name]] + '">' + atnames[i] + '</a>')
+        t = t.replace(atnames[i], '@<a target="_blank" href="' + name + '">' + atnames[i] + '</a>')
       }
     }
     return t
