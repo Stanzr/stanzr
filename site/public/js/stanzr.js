@@ -533,7 +533,7 @@ var app = {
     var usernames = {} // I need a list of lowercase->normalcase usernames, as users may enter any case
     for(var i in app.usersocial){ usernames[i.toLowerCase()] = i; }
 
-    var atnames = t.match(/@[^: ]+/g) || []
+    var atnames = t.match(/@[^: \?!><]+/g) || []
     atnames = $.unique(atnames)
     for(var i in atnames) {
       var name = atnames[i].substring(1).toLowerCase()
