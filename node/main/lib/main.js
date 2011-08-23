@@ -993,7 +993,6 @@ main.api = {
       var user = main.ent.make$('sys','user')
       user.load$({nick:nick},RE(res,function(user){
         if( user ) {
-          eyes.inspect(user)
           var usersocial = ''
           if ( user.social.service == 'twitter' && user.nick ) {
             // user.twitter_id does exist, but I couldn't find an easy way to translate it into a user stream. the nickname should be the same. 
