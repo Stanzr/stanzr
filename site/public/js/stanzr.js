@@ -1363,7 +1363,7 @@ function TopicHead(topic) {
     self.el.desc  = topichead.find('p.rally_topicdesc')
 
     self.el.title.text(topic.title)
-    self.el.desc.text(topic.desc)
+    self.el.desc.html( linkify( $('#escaper').text(topic.desc).html() ) ) // escape, then linkify topic.desc
 
 
     function movetopic(dir){
