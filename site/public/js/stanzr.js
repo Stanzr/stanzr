@@ -530,12 +530,15 @@ var app = {
     var t = $('#escaper').text(text).html()
     t = linkify( t )
     
-    var atnames = t.match(/@[^ ]+/g) || []
+    var usernames = {} // I need a list of lowercase->normalcase usernames, as users may enter any case
+    for(var i in app.usersocial){ usernames[i.toLowerCase()] = i; }
+
+    var atnames = t.match(/@[^: ]+/g) || []
     atnames = $.unique(atnames)
     for(var i in atnames) {
-      var name = atnames[i].substring(1)
-      if (name in app.usersocial) {
-        t = t.replace(atnames[i], '<a target="_blank" href="' + app.usersocial[name] + '">' + atnames[i] + '</a>')
+      var name = atnames[i].substring(1).toLowerCase()
+      if (name in usernames) {
+        t = t.replace(atnames[i], '<a target="_blank" href="' + app.usersocial[usernames[name]] + '">' + atnames[i] + '</a>')
       }
     }
 
