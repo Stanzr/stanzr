@@ -525,23 +525,31 @@ var app = {
     }
   },
 
+  linkify_atnames: function( t ) {
+    // I need a list of lowercase->normalcase usernames, as users may enter any case
+    var usernames = {} 
+    for(var i in app.usersocial){ usernames[i.toLowerCase()] = i; }
+
+    // get list of @name tags as best as we can with a regexp
+    var atnames = t.match(/@[^: \?!><]+/g) || []
+    atnames = $.unique(atnames)
+    
+    // if we have a social url for this username, use it. 
+    for(var i in atnames) {
+      var name = atnames[i].substring(1).toLowerCase()
+      if (name in usernames && usernames[name]) {
+        t = t.replace(atnames[i], '<a target="_blank" href="' + app.usersocial[usernames[name]] + '">' + atnames[i] + '</a>')
+      }
+    }
+    return t
+  },
 
   formatmsgtext: function( text ) {
     var t = $('#escaper').text(text).html()
     t = linkify( t )
+
+    t = app.linkify_atnames( t )
     
-    var usernames = {} // I need a list of lowercase->normalcase usernames, as users may enter any case
-    for(var i in app.usersocial){ usernames[i.toLowerCase()] = i; }
-
-    var atnames = t.match(/@[^: \?!><]+/g) || []
-    atnames = $.unique(atnames)
-    for(var i in atnames) {
-      var name = atnames[i].substring(1).toLowerCase()
-      if (name in usernames) {
-        t = t.replace(atnames[i], '<a target="_blank" href="' + app.usersocial[usernames[name]] + '">' + atnames[i] + '</a>')
-      }
-    }
-
     if( 'done' != app.chat.state && -1 != t.indexOf('@'+nick) ) {
       t = '<b>'+t+'</b>'
     }
