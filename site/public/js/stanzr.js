@@ -531,7 +531,7 @@ var app = {
     for(var i in app.usersocial){ usernames[i.toLowerCase()] = i; }
 
     // get list of @name tags as best as we can with a regexp
-    var atnames = t.match(/@[^: \?!><]+/g) || []
+    var atnames = t.match(/@[^,: \?!&;]+/g) || []
     atnames = $.unique(atnames)
     
     // if we have a social url for this username, use it. 
