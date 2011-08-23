@@ -995,12 +995,12 @@ main.api = {
         if( user ) {
           eyes.inspect(user)
           var usersocial = ''
-          if ( user.social.service == 'twitter' ) {
+          if ( user.social.service == 'twitter' && user.nick ) {
             // user.twitter_id does exist, but I couldn't find an easy way to translate it into a user stream. the nickname should be the same. 
             usersocial = 'http://twitter.com/#!/' + user.nick 
-          } else if ( user.social.service == 'facebook' ) {
+          } else if ( user.social.service == 'facebook' && user.facebook_id ) {
             usersocial = 'http://facebook.com/' + user.facebook_id
-          } else if ( user.social.service == 'linkedin' ) {
+          } else if ( user.social.service == 'linkedin' && user.linkedin_id ) {
             usersocial = 'http://www.linkedin.com/profile/view?id=' + user.linkedin_id
           }
           common.sendjson(res,{nick:user.nick,avimg:user.avimg,usersocial:usersocial})
