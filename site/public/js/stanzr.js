@@ -529,7 +529,15 @@ var app = {
   formatmsgtext: function( text ) {
     var t = $('#escaper').text(text).html()
     t = linkify( t )
-    //t = t.replace(/(@\w+)/g,'<b>$1</b>')
+    
+    var atnames = t.match(/@[^ ]+/g) || []
+    atnames = $.unique(atnames)
+    for(var i in atnames) {
+      var name = atnames[i].substring(1)
+      if (name in app.usersocial) {
+        t = t.replace(atnames[i], '<a target="_blank" href="' + app.usersocial[name] + '">' + atnames[i] + '</a>')
+      }
+    }
 
     if( 'done' != app.chat.state && -1 != t.indexOf('@'+nick) ) {
       t = '<b>'+t+'</b>'
@@ -634,9 +642,9 @@ var app = {
 
     msg.p = 'undefined'==typeof(msg.p) ? app.topic : msg.p
 
+    var social
     var post = $('#posts_tm li.message').clone()
     post.attr('id','msg_'+msg.i)
-    post.find('h4').text(msg.f)
     post.find('p').html( app.formatmsgtext(msg.t) )
 
     if( msg.s ) {
@@ -652,10 +660,17 @@ var app = {
       var buffer = ''
       debug('avimg',msg.f,avimg,usersocial)
       if ( avimg )       buffer += '<img src="'+avimg+'" width="32" height="32"></img>'
-      if ( usersocial ) buffer = '<a target="_blank" href="'+usersocial+'">' + buffer + '</a>'
+      if ( usersocial ) {
+        social = usersocial
+        buffer = '<a target="_blank" href="'+usersocial+'">' + buffer + '</a>'
+      }
       if ( avimg )      post.find('div.post_avatar').html(buffer)
     })
 
+
+    var buffer = msg.f
+    if ( social ) buffer = '<a href="' + social + '">' + buffer + '</a>'
+    post.find('h4').html(buffer)
 
     var share = post.find('a.share')
     var reply = post.find('a.sprite-at-reply')

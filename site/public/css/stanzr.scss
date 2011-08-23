@@ -203,7 +203,10 @@ div.post_content {
   float: left;
   margin-left: 10px;
   
-  h4 {float: left;}
+  h4 {
+    float: left;
+    a {color: black;}
+  }
   
   .post_actions {float: right; xposition:absolute; right:5px; margin-top:-5px;}
 
