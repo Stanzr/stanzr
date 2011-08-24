@@ -2004,11 +2004,6 @@ function AgreeBox() {
             self.count++
           }
         }
-
-        if( 'up' == self.drill && 115 < self.el.msg_lists[msg.p].height() ) {
-          topic_tapped_out[msg.p] = true
-          self.el.msg_lists[msg.p].children().last().remove()
-        }
       }
 
       var msgid = agrees[i]
@@ -2153,11 +2148,6 @@ function ReplyBox() {
 
         if( !msg.h ) {
           msgdiv.fadeIn()
-        }
-
-
-        if( 'up' == self.drill && 100 < self.el.msgs.height() ) {
-          i = replies.length
         }
       }
 

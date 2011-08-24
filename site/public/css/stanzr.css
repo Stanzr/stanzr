@@ -349,6 +349,11 @@ div.rightcol {
         div.rightcol div.sidesection ul.sideposts li span.count {
           float: right;
           color: #999999; }
+  div.rightcol div.fadeout {
+    margin-top: -11px;
+    content: url("/img/white_gradient_1x10.png");
+    width: 100%;
+    height: 10px; }
 
 p.post {
   margin: 0px;
