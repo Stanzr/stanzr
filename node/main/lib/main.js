@@ -591,7 +591,39 @@ main.chat = {
   getpublished: function(chatid,cb) {
     var pub = main.ent.make$('app','pub')
     pub.list$({c:chatid,sort$:{o:1}},cb)
-  }
+  },
+
+
+  addalias: function(name,chatid,cb) {
+    main.chat.get(chatid,LE(function(chat){
+      chat.aliases = chat.aliases || []
+      chat.aliases.push( name )
+      chat.aliases = _.uniq( chat.aliases )
+      
+      chat.save$(cb)
+    }))
+  },
+
+  replacealias: function(oldname,newname,chatid,cb) {
+    main.chat.get(chatid,LE(function(chat){
+      chat.aliases = chat.aliases || []
+      chat.aliases.push( newname )
+      chat.aliases = _.uniq( chat.aliases )
+      chat.aliases = _without( chat.aliases, oldname )
+
+      chat.save$(cb)
+    }))
+  },
+
+  delalias: function(name,chatid,cb) {
+    main.chat.get(chatid,LE(function(chat){
+      chat.aliases = chat.aliases || []
+      chat.aliases = _without( chat.aliases, name )
+      chat.aliases = _.uniq( chat.aliases )
+      
+      chat.save$(cb)
+    }))
+  },
 
 }
 
@@ -833,7 +865,22 @@ main.view = {
         }))
       }
     }
+  },
 
+  page: function(req, res, next ) {
+    if( req.params.page ) {
+      res.render(
+        req.params.page, 
+        { locals: {
+          txt: {
+            title:'Stanzr' 
+          },
+          val: {
+            chat:{},
+            user:{}
+          }
+        }})
+    }
   }
 
 }
@@ -1581,8 +1628,18 @@ main.api.chat.emailsend = function( req, res ) {
 
     var user = main.ent.make$('sys','user')
     user.load$({nick:nick},LE(function(user){
+      if( user.noemail ) {
+        log('UNSUBSCRIBED, not emailing ', user)
+        return
+      }
+      
       if( user.email ) {
         
+        if( !user.unsub ) {
+          user.unsub = uuid()
+          user.save$()
+        }
+
         console.log('EMAIL '+user.email+' '+subject+' '+body)
 
         sendemail(
@@ -1616,7 +1673,7 @@ main.api.user.post_terms = function( req, res ) {
   if( nick == req.user$.nick ) {
     req.user$.email = req.json$.email
     req.user$.name = req.json$.name
-    req.user$.toc = 1
+    req.user$.toc = 
     req.user$.unsub = uuid()
     req.user$.save$(sendok(res))
 
@@ -1644,6 +1701,32 @@ main.api.user.post_terms = function( req, res ) {
   else {
     denied(res)
   }
+}
+
+main.api.user.unsubscribe = function( req, res ) {
+  log('unsubscribe',req.params.unsub)
+
+  var user = main.ent.make$('sys','user')
+  user.list$({unsub:req.params.unsub},RE(res,function(list){
+    log('unsubscribe',list)
+    var user = list[0]
+    if( user ) {
+      user.noemail = 1
+      user.save$()
+     
+      var redir = conf.hosturl+'/page/unsubscribe-done'
+      log('redir',redir)
+
+      res.writeHead( 301, {
+        "Location": redir
+      })
+      res.end()
+    }
+    else {
+      res.writeHead( 404 )
+      res.end()
+    }
+  }))
 }
 
 
@@ -1840,6 +1923,8 @@ main.api.chat.admin.alias.put = function(req,res) {
     alias.save$(RE(res,function(){
       common.sendjson(res,{text:name})
     }))
+    
+    main.chat.addalias(name,req.params.chatid)
   }))
 }
 
@@ -1857,6 +1942,8 @@ main.api.chat.admin.alias.post = function(req,res) {
       oldalias.save$(RE(res,function(){
         common.sendjson(res,{text:newname})
       }))
+
+      main.chat.replacealias(oldname,newname,req.params.chatid)
     }))
   }))
 }
@@ -1867,8 +1954,10 @@ main.api.chat.admin.alias.del = function(req,res) {
     if( !oldalias ) return bad(res);
     
     oldalias.remove$(null,RE(res,function(){
-    common.sendjson(res,{text:oldname})
+      common.sendjson(res,{text:oldname})
     }))
+
+    main.chat.delalias(oldname,req.params.chatid)
   }))
 }
 
@@ -2272,8 +2361,12 @@ Seneca.init(
         0==url.indexOf('admin/rest') ||
         0==url.indexOf('admin/edit') ||
         0==url.indexOf('api') ||
+        0==url.indexOf('page') ||
+        0==url.indexOf('unsubscribe') ||
         0==url.indexOf('favicon.ico') ||
         false
+
+      log('url',url,ignore)
 
       if( ignore ) {
         next()
@@ -2309,6 +2402,8 @@ Seneca.init(
 
     // http://localhost:8080/member/QJAAMZDU
     app.get('/:chatid/QJAAMZDU', main.view.chat.hash)
+
+    app.get('/page/:page', main.view.page)
 
 
     app.listen(conf.web.port);
@@ -2348,6 +2443,7 @@ Seneca.init(
 
         capp.get('/api/user/:nick/details', main.api.user.get_details)
 
+        capp.get('/unsubscribe/:unsub', main.api.user.unsubscribe)
       })
     )
 
@@ -2480,7 +2576,7 @@ Seneca.init(
            text:{type:'string'}
          }
         },
-        {base:'sys',name:'user',fields:['nick','email','name','active','toc','avimg','social','admin'],
+        {base:'sys',name:'user',fields:['nick','email','name','active','toc','avimg','social','admin','noemail'],
          fieldtypes:{
            nick:{type:'string'},
            email:{type:'string'},
@@ -2489,7 +2585,8 @@ Seneca.init(
            toc:{type:'integer'},
            avimg:{type:'string'},
            social:{type:'object'},
-           admin:{type:'integer'}
+           admin:{type:'integer'},
+           noemail:{type:'integer'}
          }
         },
 
