@@ -1,6 +1,5 @@
 
 
-
 try {
 
 function enterkey(cb) {
@@ -680,7 +679,7 @@ var app = {
 
 
     var buffer = msg.f
-    if ( social ) buffer = '<a href="' + social + '">' + buffer + '</a>'
+    if ( social ) buffer = '<a target="_blank" href="' + social + '">' + buffer + '</a>'
     post.find('h4').html(buffer)
 
     var share = post.find('a.share')
