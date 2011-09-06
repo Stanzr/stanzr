@@ -547,12 +547,12 @@ var app = {
     var t = $('#escaper').text(text).html()
     t = linkify( t )
 
-    t = app.linkify_atnames( t )
-    
     if( 'done' != app.chat.state && -1 != t.indexOf('@'+nick) ) {
       t = '<b>'+t+'</b>'
     }
 
+    t = app.linkify_atnames( t )
+    
     return t
   },
 
