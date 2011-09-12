@@ -222,7 +222,7 @@ var app = {
     var postsarea = $('div.postsarea')
     if( postsarea[0] ) {
       var past = app.postsareascrolltop()
-      if( 100+postsarea.scrollTop() > (past - postsarea.innerHeight()) ) {
+      if( 220+postsarea.scrollTop() > (past - postsarea.innerHeight()) ) {
         postsarea.scrollTop( past )
       }
     }
