@@ -1824,8 +1824,8 @@ main.api.chat.ical = function( req, res ) {
     var end = new Date( start.getTime()+(60*60*1000) )
 
     var zpad = office.zpad
-    var startstr = ''+start.getUTCFullYear()+zpad(start.getUTCMonth()+1)+zpad(start.getUTCDay())+'T'+zpad(start.getUTCHours())+zpad(start.getUTCMinutes())+zpad(start.getUTCSeconds()) 
-    var endstr   = ''+end.getUTCFullYear()+zpad(end.getUTCMonth()+1)+zpad(end.getUTCDay())+'T'+zpad(end.getUTCHours())+zpad(end.getUTCMinutes())+zpad(end.getUTCSeconds()) 
+    var startstr = ''+start.getUTCFullYear()+zpad(start.getUTCMonth()+1)+zpad(start.getUTCDate())+'T'+zpad(start.getUTCHours())+zpad(start.getUTCMinutes())+zpad(start.getUTCSeconds()) 
+    var endstr   = ''+end.getUTCFullYear()+zpad(end.getUTCMonth()+1)+zpad(end.getUTCDate())+'T'+zpad(end.getUTCHours())+zpad(end.getUTCMinutes())+zpad(end.getUTCSeconds()) 
 
     var ical = [
       "BEGIN:VCALENDAR",
