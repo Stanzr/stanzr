@@ -1827,6 +1827,11 @@ main.api.chat.ical = function( req, res ) {
     var startstr = ''+start.getUTCFullYear()+zpad(start.getUTCMonth()+1)+zpad(start.getUTCDate())+'T'+zpad(start.getUTCHours())+zpad(start.getUTCMinutes())+zpad(start.getUTCSeconds()) 
     var endstr   = ''+end.getUTCFullYear()+zpad(end.getUTCMonth()+1)+zpad(end.getUTCDate())+'T'+zpad(end.getUTCHours())+zpad(end.getUTCMinutes())+zpad(end.getUTCSeconds()) 
 
+    // Extract the time offset from the start time to allow Outlook to
+    // calculate the correct timezone for calendar settings
+    var tmpStart = start.toString();
+    var tzOffset = tmpStart.substr(tmpStart.length - 11, 5);
+
     var ical = [
       "BEGIN:VCALENDAR",
       "PRODID:-//"+conf.hosturl+"//EN",
@@ -1838,6 +1843,8 @@ main.api.chat.ical = function( req, res ) {
       "CLASS:PUBLIC",
       "DTSTART:"+startstr,
       "DTEND:"+endstr,
+      "TZOFFSETFROM:"+tzOffset,
+      "TZOFFSETTO:"+tzOffset,
       "URL:"+chaturl,
       "DESCRIPTION:"+req.chat$.desc,
       "END:VEVENT",
