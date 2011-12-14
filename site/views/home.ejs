@@ -1,9 +1,3 @@
-<SCRIPT>
-function clearDefaultandCSS(el) {
-  if (el.defaultValue==el.value) el.value = ""
-}
-</SCRIPT>
-
 <div class="landing">
   <div class="coming_soon">
     <img src="/img/logo_landing.png" />
@@ -13,8 +7,14 @@ function clearDefaultandCSS(el) {
     
     <form method="post" action="http://oi.vresp.com?fid=547fff93de" >
       <div>
+<SCRIPT>
+function clearDefaultandCSS(el) {
+  if (el.defaultValue==el.value) el.value = ""
+}
+</SCRIPT>
+
         <input name="email_address" value ="E-Mail Address" ONFOCUS="clearDefault(this)" class="textfield"/><br/>
-        <input name="TwitterHandle" value ="TwitterHandle" ONFOCUS="clearDefault(this)"class="textfield"/><br/>
+        <input name="TwitterHandle" value ="Twitter Handle" ONFOCUS="clearDefault(this)" class="textfield"/><br/>
         <input type="submit" value="Send"/>
       </div>
     </form>
