@@ -1601,7 +1601,7 @@ function ChatDetailsBox() {
       self.el.editbtn.click(killpopups(app.popup.box.hostchat.editchat))
       self.el.emailbtn.click(killpopups(app.popup.box.email.render))
       // self.el.moderatorsbtn.click(killpopups(app.popup.box.moderators.render))
-      // self.el.analyticsbtn.attr('href','/'+chat.chatid+'/moderator')
+      self.el.analyticsbtn.attr('href','/'+chat.chatid+'/moderator')
       self.el.curatebtn.click(killpopups(app.curate.render))
       self.el.unpublishbtn.click(killpopups(function(){app.closechat(function(){
         app.reloadpage(alias)
@@ -1615,7 +1615,7 @@ function ChatDetailsBox() {
     if( page.user.admin ) {
       self.el.aliasesbtn.click(killpopups(app.popup.box.aliases.render))
       self.el.moderatorsbtn.click(killpopups(app.popup.box.moderators.render))
-      self.el.analyticsbtn.attr('href','/'+chat.chatid+'/moderator')
+      // self.el.analyticsbtn.attr('href','/'+chat.chatid+'/moderator')
     }
 
     showif(self,{
@@ -1624,6 +1624,9 @@ function ChatDetailsBox() {
       },
       emailbtn: function(){
         return app.ismod
+      },
+      analyticsbtn: function(){
+        return page.ismod
       },
       curatebtn: function(){
         return app.ismod && 'closed'==app.chat.state
@@ -1635,9 +1638,6 @@ function ChatDetailsBox() {
         return page.user.admin
       },
       moderatorsbtn: function(){
-        return page.user.admin
-      },
-      analyticsbtn: function(){
         return page.user.admin
       },
       modmsgbtn: function() {
