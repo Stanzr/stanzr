@@ -1,4 +1,3 @@
-
 try {
 
 function enterkey(cb) {
@@ -1601,8 +1600,8 @@ function ChatDetailsBox() {
     if( app.ismod ) {
       self.el.editbtn.click(killpopups(app.popup.box.hostchat.editchat))
       self.el.emailbtn.click(killpopups(app.popup.box.email.render))
-      self.el.moderatorsbtn.click(killpopups(app.popup.box.moderators.render))
-      self.el.analyticsbtn.attr('href','/'+chat.chatid+'/moderator')
+      // self.el.moderatorsbtn.click(killpopups(app.popup.box.moderators.render))
+      // self.el.analyticsbtn.attr('href','/'+chat.chatid+'/moderator')
       self.el.curatebtn.click(killpopups(app.curate.render))
       self.el.unpublishbtn.click(killpopups(function(){app.closechat(function(){
         app.reloadpage(alias)
