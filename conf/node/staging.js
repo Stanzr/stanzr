@@ -10,15 +10,15 @@ module.exports = {
     mongo: {
       main: {
         name: 'stanzrstaging',
-        server: 'flame.mongohq.com',
-        port: 27045,
+        server: 'ds037097.mongolab.com',
+        port: 37097,
         username: 'staging',
         password: 'k1lk3nn1'  
       },
       log: {
         name: 'stanzrstaging',
-        server: 'flame.mongohq.com',
-        port: 27045,
+        server: 'ds037097.mongolab.com',
+        port: 37097,
         username: 'staging',
         password: 'k1lk3nn1'  
       }

@@ -4,8 +4,8 @@ module.exports = {
     env:'design',
     mongo: {
       main: {
-        server:'flame.mongohq.com',
-        port:27059,
+        server:'ds037087.mongolab.com',
+        port:37087,
         name:'stanzr01',
         username:'design',
         password:'w1ckl0w1'

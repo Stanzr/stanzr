@@ -9,8 +9,8 @@ module.exports = {
     },
     mongo: {
       main: {
-        server:'flame.mongohq.com',
-        port:27044,
+        server:'ds037047.mongolab.com',
+        port:37047,
         name:'stanzrdemo',
         username:'demo',
         password:'S2QP11CC'
