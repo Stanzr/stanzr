@@ -1,17 +1,16 @@
 
 module.exports = {
-  conf: {
-    env:'dev',
-    hosturl:'http://stanzr.test',
+    env:'live',
+    hosturl:'http://stanzr.com',
     tweetsearch:true,
-    web:{
-      port:80
+    web: {
+      port: 80
     },
     mongo: {
       main: {
         server:'localhost',
         port:27017,
-        name:'stanzrdev'
+        name:'stanzrlive'
       }
     },
     keys: {
@@ -40,5 +39,4 @@ module.exports = {
         sender:'taariq@stanzr.com'
       }
     }
-  }
 }

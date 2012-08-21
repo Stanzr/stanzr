@@ -4,7 +4,6 @@ var util    = common.util
 var fs      = common.fs
 
 
-var connect = common.connect
 var express = common.express
 var mongo   = common.mongo
 var now     = common.now
@@ -17,7 +16,6 @@ var uuid    = common.uuid
 var conf    = common.conf
 var twitter = common.twitter
 var oauth   = common.oauth
-var form    = common.form
 var https    = require('https')
 
 var office  = common.office
@@ -2317,10 +2315,10 @@ Seneca.init(
     })
 
 
-    app.use( connect.logger( {stream:fs.createWriteStream(conf.accesslog)} ) )
-    //app.use( connect.logger() )
+    app.use( express.logger( {stream:fs.createWriteStream(conf.accesslog)} ) )
+    //app.use( express.logger() )
 
-    app.use(form({ keepExtensions: true }))
+    app.use(express.bodyParser())
 
     app.use( imageupload.service({
       callback: 'parent.app.uploadimage',
@@ -2419,7 +2417,7 @@ Seneca.init(
     
 
 
-    app.use( connect.static( __dirname + '/../../../site/public') )
+    app.use( express.static( __dirname + '/../../../site/public') )
 
     app.use( initsocial() )    
     
@@ -2429,7 +2427,7 @@ Seneca.init(
     app.use( loadchat )
 
     app.use( 
-      connect.router(function(capp){
+      express.router(function(capp){
         capp.get('/api/ping/:kind',main.api.ping )
         capp.post('/api/ping/diag',main.api.ping )
 
@@ -2457,7 +2455,7 @@ Seneca.init(
     app.use( auth )
         
     app.use( 
-      connect.router(function(capp){
+      express.router(function(capp){
         // FIX remove as repeated?
         capp.post('/api/auth/:action', main.api.auth.post)
 
@@ -2483,7 +2481,7 @@ Seneca.init(
     app.use( chatmustbeopen )
         
     app.use( 
-      connect.router(function(capp){
+      express.router(function(capp){
         capp.post('/api/chat/:chatid/msg/:msgid/agree', main.api.chat.msg.post_agree)
         capp.post('/api/chat/:chatid/msg', main.api.chat.msg.post)
 
@@ -2497,7 +2495,7 @@ Seneca.init(
     app.use( mustbemod )
 
     app.use( 
-      connect.router(function(capp){
+      express.router(function(capp){
         capp.post('/api/chat/:chatid', main.api.chat.save)
 
         capp.post('/api/chat/:chatid/topic/:topic', main.api.chat.topic.post)
@@ -2520,7 +2518,7 @@ Seneca.init(
     app.use( mustbeadmin )
 
     app.use( 
-      connect.router(function(capp){
+      express.router(function(capp){
         capp.get('/api/chat/:chatid/admin/moderator', main.api.chat.admin.moderator.get)
         capp.put('/api/chat/:chatid/admin/moderator', main.api.chat.admin.moderator.put)
         capp.post('/api/chat/:chatid/admin/moderator/:name', main.api.chat.admin.moderator.post)

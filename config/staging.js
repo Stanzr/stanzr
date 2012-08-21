@@ -1,19 +1,25 @@
 
 module.exports = {
-  conf: {
-    env:'demo',
-    hosturl:'http://stanzr.com',
+    env:'staging',
+    hosturl:'http://staging.stanzr.com',
     tweetsearch:true,
     web: {
       port: 80
     },
     mongo: {
       main: {
-        server:'ds037047.mongolab.com',
-        port:37047,
-        name:'stanzrdemo',
-        username:'demo',
-        password:'S2QP11CC'
+        name: 'stanzrstaging',
+        server: 'ds037097.mongolab.com',
+        port: 37097,
+        username: 'staging',
+        password: 'k1lk3nn1'  
+      },
+      log: {
+        name: 'stanzrstaging',
+        server: 'ds037097.mongolab.com',
+        port: 37097,
+        username: 'staging',
+        password: 'k1lk3nn1'  
       }
     },
     keys: {
@@ -42,5 +48,4 @@ module.exports = {
         sender:'taariq@stanzr.com'
       }
     }
-  }
 }

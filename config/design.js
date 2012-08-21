@@ -1,22 +1,8 @@
 
 module.exports = {
-  conf: {
-    env:'demo',
-    hosturl:'http://stanzr.com',
-    tweetsearch:true,
-    accesslog:'/var/log/stanzr/access.log',
-    web: {
-      port: 80
-    },
+    env:'design',
     mongo: {
       main: {
-        server:'ds037067.mongolab.com',
-        port:37067,
-        name:'stanzrlive',
-        username:'stanzrlive',
-        password:'WDcc4tt1zw'
-      },
-      log: {
         server:'ds037087.mongolab.com',
         port:37087,
         name:'stanzr01',
@@ -50,5 +36,4 @@ module.exports = {
         sender:'taariq@stanzr.com'
       }
     }
-  }
 }

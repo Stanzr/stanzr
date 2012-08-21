@@ -37,7 +37,6 @@ var util     = exports.util     = require('util')
 var url      = exports.url      = require('url')
 var fs       = exports.fs       = require('fs')
 
-var connect  = exports.connect   = require('connect')
 var uuid     = exports.uuid      = require('node-uuid')
 var request  = exports.request   = require('request')
 var express  = exports.express   = require('express')
@@ -47,82 +46,26 @@ var eyes     = exports.eyes      = require('eyes')
 var cookies  = exports.cookies   = require('cookies')
 var _        = exports._         = require('underscore')
 var url      = exports.url       = require('url')
-var form     = exports.form      = require('connect-form')
 var knox     = exports.knox      = require('knox')
 var postmark = exports.postmark  = require('postmark')
 
-
-// winston pollutes namespace by injecting config
-var configx = require('config')
-
-
 var office   = exports.office    = require('./office')
 
-var oauth    = exports.oauth     = require('../../support/node-oauth')
-var winston  = exports.winston   = require('../../support/winston')
+var oauth    = exports.oauth     = require('oauth')
+var winston  = exports.winston   = require('winston')
 
 var twitter  = exports.twitter   = require('twitter')
 
-var seneca   = exports.seneca    = require('../../support/seneca')
+var seneca   = exports.seneca    = require('seneca')
 
 var now      = exports.now   = require('now')
 
 
 
-var conf = exports.conf = configx('conf',{
-  env: 'dev',
-  hosturl:'http://localhost:8080',
-  tweetsearch:false,
-  quickcodelen:12,
-  accesslog:'/tmp/stanzr-access.log',
-  twlog:'/tmp/twitter.log',
-  web: {
-    port: 8080
-  },
-  keys: {
-    chartaca: {
-      key: '3b206e8c-f57a-49f1-9ee3-34fd3b6ce2b5'
-    },
-    linkedin: {
-        key:'k',
-        secret:'s',
-    },
-    twitter: {
-      key:'k',
-      secret:'s',
-      token: {
-        key: 'k',
-        secret: 's'
-      }
-    },
-    facebook: {
-      key:'k',
-      secret:'s'
-    }
-  },
-  mongo: {
-    main: {
-      name: 'stanzrdev',
-      server: 'localhost',
-      port: 27017,
-      username: '',
-      password: ''
-    },
-    log: {
-      name: 'stanzrdev',
-      server: 'localhost',
-      port: 27017,
-      username: '',
-      password: ''
-    }
-  }
-})
+var conf = exports.conf = require('config');
+console.log(JSON.stringify(conf));
 
-eyes.inspect(conf)
-
-
-
-winston.add(winston.transports.MongoDB, {
+winston.add(require('winston-mongodb').MongoDB, {
   db: conf.mongo.log.name,
   host: conf.mongo.log.server,
   port: conf.mongo.log.port,
@@ -200,7 +143,7 @@ function die(msg) {
 
 // mongo functions
 
-var mongodb = require('../../support/node-mongodb-native')
+var mongodb = require('mongodb')
 
 var mongo = {
   mongo: mongodb,
