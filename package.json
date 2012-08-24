@@ -1,19 +1,20 @@
 {
   "name": "stanzr",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "",
   "keywords": [],
-  "author": "Taariq Lewis <taariq.lewis@gmail.com>",
+  "author": {
+    "name": "Taariq Lewis",
+    "email": "taariq.lewis@gmail.com"
+  },
   "contributors": [
     {
       "name": "Richard Rodger",
-      "email": "richard@chartaca.com",
-      "web": "http://"
+      "email": "richard@chartaca.com"
     },
     {
       "name": "Daniel Lewis",
-      "email": "daniel@cloudspace.com",
-      "web": "http://www.cloudspace.com/"
+      "email": "daniel@cloudspace.com"
     }
   ],
   "repositories": [
@@ -32,27 +33,28 @@
     "gex": "*",
     "knox": "*",
     "log": "*",
-    "mongodb": "*",
-    "oauth": "*",
+    "mongodb": "0.9.9-8",
     "node-uuid": "*",
     "now": "*",
+    "oauth": "*",
     "postmark": "*",
     "request": "*",
     "seneca": "*",
     "twitter": "*",
     "underscore": "*",
-    "winston-mongodb": "*",
+    "winston-mongodb": "0.4.0",
     "winston": "*"
   },
-  "analyze": false,
+  "bundleDependencies": [
+    "now",
+    "seneca"
+  ],
+  "analyze": true,
   "engines": {
-    "node": "v0.6.x"
+    "node": "0.6.x"
   },
   "scripts": {
     "start": "node node/main/lib/main.js"
-  },
-  "directories": {
-    "lib": "main/lib"
   },
   "subdomain": "stanzr"
 }

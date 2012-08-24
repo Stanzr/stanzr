@@ -39,8 +39,8 @@ process.on('uncaughtException', function (err) {
 });
 
 
-var Log = require('log')
-var twlog = new Log(Log.DEBUG,fs.createWriteStream(conf.twlog));
+var twlog = new log(log.DEBUG);
+//var twlog = new Log(log.DEBUG,fs.createWriteStream(conf.twlog));
 
 
 var emailer = new email.Emailer()
@@ -2315,8 +2315,8 @@ Seneca.init(
     })
 
 
-    app.use( express.logger( {stream:fs.createWriteStream(conf.accesslog)} ) )
-    //app.use( express.logger() )
+    //app.use( express.logger( {stream:fs.createWriteStream(conf.accesslog)} ) )
+    app.use( express.logger() )
 
     app.use(express.bodyParser())
 
@@ -2336,6 +2336,7 @@ Seneca.init(
 	  'localhost' == host ||
           'localhost:8080' == host ||
           'stanzr.com' == host ||
+          'stanzr.jit.su' == host ||
           'stanzr.test' == host ||
           '127.0.0.1' == host ||
           0 == host.indexOf('192.168.') ) 
@@ -2411,7 +2412,7 @@ Seneca.init(
 
 
     app.listen(conf.web.port);
-    log("port", app.address().port)
+    log("port", conf.web.port)
 
 
     
