@@ -1,6 +1,6 @@
 {
   "name": "stanzr",
-  "version": "0.1.0",
+  "version": "0.1.0-18",
   "description": "",
   "keywords": [],
   "author": {
@@ -39,7 +39,7 @@
     "oauth": "*",
     "postmark": "*",
     "request": "*",
-    "seneca": "*",
+    "seneca": "0.0.1",
     "twitter": "*",
     "underscore": "*",
     "winston-mongodb": "0.4.0",
